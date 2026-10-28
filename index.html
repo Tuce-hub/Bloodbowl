@@ -52,8 +52,8 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .field input,.field select{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:12px 12px;font-size:18px;width:100%;min-width:0}
 .field input:focus{border-color:var(--gold);outline:none}
 .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.row2,.grid4{align-items:end}
 .row2>*,.grid4>*{min-width:0}
-input[type="datetime-local"]{min-width:0;max-width:100%}
 .side-tag{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
 .btn{border:0;border-radius:8px;padding:14px 18px;font-family:var(--f-label);font-weight:700;font-size:19px;letter-spacing:.06em;text-transform:uppercase;background:var(--surface2);border:1px solid var(--line)}
 .btn.primary{background:var(--me);color:var(--me-ink);border-color:var(--me)}
@@ -70,13 +70,13 @@ input[type="datetime-local"]{min-width:0;max-width:100%}
 
 /* live card (portrait while a match runs) */
 .live{border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.live .sb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:var(--surface);padding:16px;gap:10px}
-.live .tm{display:flex;flex-direction:column;gap:2px;min-width:0}
-.live .tm.r{text-align:right}
-.live .tm .n{font-family:var(--f-label);font-weight:700;font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.live .tm .ro{color:var(--muted);font-size:14px}
-.live .tm .t{font-family:var(--f-display);font-size:28px;line-height:1}
-.live .score{font-family:var(--f-display);font-size:56px;line-height:.9;font-weight:600}
+.live .sb{display:flex;flex-direction:column;gap:8px;background:var(--surface);padding:16px}
+.live .pl{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.live .who{display:flex;flex-direction:column;gap:1px;min-width:0}
+.live .n{font-family:var(--f-label);font-weight:700;font-size:20px;line-height:1.15;overflow-wrap:anywhere}
+.live .ro{color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.live .t{font-family:var(--f-display);font-size:32px;line-height:1;flex:none}
+.live .score{font-family:var(--f-display);font-size:48px;line-height:.9;font-weight:600;text-align:center;padding-block:2px}
 .live .acts{display:flex;flex-wrap:wrap;gap:10px;padding:14px 16px;background:var(--surface2)}
 .rotate{display:flex;align-items:center;gap:10px;color:var(--gold);font-family:var(--f-label);font-size:16px;letter-spacing:.04em}
 
@@ -86,7 +86,7 @@ input[type="datetime-local"]{min-width:0;max-width:100%}
 .tile .k{font-family:var(--f-label);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .tile .v{font-family:var(--f-display);font-size:30px;line-height:1;font-weight:600}
 .tile .s{font-size:12px;color:var(--muted)}
-.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px}
+.seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px}
 .seg button{flex:1;min-width:0;border:0;background:transparent;border-radius:6px;padding:9px 2px;font-family:var(--f-label);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--surface2);color:var(--fg);box-shadow:inset 0 -2px 0 var(--gold)}
 .search{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:16px;width:100%}
@@ -108,7 +108,7 @@ tr.sub td{background:var(--surface);font-weight:400;font-size:14px;color:var(--m
 .pill{font-family:var(--f-label);font-weight:700;font-size:15px;width:30px;height:30px;border-radius:6px;display:grid;place-items:center;grid-row:1;align-self:center}
 .pill.V{background:var(--win);color:var(--me-ink)} .pill.N{background:var(--draw);color:#2a2410} .pill.D{background:var(--loss);color:#360808}
 .match .line1{grid-column:2;grid-row:1;align-self:center;font-family:var(--f-label);font-weight:600;font-size:18px;line-height:1.2;min-width:0}
-.match .line1 .sc{white-space:nowrap;font-family:var(--f-display);font-size:24px;margin:0 6px;vertical-align:-2px}
+.match .line1 .sc{white-space:nowrap;font-family:var(--f-display);font-size:24px;margin:0 2px;vertical-align:-2px}
 .match .info{grid-column:2/4;grid-row:2;margin:0;display:grid;grid-template-columns:76px minmax(0,1fr);gap:4px 12px;font-size:15px;line-height:1.35}
 .match .info dt{font-family:var(--f-label);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:1px}
 .match .info dd{margin:0;min-width:0;overflow-wrap:anywhere}
@@ -157,7 +157,7 @@ label.btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;color:var(--fg);font:13px/1.4 ui-monospace,monospace;padding:10px}
 
 /* ---------- Chrono (paysage) ---------- */
-#clock{position:fixed;inset:0;z-index:20;background:#000;display:grid;grid-template-columns:1fr 76px 1fr;user-select:none;-webkit-user-select:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+#clock{position:fixed;inset:0;z-index:20;background:#000;display:grid;grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr);user-select:none;-webkit-user-select:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 #clock.swap .half[data-side="me"]{order:1} #clock.swap .strip{order:2} #clock.swap .half[data-side="opp"]{order:3}
 .half{position:relative;display:grid;grid-template-rows:auto auto 1fr auto;align-items:center;padding:3vh 2.5vw 2vh;gap:1.5vh;touch-action:manipulation;cursor:pointer;min-width:0;background:var(--surface);transition:background .2s;overflow:hidden}
 .half{--c:var(--me);--ci:var(--me-ink)}
@@ -171,11 +171,11 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 @keyframes flash{50%{background:color-mix(in srgb,var(--danger) 45%,#0a0f0c)}}
 @media (prefers-reduced-motion:reduce){.half.over.active{animation:none}}
 .h-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;min-width:0}
-.h-name{font-family:var(--f-label);font-weight:700;font-size:clamp(18px,5.5vh,34px);line-height:1;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.h-roster{font-family:var(--f-label);font-size:clamp(14px,3.8vh,22px);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.h-time{font-family:var(--f-display);font-weight:600;font-size:min(26vh,10.5vw);line-height:.85;text-align:center;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.h-name{flex:1 1 auto;font-family:var(--f-label);font-weight:700;font-size:clamp(18px,5.5vh,34px);line-height:1;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.h-roster{flex:0 1 auto;max-width:48%;font-family:var(--f-label);font-size:clamp(14px,3.8vh,22px);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-time{font-family:var(--f-display);font-weight:600;font-size:min(26vh,10.5vw);line-height:.85;text-align:center;white-space:nowrap;min-width:0;letter-spacing:.01em;font-variant-numeric:tabular-nums}
 .half.over .h-time{color:#ffd2d2}
-.h-status{text-align:center;font-family:var(--f-label);font-weight:700;font-size:clamp(14px,4.2vh,24px);letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}
+.h-status{text-align:center;text-wrap:balance;font-family:var(--f-label);font-weight:700;font-size:clamp(12px,3.9vh,22px);letter-spacing:.05em;line-height:1.2;text-transform:uppercase;color:var(--fg)}
 .half:not(.active) .h-status{color:var(--muted)}
 .half.over .h-status{color:#ffd2d2}
 .h-ctrs{display:grid;grid-template-columns:1fr 1fr;gap:2vw}
@@ -195,14 +195,25 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;z-index:40;background:#000b;display:grid;place-items:center;padding:16px}
-.dlg{overflow-x:hidden;background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(520px,100%);max-height:calc(100% - 8px);overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.dlg{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(520px,100%);max-height:calc(100% - 8px);overflow-y:auto;overflow-x:hidden;padding:18px;display:flex;flex-direction:column;gap:14px}
 .dlg h3{font-family:var(--f-label);font-weight:700;font-size:22px;letter-spacing:.03em;margin:0}
 .dlg p{margin:0;color:var(--muted)}
 .dlg .acts{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
 .grid4{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--fg);color:var(--bg);font-family:var(--f-label);font-weight:600;font-size:16px;padding:10px 16px;border-radius:8px;max-width:calc(100% - 32px)}
 
-@media (max-width:420px){.tiles{grid-template-columns:repeat(2,1fr)}.brand span{display:none}}
+.ac-host{position:relative}
+.ac{position:absolute;left:0;right:0;top:100%;margin-top:4px;z-index:30;background:var(--surface2);border:1px solid color-mix(in srgb,var(--gold) 60%,var(--line));border-radius:8px;max-height:min(232px,42vh);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 12px 28px #000b}
+.ac.up{top:auto;bottom:100%;margin:0 0 4px}
+.ac-it{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:11px 12px;border-top:1px solid var(--line);cursor:pointer;font-size:17px;line-height:1.25}
+.ac-it:first-child{border-top:0}
+.ac-it span{min-width:0;overflow-wrap:anywhere}
+.ac-it b{color:var(--gold);font-weight:600}
+.ac-it small{flex:none;color:var(--muted);font-size:13px;white-space:nowrap}
+.ac-it.on,.ac-it:active{background:color-mix(in srgb,var(--gold) 16%,transparent)}
+@media (max-width:420px){.tiles{grid-template-columns:repeat(2,1fr)}.brand span{display:none}
+  .seg{grid-template-columns:repeat(2,minmax(0,1fr))}
+  th,td{padding:9px 6px} table{font-size:14px} th{font-size:12px;letter-spacing:.04em}}
 </style>
 </head>
 <body>
@@ -219,16 +230,16 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <h2>Nouveau match</h2>
       <div class="field">
         <label for="fMyRoster"><span class="side-tag" style="background:var(--me)"></span>Mon roster</label>
-        <input id="fMyRoster" list="dlRosters" placeholder="Ex. Orques" required>
+        <input id="fMyRoster" placeholder="Choisissez votre roster" required>
       </div>
       <div class="field">
         <label for="fComp">Compétition</label>
-        <input id="fComp" list="dlComps" placeholder="Vide si match amical">
+        <input id="fComp" placeholder="Vide si match amical">
       </div>
       <div class="row2">
         <div class="field">
           <label for="fCoach"><span class="side-tag" style="background:var(--opp)"></span>Coach adverse</label>
-          <input id="fCoach" list="dlCoaches" placeholder="Nom du coach" required>
+          <input id="fCoach" placeholder="Nom du coach" required>
         </div>
         <div class="field">
           <label for="fNaf">N° NAF</label>
@@ -238,7 +249,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <div id="intel" hidden></div>
       <div class="field">
         <label for="fOppRoster">Roster adverse</label>
-        <input id="fOppRoster" list="dlRosters" placeholder="Ex. Skavens" required>
+        <input id="fOppRoster" placeholder="Choisissez son roster" required>
       </div>
       <div class="field">
         <label for="fMinutes">Temps par joueur (minutes)</label>
@@ -258,7 +269,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button type="button" data-g="mine" aria-pressed="false">Mon roster</button>
       <button type="button" data-g="comp" aria-pressed="false">Compét.</button>
     </div>
-    <input class="search" id="statSearch" type="search" placeholder="Filtrer (nom, roster, compétition, n° NAF)…">
+    <input class="search" id="statSearch" type="search" placeholder="Filtrer : nom, roster, NAF…">
     <div id="statTable"></div>
     <p class="hint">TD et sorties : pour – contre. Touchez un coach pour voir ses matchs.</p>
   </section>
@@ -354,9 +365,6 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 <div id="modal" class="modal" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
-<datalist id="dlRosters"></datalist>
-<datalist id="dlCoaches"></datalist>
-<datalist id="dlComps"></datalist>
 
 <script>
 (function(){
@@ -502,6 +510,43 @@ function bindWheels(d){const hid=d.querySelector("#eDate");if(!hid)return;
     el.addEventListener("keydown",e=>{if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();el.scrollBy({top:e.key==="ArrowDown"?WH:-WH,behavior:"smooth"})}})});
   put()}
 
+/* ---------- suggestions (remplacent les listes déroulantes du navigateur) ---------- */
+const fold=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+const plural=n=>n+" match"+(n>1?"s":"");
+function countBy(arr){const m=new Map();arr.filter(Boolean).forEach(v=>{const k=norm(v);const e=m.get(k)||{v,n:0};e.n++;m.set(k,e)});return [...m.values()].sort((a,b)=>b.n-a.n||a.v.localeCompare(b.v,"fr"))}
+function acItems(kind){const ms=allMatches();
+  if(kind==="mine"||kind==="opp"){const played=countBy(ms.map(m=>kind==="mine"?m.myRoster:m.oppRoster));const seen=new Set(played.map(e=>norm(e.v)));
+    return [...played.map(e=>({v:e.v,sub:plural(e.n)})),...ROSTERS.filter(r=>!seen.has(norm(r))).map(v=>({v}))]}
+  if(kind==="coach")return countBy(ms.map(m=>m.oppCoach)).map(e=>{const n=nafOf(e.v);return {v:e.v,sub:(n?"NAF "+n+" · ":"")+plural(e.n)}});
+  if(kind==="comp")return countBy(ms.map(m=>m.competition)).map(e=>({v:e.v,sub:plural(e.n)}));
+  return []}
+function hl(v,q){if(!q)return esc(v);const i=fold(v).indexOf(q);if(i<0)return esc(v);return esc(v.slice(0,i))+"<b>"+esc(v.slice(i,i+q.length))+"</b>"+esc(v.slice(i+q.length))}
+let acClose=null;
+function attachAC(inp,kind){if(!inp||inp.dataset.ac)return;inp.dataset.ac=kind;inp.setAttribute("autocomplete","off");inp.removeAttribute("list");
+  const field=inp.closest(".field");field.classList.add("ac-host");
+  const box=document.createElement("div");box.className="ac";box.hidden=true;box.setAttribute("role","listbox");field.appendChild(box);
+  let items=[],idx=-1,skip=false,blurT;
+  const close=()=>{box.hidden=true;idx=-1;if(acClose===close)acClose=null};
+  const place=()=>{box.classList.remove("up");const r=inp.getBoundingClientRect();const vh=window.visualViewport?visualViewport.height:innerHeight;if(vh-r.bottom<190&&r.top>vh-r.bottom)box.classList.add("up")};
+  const draw=()=>{box.innerHTML=items.map((it,i)=>`<div class="ac-it${i===idx?" on":""}" role="option" data-i="${i}"><span>${hl(it.v,fold(inp.value.trim()))}</span>${it.sub?`<small>${esc(it.sub)}</small>`:""}</div>`).join("")};
+  const open=()=>{const q=fold(inp.value.trim());const all=acItems(kind);
+    items=(q?all.filter(it=>fold(it.v).includes(q)&&fold(it.v)!==q):all).slice(0,40);
+    if(!items.length){close();return}
+    if(acClose&&acClose!==close)acClose();acClose=close;idx=-1;draw();box.hidden=false;box.scrollTop=0;place()};
+  const pick=i=>{const it=items[i];if(!it)return;inp.value=it.v;close();skip=true;inp.dispatchEvent(new Event("input",{bubbles:true}));skip=false;inp.dispatchEvent(new Event("change",{bubbles:true}))};
+  inp.addEventListener("focus",()=>{clearTimeout(blurT);open()});
+  inp.addEventListener("click",()=>{if(box.hidden)open()});
+  inp.addEventListener("input",()=>{if(!skip)open()});
+  inp.addEventListener("blur",()=>{blurT=setTimeout(close,180)});
+  inp.addEventListener("keydown",e=>{if(box.hidden)return;
+    if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();idx=(idx+(e.key==="ArrowDown"?1:-1)+items.length)%items.length;draw();const el=box.children[idx];el&&el.scrollIntoView({block:"nearest"})}
+    else if(e.key==="Enter"&&idx>=0){e.preventDefault();pick(idx)}else if(e.key==="Escape"){close()}});
+  ["mousedown","pointerdown"].forEach(t=>box.addEventListener(t,e=>{if(e.pointerType!=="touch")e.preventDefault()}));
+  box.addEventListener("touchstart",()=>clearTimeout(blurT),{passive:true});
+  box.addEventListener("click",e=>{const el=e.target.closest(".ac-it");if(el){clearTimeout(blurT);pick(+el.dataset.i);inp.blur()}});
+  if(window.visualViewport)visualViewport.addEventListener("resize",()=>{if(!box.hidden)place()})}
+document.addEventListener("pointerdown",e=>{if(acClose&&!e.target.closest(".ac-host"))acClose()});
+
 /* ---------- dates, NAF ---------- */
 const p2=n=>String(n).padStart(2,"0");
 function toLocalInput(iso){const d=new Date(iso||Date.now());if(isNaN(d))return "";return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
@@ -514,12 +559,6 @@ function nafOf(coach){const k=norm(coach);const m=allMatches().find(x=>norm(x.op
 function coachByNaf(naf){naf=cleanNaf(naf);if(!naf)return null;const m=allMatches().find(x=>String(x.oppNaf||"")===naf);return m?m.oppCoach:null}
 
 /* ---------- datalists ---------- */
-function coachesList(){const map=new Map();allMatches().forEach(m=>{const k=norm(m.oppCoach);if(k&&!map.has(k))map.set(k,m.oppCoach)});return [...map.values()].sort((a,b)=>a.localeCompare(b,"fr"))}
-function fillLists(){const used=new Set(allMatches().flatMap(m=>[m.myRoster,m.oppRoster]).filter(Boolean));const r=[...new Set([...ROSTERS,...used])].sort((a,b)=>a.localeCompare(b,"fr"));
-  $("#dlRosters").innerHTML=r.map(x=>`<option value="${esc(x)}">`).join("");
-  $("#dlCoaches").innerHTML=coachesList().map(x=>`<option value="${esc(x)}">`).join("");
-  const comps=[...new Set(allMatches().map(m=>m.competition).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
-  $("#dlComps").innerHTML=comps.map(x=>`<option value="${esc(x)}">`).join("")}
 
 /* ---------- stats ---------- */
 function agg(list){const a={j:0,V:0,N:0,D:0,tdF:0,tdC:0,casF:0,casC:0};list.forEach(m=>{a.j++;a[result(m)]++;a.tdF+=+m.myTD||0;a.tdC+=+m.oppTD||0;a.casF+=+m.myCas||0;a.casC+=+m.oppCas||0});return a}
@@ -560,7 +599,7 @@ function renderStats(){const list=allMatches();const a=agg(list);
 function renderHist(){const list=allMatches();$("#histTitle").textContent=`Historique · ${list.length} match${list.length>1?"s":""}`;
   if(!list.length){$("#histList").innerHTML='<div class="empty">Vos matchs terminés s\'afficheront ici, du plus récent au plus ancien. Pour un match joué sans le chrono, utilisez « Saisir un match passé ».</div>';return}
   $("#histList").innerHTML=list.map(m=>{const r=result(m);return `<div class="match"><span class="pill ${r}">${r}</span>
-  <div class="line1">${esc(m.myRoster)}<span class="sc num">${m.myTD}–${m.oppTD}</span>${esc(m.oppRoster)}</div>
+  <div class="line1">${esc(m.myRoster)} <span class="sc num">${m.myTD}–${m.oppTD}</span> ${esc(m.oppRoster)}</div>
   <div class="mact">${hasPhoto(m)?`<button class="thumb" data-ph="${esc(m.id)}" aria-label="Voir la photo">${CAM}</button>`:""}<button class="icon-btn" data-ed="${esc(m.id)}" aria-label="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button class="icon-btn" data-del="${esc(m.id)}" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
   <dl class="info"><dt>Coach</dt><dd>${esc(m.oppCoach)}</dd>${m.oppNaf?`<dt>NAF</dt><dd class="num">${esc(m.oppNaf)}</dd>`:""}<dt>Date</dt><dd>${fdate(m.date)}</dd>${m.competition?`<dt>Compét.</dt><dd>${esc(m.competition)}</dd>`:""}<dt>Sorties</dt><dd class="num">${m.myCas}–${m.oppCas}</dd>${m.note?`<dt>Notes</dt><dd class="note">${esc(m.note)}</dd>`:""}</dl></div>`}).join("");
   $$("[data-ed]").forEach(b=>b.onclick=()=>editMatch(matches[b.dataset.ed]));
@@ -568,12 +607,12 @@ function renderHist(){const list=allMatches();$("#histTitle").textContent=`Histo
   $$("[data-del]").forEach(b=>b.onclick=()=>{const m=matches[b.dataset.del];confirmBox("Supprimer ce match ?",`${m.myRoster} ${m.myTD}–${m.oppTD} ${m.oppRoster}, contre ${m.oppCoach} (${fdate(m.date)}). Cette suppression est définitive.`,"Supprimer",true,()=>{photoDel(m.id);photoPending.delete(m.id);savePhotoPending();forgetPhoto(m.id);markDirty({id:m.id,deleted:true});toast("Match supprimé")})})}
 
 function matchForm(m){return `${dateWheels(toLocalInput(m.date))}
-  <div class="field"><label for="eComp">Compétition</label><input id="eComp" list="dlComps" value="${esc(m.competition||"")}" placeholder="Vide si match amical"></div>
-  <div class="field"><label for="eMyRoster">Mon roster</label><input id="eMyRoster" list="dlRosters" value="${esc(m.myRoster)}"></div>
-  <div class="row2"><div class="field"><label for="eCoach">Coach adverse</label><input id="eCoach" list="dlCoaches" value="${esc(m.oppCoach)}"></div>
+  <div class="field"><label for="eComp">Compétition</label><input id="eComp" value="${esc(m.competition||"")}" placeholder="Vide si match amical"></div>
+  <div class="field"><label for="eMyRoster">Mon roster</label><input id="eMyRoster" value="${esc(m.myRoster)}" placeholder="Choisissez votre roster"></div>
+  <div class="row2"><div class="field"><label for="eCoach">Coach adverse</label><input id="eCoach" value="${esc(m.oppCoach)}"></div>
   <div class="field"><label for="eNaf">N° NAF</label><input id="eNaf" inputmode="numeric" value="${esc(m.oppNaf||"")}" placeholder="Facultatif"></div></div>
   <div class="field">
-<label for="eOppRoster">Son roster</label><input id="eOppRoster" list="dlRosters" value="${esc(m.oppRoster)}"></div>
+<label for="eOppRoster">Son roster</label><input id="eOppRoster" value="${esc(m.oppRoster)}" placeholder="Choisissez son roster"></div>
   <div class="grid4"><div class="field"><label for="eMyTD">Mes TD</label><input id="eMyTD" type="number" inputmode="numeric" min="0" value="${m.myTD}"></div>
   <div class="field"><label for="eOppTD">TD adverses</label><input id="eOppTD" type="number" inputmode="numeric" min="0" value="${m.oppTD}"></div>
   <div class="field"><label for="eMyCas">Mes sorties</label><input id="eMyCas" type="number" inputmode="numeric" min="0" value="${m.myCas}"></div>
@@ -581,7 +620,7 @@ function matchForm(m){return `${dateWheels(toLocalInput(m.date))}
   <div class="field"><label for="eNote">Commentaires</label><textarea id="eNote" rows="3" maxlength="2000" placeholder="Faits marquants, tactique adverse, joueurs perdus…">${esc(m.note||"")}</textarea></div>${photoBlock()}`}
 function readForm(d,m){const v=id=>d.querySelector(id).value;const n=id=>Math.max(0,parseInt(v(id),10)||0);
   return Object.assign({},m,{date:fromLocalInput(v("#eDate"),m.date),competition:v("#eComp").trim(),note:v("#eNote").trim(),oppNaf:cleanNaf(v("#eNaf")),myRoster:v("#eMyRoster").trim()||m.myRoster,oppCoach:v("#eCoach").trim()||m.oppCoach,oppRoster:v("#eOppRoster").trim()||m.oppRoster,myTD:n("#eMyTD"),oppTD:n("#eOppTD"),myCas:n("#eMyCas"),oppCas:n("#eOppCas")})}
-function bindFormHelpers(d){bindWheels(d);const c=d.querySelector("#eCoach"),f=d.querySelector("#eNaf");
+function bindFormHelpers(d){bindWheels(d);attachAC(d.querySelector("#eMyRoster"),"mine");attachAC(d.querySelector("#eOppRoster"),"opp");attachAC(d.querySelector("#eCoach"),"coach");attachAC(d.querySelector("#eComp"),"comp");const c=d.querySelector("#eCoach"),f=d.querySelector("#eNaf");
   c.addEventListener("change",()=>{if(!f.value)f.value=nafOf(c.value)});
   f.addEventListener("change",()=>{const k=coachByNaf(f.value);if(k&&!c.value.trim())c.value=k})}
 function saveWithNaf(fin,msg){markDirty(fin);toast(msg);
@@ -589,7 +628,7 @@ function saveWithNaf(fin,msg){markDirty(fin);toast(msg);
   const others=allMatches().filter(x=>x.id!==fin.id&&norm(x.oppCoach)===k&&String(x.oppNaf||"")!==fin.oppNaf);
   if(others.length)confirmBox("Appliquer ce N° NAF partout ?",`${others.length} autre(s) match(s) contre ${fin.oppCoach} ont un N° NAF différent ou vide. Les mettre à ${fin.oppNaf} ?`,"Appliquer",false,()=>{others.forEach(x=>markDirty(Object.assign({},x,{oppNaf:fin.oppNaf})));toast("N° NAF mis à jour")})}
 function editMatch(m){modal(`<h3>Modifier le match du ${fdate(m.date)}</h3>${matchForm(m)}<div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{bindFormHelpers(d);const ph=bindPhoto(d,m);d.querySelector("[data-x]").onclick=close;d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);close();await applyPhoto(fin,ph);saveWithNaf(fin,"Match modifié")}})}
-function pastMatch(){const m={id:uid(),date:new Date().toISOString(),competition:settings.lastComp||"",myRoster:settings.lastMyRoster||"",oppCoach:"",oppNaf:"",oppRoster:"",myTD:0,oppTD:0,myCas:0,oppCas:0,note:""};
+function pastMatch(){const m={id:uid(),date:new Date().toISOString(),competition:settings.lastComp||"",myRoster:"",oppCoach:"",oppNaf:"",oppRoster:"",myTD:0,oppTD:0,myCas:0,oppCas:0,note:""};
   modal(`<h3>Saisir un match passé</h3><p>Pour un match joué sans le chrono.</p>${matchForm(m)}<div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{bindFormHelpers(d);const ph=bindPhoto(d,m);
     d.querySelector("[data-x]").onclick=close;
     d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);
@@ -609,7 +648,7 @@ $("#newMatch").addEventListener("submit",e=>{e.preventDefault();
   live={id:uid(),date:new Date().toISOString(),competition:$("#fComp").value.trim(),myRoster:$("#fMyRoster").value.trim(),oppCoach:$("#fCoach").value.trim(),oppNaf:cleanNaf($("#fNaf").value),oppRoster:$("#fOppRoster").value.trim(),minutes,
     remaining:{me:minutes*60000,opp:minutes*60000},active:null,running:false,paused:false,since:0,started:false,td:{me:0,opp:0},cas:{me:0,opp:0},alerted:{me:false,opp:false}};
   settings.lastMyRoster=live.myRoster;settings.lastComp=live.competition;saveSettings();saveLive();
-  $("#fCoach").value="";$("#fNaf").value="";$("#fOppRoster").value="";renderIntel();
+  $("#fMyRoster").value="";$("#fCoach").value="";$("#fNaf").value="";$("#fOppRoster").value="";renderIntel();
   forceClock=true;renderAll();goFull(false);toast("Match lancé")});
 
 $("#fCoach").addEventListener("input",()=>{renderIntel();const k=norm($("#fCoach").value);const last=allMatches().find(m=>norm(m.oppCoach)===k);if(last&&!$("#fOppRoster").value)$("#fOppRoster").value=last.oppRoster;if(last&&!$("#fNaf").value)$("#fNaf").value=nafOf(last.oppCoach)});
@@ -618,9 +657,9 @@ $("#fNaf").addEventListener("input",()=>{const k=coachByNaf($("#fNaf").value);if
 function renderLiveCard(){const box=$("#liveBox");if(!live){box.hidden=true;$("#newMatch").hidden=false;return}
   box.hidden=false;$("#newMatch").hidden=true;
   box.innerHTML=`<div class="live"><div class="sb">
-   <div class="tm"><span class="n">${esc(settings.coachName||"Moi")}</span><span class="ro">${esc(live.myRoster)}</span><span class="t num" data-lt="me"></span></div>
-   <div class="score num">${live.td.me}–${live.td.opp}</div>
-   <div class="tm r"><span class="n">${esc(live.oppCoach)}${live.oppNaf?` <span class="pm">NAF ${esc(live.oppNaf)}</span>`:""}</span><span class="ro">${esc(live.oppRoster)}</span><span class="t num" data-lt="opp"></span></div></div>
+   <div class="pl"><div class="who"><span class="n">${esc(settings.coachName||"Moi")}</span><span class="ro">${esc(live.myRoster)}</span></div><span class="t num" data-lt="me"></span></div>
+   <div class="score num">${live.td.me} – ${live.td.opp}</div>
+   <div class="pl"><div class="who"><span class="n">${esc(live.oppCoach)}</span><span class="ro">${esc(live.oppRoster)}${live.oppNaf?" · NAF "+esc(live.oppNaf):""}</span></div><span class="t num" data-lt="opp"></span></div></div>
    <div class="acts"><div class="rotate"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="11" rx="2"/><path d="M8 3h8"/></svg>Tournez le téléphone en paysage pour le chrono</div>
    <button class="btn small" id="lShow">Afficher le chrono</button><button class="btn small" id="lEnd">Terminer</button><button class="btn small danger" id="lQuit">Abandonner</button></div></div>`;
   $("#lShow").onclick=()=>{forceClock=true;renderClockVisibility();goFull(false)};
@@ -659,10 +698,12 @@ $("#cSwap").onclick=()=>{settings.swap=!settings.swap;saveSettings();renderClock
 $("#cEnd").onclick=endMatch;
 $("#cClose").onclick=()=>{forceClock=false;$("#clock").hidden=true;exitFull();renderLiveCard();if(landscape.matches&&coarse.matches)toast("Tournez en portrait pour le menu")};
 
-function statusText(side,r){if(!live.running&&!live.paused&&!live.active)return live.started?"Arrêté · touchez pour démarrer votre tour":"Touchez ici pour démarrer votre tour";
+function statusText(side,r){if(!live.running&&!live.paused&&!live.active)return "Touchez pour démarrer";
   if(live.paused)return live.active===side?"Pause · touchez pour reprendre":"Pause · touchez pour jouer";
-  if(live.active===side)return (r<0?"Temps écoulé · ":"")+"Votre tour · touchez pour finir";
+  if(live.active===side)return r<0?"Temps écoulé · touchez pour finir":"À vous · touchez pour finir";
   return r<0?"Temps écoulé":"En attente"}
+function fitText(el){el.style.fontSize="";const cw=el.clientWidth;if(!cw)return;el.dataset.fit="1";if(el.scrollWidth>cw){el.style.fontSize=(parseFloat(getComputedStyle(el).fontSize)*cw/el.scrollWidth*.96)+"px"}}
+addEventListener("resize",()=>$$(".h-time").forEach(e=>delete e.dataset.fit));
 function renderClock(){if(!live)return;const c=$("#clock");c.classList.toggle("swap",!!settings.swap);
   ["me","opp"].forEach(side=>{const h=c.querySelector(`.half[data-side="${side}"]`);const r=rem(side);
     h.classList.toggle("active",live.active===side&&(live.running||live.paused));
@@ -670,11 +711,11 @@ function renderClock(){if(!live)return;const c=$("#clock");c.classList.toggle("s
     h.classList.toggle("over",r<0);
     h.querySelector(".h-name").textContent=sideName(side);
     h.querySelector(".h-roster").textContent=sideRoster(side);
-    h.querySelector(".h-time").textContent=fmt(r);
+    const te=h.querySelector(".h-time"),txt=fmt(r);if(te.textContent!==txt||!te.dataset.fit){te.textContent=txt;fitText(te)}
     h.querySelector(".h-status").textContent=statusText(side,r);
     h.querySelector(".td .val").textContent=live.td[side];
     h.querySelector(".cas .val").textContent=live.cas[side]});
-  const p=$("#cPause");p.classList.toggle("go",!!live.paused);p.querySelector("span").textContent=live.paused?"Reprendre":"Pause";
+  const p=$("#cPause");p.classList.toggle("go",!!live.paused);p.querySelector("span").textContent=live.paused?"Reprise":"Pause";
   p.querySelector("svg").innerHTML=live.paused?'<path d="M7 4l13 8-13 8z"/>':'<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
   p.disabled=!live.running&&!live.paused}
 
@@ -737,10 +778,10 @@ $$(".tabs button").forEach(b=>b.onclick=()=>{showTab(b.dataset.tab);try{history.
 $$(".seg button").forEach(b=>b.onclick=()=>{group=b.dataset.g;openCoach=null;$$(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderStats()});
 $("#statSearch").addEventListener("input",renderStats);
 
-function renderAll(){fillLists();renderLiveCard();renderStats();renderHist();renderClockVisibility();tick()}
+function renderAll(){renderLiveCard();renderStats();renderHist();renderClockVisibility();tick()}
 
 /* ---------- boot ---------- */
-$("#fMinutes").value=settings.minutes;$("#fMyRoster").value=settings.lastMyRoster||"";$("#fComp").value=settings.lastComp||"";
+$("#fMinutes").value=settings.minutes;attachAC($("#fMyRoster"),"mine");attachAC($("#fOppRoster"),"opp");attachAC($("#fCoach"),"coach");attachAC($("#fComp"),"comp");$("#fComp").value=settings.lastComp||"";
 renderSettings();setSync();renderAll();
 const h=(location.hash||"").slice(1);if(h==="stats"||h==="hist")showTab(h);else if(h==="options")showTab("set");
 sync();
