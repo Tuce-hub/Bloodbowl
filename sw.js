@@ -1,10 +1,11 @@
 // Dugout Blood Bowl — fonctionnement hors ligne.
 // Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement.
-const VERSION = "dugout-v5";
+const VERSION = "dugout-v6";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  // cache: "reload" : toujours prendre les fichiers frais sur GitHub, jamais ceux du cache du navigateur.
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", e => {
@@ -24,7 +25,7 @@ self.addEventListener("fetch", e => {
   // Cache d'abord (démarrage instantané, même sans réseau), mise à jour en arrière-plan.
   e.respondWith(caches.open(VERSION).then(async cache => {
     const cached = await cache.match(req, { ignoreSearch: sameOrigin });
-    const network = fetch(req).then(res => {
+    const network = fetch(sameOrigin ? new Request(req, { cache: "no-cache" }) : req).then(res => {
       if (res && (res.ok || res.type === "opaque")) cache.put(req, res.clone());
       return res;
     }).catch(() => null);
