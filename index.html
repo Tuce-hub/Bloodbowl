@@ -121,6 +121,17 @@ tr.sub td{background:var(--surface);font-weight:400;font-size:14px;color:var(--m
 .ph-prev img{width:96px;height:96px;object-fit:cover;margin:-4px}
 .ph-acts{display:flex;gap:8px;flex-wrap:wrap}
 label.btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.wheels{position:relative;display:grid;grid-template-columns:1fr 1.3fr 1.2fr;gap:4px;height:200px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;overflow:hidden;padding:0 6px}
+.wheels::before{content:"";position:absolute;left:6px;right:6px;top:80px;height:40px;border-radius:6px;background:color-mix(in srgb,var(--gold) 14%,transparent);border:1px solid color-mix(in srgb,var(--gold) 50%,transparent);pointer-events:none}
+.wheels::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(var(--surface2),transparent 38%,transparent 62%,var(--surface2))}
+.wheel{height:200px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;outline:none;touch-action:pan-y}
+.wheel::-webkit-scrollbar{display:none}
+.wheel:focus-visible{box-shadow:inset 0 0 0 2px var(--gold);border-radius:6px}
+.wheel .sp{height:80px}
+.wheel .it{height:40px;line-height:40px;text-align:center;scroll-snap-align:center;font-family:var(--f-label);font-weight:600;font-size:20px;color:var(--muted);cursor:pointer;user-select:none}
+.wheel .it.sel{color:var(--fg);font-size:22px}
+.field textarea{font:16px/1.4 var(--f-body);min-height:84px;padding:10px 12px;resize:vertical}
+.match .info dd.note{white-space:pre-wrap}
 .ph-full{width:100%;max-height:70vh;object-fit:contain;border-radius:8px;background:#000;display:block}
 .icon-btn{width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);display:grid;place-items:center}
 .icon-btn svg{width:18px;height:18px}
@@ -373,7 +384,7 @@ function fmt(ms){const neg=ms<0;let s=Math.floor(Math.abs(ms)/1000);if(neg)s=Mat
 const fdate=iso=>{try{return new Date(iso).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})}catch(e){return ""}};
 
 /* ---------- toast & modal ---------- */
-let toastT;function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2400)}
+let toastT;function toast(t){const el=$("#toast");el.textContent=String(t).replace(/(\d)–(\d)/g,"$1\u2060–\u2060$2");el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2400)}
 function modal(html,bind){const m=$("#modal");m.innerHTML='<div class="dlg" role="dialog" aria-modal="true">'+html+'</div>';m.hidden=false;const close=()=>{m.hidden=true;m.innerHTML=""};m.onclick=e=>{if(e.target===m)close()};bind&&bind(m.firstChild,close);const f=m.querySelector("input,button");f&&f.focus({preventScroll:true});return close}
 function confirmBox(title,text,ok,danger,fn){modal(`<h3>${esc(title)}</h3><p>${esc(text)}</p><div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small ${danger?"danger":"primary"}" data-ok>${esc(ok)}</button></div>`,(d,close)=>{d.querySelector("[data-x]").onclick=close;d.querySelector("[data-ok]").onclick=()=>{close();fn()}})}
 
@@ -466,6 +477,31 @@ async function uploadPhotos(){let n=0;
 function viewPhoto(m){modal(`<img class="ph-full" id="phFull" alt="Photo du match"><p class="hint">${esc(fdate(m.date))} · ${esc(m.myRoster)} ${m.myTD}–${m.oppTD} ${esc(m.oppCoach)}</p><div class="acts"><button class="btn small" data-x>Fermer</button></div>`,(d,close)=>{d.querySelector("[data-x]").onclick=close;
   photoFor(m).then(src=>{const im=d.querySelector("#phFull");if(!im)return;if(src)im.src=src;else{im.replaceWith(Object.assign(document.createElement("p"),{textContent:"Photo indisponible : vérifiez la connexion et la synchro."}))}})})}
 
+/* ---------- roulette de date (jour / mois / année) ---------- */
+const MOIS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const WH=40;
+function dateWheels(val){return `<div class="field"><span class="flabel" id="eDateLbl">Date</span>
+  <div class="wheels" role="group" aria-labelledby="eDateLbl"><div class="wheel" data-w="d" tabindex="0" aria-label="Jour"></div><div class="wheel" data-w="m" tabindex="0" aria-label="Mois"></div><div class="wheel" data-w="y" tabindex="0" aria-label="Année"></div></div>
+  <input type="hidden" id="eDate" value="${val}"></div>`}
+function bindWheels(d){const hid=d.querySelector("#eDate");if(!hid)return;
+  const now=new Date();let [y,m,day]=(hid.value||toLocalInput(now.toISOString())).split("-").map(Number);
+  const y0=Math.min(2015,y),y1=Math.max(now.getFullYear()+1,y);
+  const W={d:d.querySelector('[data-w="d"]'),m:d.querySelector('[data-w="m"]'),y:d.querySelector('[data-w="y"]')};
+  const dim=()=>new Date(y,m,0).getDate();
+  const fill=(el,labels)=>{el.innerHTML='<div class="sp"></div>'+labels.map((t,i)=>`<div class="it" data-i="${i}">${t}</div>`).join("")+'<div class="sp"></div>'};
+  const mark=(el,i)=>el.querySelectorAll(".it").forEach(x=>x.classList.toggle("sel",+x.dataset.i===i));
+  const put=()=>{hid.value=`${y}-${p2(m)}-${p2(day)}`};
+  const days=()=>{const n=dim();if(day>n)day=n;fill(W.d,Array.from({length:n},(_,i)=>String(i+1)));W.d.scrollTop=(day-1)*WH;mark(W.d,day-1)};
+  fill(W.m,MOIS);fill(W.y,Array.from({length:y1-y0+1},(_,i)=>String(y0+i)));days();
+  requestAnimationFrame(()=>{W.d.scrollTop=(day-1)*WH;W.m.scrollTop=(m-1)*WH;W.y.scrollTop=(y-y0)*WH;mark(W.m,m-1);mark(W.y,y-y0);mark(W.d,day-1)});
+  const settle=(k)=>{const el=W[k];const n=el.querySelectorAll(".it").length;const i=Math.max(0,Math.min(n-1,Math.round(el.scrollTop/WH)));mark(el,i);
+    if(k==="d")day=i+1;else if(k==="m"){if(m!==i+1){m=i+1;days()}}else{if(y!==y0+i){y=y0+i;days()}}put()};
+  Object.keys(W).forEach(k=>{const el=W[k];let t;
+    el.addEventListener("scroll",()=>{clearTimeout(t);const i=Math.round(el.scrollTop/WH);mark(el,i);t=setTimeout(()=>settle(k),140)},{passive:true});
+    el.addEventListener("click",e=>{const it=e.target.closest(".it");if(it)el.scrollTo({top:+it.dataset.i*WH,behavior:"smooth"})});
+    el.addEventListener("keydown",e=>{if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();el.scrollBy({top:e.key==="ArrowDown"?WH:-WH,behavior:"smooth"})}})});
+  put()}
+
 /* ---------- dates, NAF ---------- */
 const p2=n=>String(n).padStart(2,"0");
 function toLocalInput(iso){const d=new Date(iso||Date.now());if(isNaN(d))return "";return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
@@ -526,12 +562,12 @@ function renderHist(){const list=allMatches();$("#histTitle").textContent=`Histo
   $("#histList").innerHTML=list.map(m=>{const r=result(m);return `<div class="match"><span class="pill ${r}">${r}</span>
   <div class="line1">${esc(m.myRoster)}<span class="sc num">${m.myTD}–${m.oppTD}</span>${esc(m.oppRoster)}</div>
   <div class="mact">${hasPhoto(m)?`<button class="thumb" data-ph="${esc(m.id)}" aria-label="Voir la photo">${CAM}</button>`:""}<button class="icon-btn" data-ed="${esc(m.id)}" aria-label="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button class="icon-btn" data-del="${esc(m.id)}" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
-  <dl class="info"><dt>Coach</dt><dd>${esc(m.oppCoach)}</dd>${m.oppNaf?`<dt>NAF</dt><dd class="num">${esc(m.oppNaf)}</dd>`:""}<dt>Date</dt><dd>${fdate(m.date)}</dd>${m.competition?`<dt>Compét.</dt><dd>${esc(m.competition)}</dd>`:""}<dt>Sorties</dt><dd class="num">${m.myCas}–${m.oppCas}</dd></dl></div>`}).join("");
+  <dl class="info"><dt>Coach</dt><dd>${esc(m.oppCoach)}</dd>${m.oppNaf?`<dt>NAF</dt><dd class="num">${esc(m.oppNaf)}</dd>`:""}<dt>Date</dt><dd>${fdate(m.date)}</dd>${m.competition?`<dt>Compét.</dt><dd>${esc(m.competition)}</dd>`:""}<dt>Sorties</dt><dd class="num">${m.myCas}–${m.oppCas}</dd>${m.note?`<dt>Notes</dt><dd class="note">${esc(m.note)}</dd>`:""}</dl></div>`}).join("");
   $$("[data-ed]").forEach(b=>b.onclick=()=>editMatch(matches[b.dataset.ed]));
   $$("[data-ph]").forEach(b=>{const m=matches[b.dataset.ph];b.onclick=()=>viewPhoto(m);photoFor(m).then(src=>{if(src&&b.isConnected)b.innerHTML=`<img src="${src}" alt="">`})});
   $$("[data-del]").forEach(b=>b.onclick=()=>{const m=matches[b.dataset.del];confirmBox("Supprimer ce match ?",`${m.myRoster} ${m.myTD}–${m.oppTD} ${m.oppRoster}, contre ${m.oppCoach} (${fdate(m.date)}). Cette suppression est définitive.`,"Supprimer",true,()=>{photoDel(m.id);photoPending.delete(m.id);savePhotoPending();forgetPhoto(m.id);markDirty({id:m.id,deleted:true});toast("Match supprimé")})})}
 
-function matchForm(m){return `<div class="field"><label for="eDate">Date</label><input id="eDate" type="date" value="${toLocalInput(m.date)}"></div>
+function matchForm(m){return `${dateWheels(toLocalInput(m.date))}
   <div class="field"><label for="eComp">Compétition</label><input id="eComp" list="dlComps" value="${esc(m.competition||"")}" placeholder="Vide si match amical"></div>
   <div class="field"><label for="eMyRoster">Mon roster</label><input id="eMyRoster" list="dlRosters" value="${esc(m.myRoster)}"></div>
   <div class="row2"><div class="field"><label for="eCoach">Coach adverse</label><input id="eCoach" list="dlCoaches" value="${esc(m.oppCoach)}"></div>
@@ -541,10 +577,11 @@ function matchForm(m){return `<div class="field"><label for="eDate">Date</label>
   <div class="grid4"><div class="field"><label for="eMyTD">Mes TD</label><input id="eMyTD" type="number" inputmode="numeric" min="0" value="${m.myTD}"></div>
   <div class="field"><label for="eOppTD">TD adverses</label><input id="eOppTD" type="number" inputmode="numeric" min="0" value="${m.oppTD}"></div>
   <div class="field"><label for="eMyCas">Mes sorties</label><input id="eMyCas" type="number" inputmode="numeric" min="0" value="${m.myCas}"></div>
-  <div class="field"><label for="eOppCas">Sorties adverses</label><input id="eOppCas" type="number" inputmode="numeric" min="0" value="${m.oppCas}"></div></div>${photoBlock()}`}
+  <div class="field"><label for="eOppCas">Sorties adverses</label><input id="eOppCas" type="number" inputmode="numeric" min="0" value="${m.oppCas}"></div></div>
+  <div class="field"><label for="eNote">Commentaires</label><textarea id="eNote" rows="3" maxlength="2000" placeholder="Faits marquants, tactique adverse, joueurs perdus…">${esc(m.note||"")}</textarea></div>${photoBlock()}`}
 function readForm(d,m){const v=id=>d.querySelector(id).value;const n=id=>Math.max(0,parseInt(v(id),10)||0);
-  return Object.assign({},m,{date:fromLocalInput(v("#eDate"),m.date),competition:v("#eComp").trim(),oppNaf:cleanNaf(v("#eNaf")),myRoster:v("#eMyRoster").trim()||m.myRoster,oppCoach:v("#eCoach").trim()||m.oppCoach,oppRoster:v("#eOppRoster").trim()||m.oppRoster,myTD:n("#eMyTD"),oppTD:n("#eOppTD"),myCas:n("#eMyCas"),oppCas:n("#eOppCas")})}
-function bindFormHelpers(d){const c=d.querySelector("#eCoach"),f=d.querySelector("#eNaf");
+  return Object.assign({},m,{date:fromLocalInput(v("#eDate"),m.date),competition:v("#eComp").trim(),note:v("#eNote").trim(),oppNaf:cleanNaf(v("#eNaf")),myRoster:v("#eMyRoster").trim()||m.myRoster,oppCoach:v("#eCoach").trim()||m.oppCoach,oppRoster:v("#eOppRoster").trim()||m.oppRoster,myTD:n("#eMyTD"),oppTD:n("#eOppTD"),myCas:n("#eMyCas"),oppCas:n("#eOppCas")})}
+function bindFormHelpers(d){bindWheels(d);const c=d.querySelector("#eCoach"),f=d.querySelector("#eNaf");
   c.addEventListener("change",()=>{if(!f.value)f.value=nafOf(c.value)});
   f.addEventListener("change",()=>{const k=coachByNaf(f.value);if(k&&!c.value.trim())c.value=k})}
 function saveWithNaf(fin,msg){markDirty(fin);toast(msg);
@@ -552,12 +589,10 @@ function saveWithNaf(fin,msg){markDirty(fin);toast(msg);
   const others=allMatches().filter(x=>x.id!==fin.id&&norm(x.oppCoach)===k&&String(x.oppNaf||"")!==fin.oppNaf);
   if(others.length)confirmBox("Appliquer ce N° NAF partout ?",`${others.length} autre(s) match(s) contre ${fin.oppCoach} ont un N° NAF différent ou vide. Les mettre à ${fin.oppNaf} ?`,"Appliquer",false,()=>{others.forEach(x=>markDirty(Object.assign({},x,{oppNaf:fin.oppNaf})));toast("N° NAF mis à jour")})}
 function editMatch(m){modal(`<h3>Modifier le match du ${fdate(m.date)}</h3>${matchForm(m)}<div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{bindFormHelpers(d);const ph=bindPhoto(d,m);d.querySelector("[data-x]").onclick=close;d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);close();await applyPhoto(fin,ph);saveWithNaf(fin,"Match modifié")}})}
-function pastMatch(){const m={id:uid(),date:new Date().toISOString(),competition:settings.lastComp||"",myRoster:settings.lastMyRoster||"",oppCoach:"",oppNaf:"",oppRoster:"",myTD:0,oppTD:0,myCas:0,oppCas:0};
+function pastMatch(){const m={id:uid(),date:new Date().toISOString(),competition:settings.lastComp||"",myRoster:settings.lastMyRoster||"",oppCoach:"",oppNaf:"",oppRoster:"",myTD:0,oppTD:0,myCas:0,oppCas:0,note:""};
   modal(`<h3>Saisir un match passé</h3><p>Pour un match joué sans le chrono.</p>${matchForm(m)}<div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{bindFormHelpers(d);const ph=bindPhoto(d,m);
-    d.querySelector("#eDate").value="";
     d.querySelector("[data-x]").onclick=close;
     d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);
-      if(!d.querySelector("#eDate").value){toast("Indiquez la date du match");return}
       if(!fin.oppCoach||!fin.myRoster||!fin.oppRoster){toast("Renseignez les deux rosters et le coach adverse");return}
       close();await applyPhoto(fin,ph);saveWithNaf(fin,`Match ajouté : ${result(fin)==="V"?"victoire":result(fin)==="D"?"défaite":"nul"} ${fin.myTD}–${fin.oppTD}`)}})}
 $("#bPast").onclick=pastMatch;
