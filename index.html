@@ -205,11 +205,11 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 .ac-host{position:relative}
 .ac{position:absolute;left:0;right:0;top:100%;margin-top:4px;z-index:30;background:var(--surface2);border:1px solid color-mix(in srgb,var(--gold) 60%,var(--line));border-radius:8px;max-height:min(232px,42vh);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 12px 28px #000b}
 .ac.up{top:auto;bottom:100%;margin:0 0 4px}
-.ac-it{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:11px 12px;border-top:1px solid var(--line);cursor:pointer;font-size:17px;line-height:1.25}
+.ac-it{display:flex;flex-direction:column;gap:1px;padding:10px 12px;border-top:1px solid var(--line);cursor:pointer;font-size:17px;line-height:1.25}
 .ac-it:first-child{border-top:0}
-.ac-it span{min-width:0;overflow-wrap:anywhere}
+.ac-it span{min-width:0;overflow-wrap:break-word}
 .ac-it b{color:var(--gold);font-weight:600}
-.ac-it small{flex:none;color:var(--muted);font-size:13px;white-space:nowrap}
+.ac-it small{color:var(--muted);font-size:13px}
 .ac-it.on,.ac-it:active{background:color-mix(in srgb,var(--gold) 16%,transparent)}
 @media (max-width:420px){.tiles{grid-template-columns:repeat(2,1fr)}.brand span{display:none}
   .seg{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -239,7 +239,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <div class="row2">
         <div class="field">
           <label for="fCoach"><span class="side-tag" style="background:var(--opp)"></span>Coach adverse</label>
-          <input id="fCoach" placeholder="Nom du coach" required>
+          <input id="fCoach" placeholder="Nom" required>
         </div>
         <div class="field">
           <label for="fNaf">N° NAF</label>
@@ -523,7 +523,7 @@ function acItems(kind){const ms=allMatches();
 function hl(v,q){if(!q)return esc(v);const i=fold(v).indexOf(q);if(i<0)return esc(v);return esc(v.slice(0,i))+"<b>"+esc(v.slice(i,i+q.length))+"</b>"+esc(v.slice(i+q.length))}
 let acClose=null;
 function attachAC(inp,kind){if(!inp||inp.dataset.ac)return;inp.dataset.ac=kind;inp.setAttribute("autocomplete","off");inp.removeAttribute("list");
-  const field=inp.closest(".field");field.classList.add("ac-host");
+  const field=inp.closest(".field");const row=field.parentElement.classList.contains("row2")?field.parentElement:null;(row||field).classList.add("ac-host");
   const box=document.createElement("div");box.className="ac";box.hidden=true;box.setAttribute("role","listbox");field.appendChild(box);
   let items=[],idx=-1,skip=false,blurT;
   const close=()=>{box.hidden=true;idx=-1;if(acClose===close)acClose=null};
