@@ -146,10 +146,62 @@ label.btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .icon-btn svg{width:18px;height:18px}
 .empty{border:1px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--muted)}
 
+/* direct */
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dstat{font-family:var(--f-label);font-size:13px;letter-spacing:.04em;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dstat::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.dstat.ok::before{background:var(--me)} .dstat.wait::before{background:var(--gold)} .dstat.err{color:var(--danger)} .dstat.err::before{background:var(--danger)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-family:var(--f-label);font-weight:600;font-size:15px;color:var(--muted);white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--surface2);color:var(--fg);border-color:var(--gold)}
+.dcard{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.dtop{display:flex;align-items:center;gap:10px;min-width:0}
+.dcomp{color:var(--muted);font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{flex:none;display:inline-flex;align-items:center;gap:6px;font-family:var(--f-label);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:5px;background:var(--surface2);color:var(--muted)}
+.badge.live{background:color-mix(in srgb,var(--danger) 22%,transparent);color:#ffb3b3}
+.badge.pause{color:var(--gold)} .badge.end{color:var(--fg)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--danger);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+.dr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:4px 0 4px 10px;border-left:3px solid transparent}
+.dr.on{border-left-color:var(--me)}
+.dw{display:flex;flex-direction:column;min-width:0}
+.dw b{font-family:var(--f-label);font-weight:700;font-size:18px;line-height:1.15;overflow-wrap:break-word}
+.dw small{color:var(--muted);font-size:13px;overflow-wrap:break-word}
+.dsc{font-family:var(--f-display);font-weight:600;font-size:34px;line-height:.9;min-width:1ch;text-align:right}
+.dt{font-family:var(--f-display);font-size:22px;line-height:1;color:var(--muted);min-width:4.2ch;text-align:right}
+.dr.on .dt{color:var(--fg)} .dt.neg{color:var(--danger)}
+.dw .dcs{color:var(--fg);font-size:13px} .dw .dcs b{font-family:var(--f-display);font-size:17px;font-weight:600}
+.dd-bar{display:flex;justify-content:space-between;gap:10px}
+.dd-board{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.dd-upd{font-size:12px}
+.chat{display:flex;flex-direction:column;gap:8px;max-height:45vh;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
+.msg{background:var(--surface2);border-radius:8px;padding:7px 10px;max-width:92%;align-self:flex-start}
+.msg.me{align-self:flex-end;background:color-mix(in srgb,var(--me) 14%,var(--surface2))}
+.mh{display:flex;align-items:baseline;gap:8px;font-size:13px}
+.mh b{font-family:var(--f-label);font-size:15px;min-width:0;overflow-wrap:anywhere}
+.msg.pl .mh b{color:var(--gold)}
+.tag{font-family:var(--f-label);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);border:1px solid color-mix(in srgb,var(--gold) 50%,transparent);border-radius:4px;padding:0 4px}
+.mt{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;flex:none}
+.mdel{margin-left:auto;border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;padding:0 4px}
+.mb{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
+.send{display:flex;gap:8px}
+.send input{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:16px}
+.send input:focus{border-color:var(--gold);outline:none}
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.feed li{display:flex;gap:10px;align-items:baseline;font-size:15px}
+.fk.k-td{color:var(--gold);font-weight:600} .fk.k-end{font-weight:700} .fk.k-over{color:var(--danger)}
+.lbc{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line);background:var(--surface)}
+.lbc .hint{flex-basis:100%}
+.ubadge{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--danger);color:#fff;font:700 12px/20px var(--f-label);font-style:normal;text-align:center}
+.strip button{position:relative}
+.uidbox{font:13px/1.4 ui-monospace,monospace;color:var(--muted);overflow-wrap:anywhere;user-select:all}
+
 /* tabs */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-.tabs .in{display:grid;grid-template-columns:repeat(4,1fr);width:100%;max-width:720px}
-.tabs button{border:0;background:transparent;padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--f-label);font-weight:600;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tabs .in{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:720px}
+.tabs button{border:0;background:transparent;padding:10px 2px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--f-label);font-weight:600;font-size:13px;letter-spacing:.03em;min-width:0;text-transform:uppercase;color:var(--muted)}
 .tabs button svg{width:22px;height:22px}
 .tabs button[aria-current="page"]{color:var(--gold)}
 
@@ -269,6 +321,17 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
     </form>
   </section>
 
+  <!-- DIRECT -->
+  <section class="view" id="v-direct" hidden>
+    <div id="dList" style="display:flex;flex-direction:column;gap:14px">
+      <div class="dhead"><h2>Matchs en direct</h2><span class="dstat wait" id="dStat">Connexion…</span></div>
+      <input class="search" id="dSearch" type="search" placeholder="Filtrer : coach, roster, NAF…" autocomplete="off">
+      <div class="chips" id="dComps"></div>
+      <div class="hist" id="dCards"><div class="empty">Chargement des matchs en direct…</div></div>
+    </div>
+    <div id="dDetail" hidden style="display:flex;flex-direction:column;gap:14px"></div>
+  </section>
+
   <!-- STATS -->
   <section class="view" id="v-stats" hidden>
     <div class="tiles" id="tiles"></div>
@@ -306,6 +369,12 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <label class="tog"><span>Garder l'écran allumé pendant le chrono</span><span class="switch"><input type="checkbox" id="sWake"><i></i></span></label>
     </div>
     <div class="panel">
+      <h2>Direct</h2>
+      <label class="tog"><span>Diffuser mes matchs en direct</span><span class="switch"><input type="checkbox" id="sBroadcast"><i></i></span></label>
+      <p class="hint">Les matchs que vous lancez sont visibles par tous dans l'onglet Direct, avec votre nom de coach et celui de votre adversaire. Ils disparaissent 3 heures après la fin, avec leur tchat.</p>
+      <div class="field"><span class="flabel">Identifiant de cet appareil</span><span class="uidbox" id="sUid"></span><span class="hint" id="sAdmin" hidden>✓ Administrateur du direct</span></div>
+    </div>
+    <div class="panel">
       <h2>Synchronisation Google Sheets</h2>
       <p class="hint" id="syncLong"></p>
       <div class="field">
@@ -335,6 +404,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 <nav class="tabs" aria-label="Sections">
   <div class="in">
     <button type="button" data-tab="match" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>Match</button>
+    <button type="button" data-tab="direct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/></svg>Direct</button>
     <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Stats</button>
     <button type="button" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Matchs</button>
     <button type="button" data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Réglages</button>
@@ -667,7 +737,9 @@ $("#newMatch").addEventListener("submit",e=>{e.preventDefault();
   const minutes=Math.max(1,parseInt($("#fMinutes").value,10)||settings.minutes);
   live={id:uid(),date:new Date().toISOString(),competition:$("#fComp").value.trim(),myRoster:$("#fMyRoster").value.trim(),oppCoach:$("#fCoach").value.trim(),oppNaf:cleanNaf($("#fNaf").value),oppRoster:$("#fOppRoster").value.trim(),minutes,
     remaining:{me:minutes*60000,opp:minutes*60000},active:null,running:false,paused:false,since:0,started:false,td:{me:0,opp:0},cas:{me:0,opp:0},alerted:{me:false,opp:false}};
+  live.broadcast=!!settings.broadcast;
   settings.lastMyRoster=live.myRoster;settings.lastComp=live.competition;saveSettings();saveLive();
+  if(live.broadcast){watchOwnChat();pushLive("new",null,"Match en préparation")}
   $("#fMyRoster").value="";$("#fCoach").value="";$("#fNaf").value="";$("#fOppRoster").value="";renderIntel();
   forceClock=true;renderAll();goFull(false);toast("Match lancé")});
 
@@ -682,17 +754,23 @@ function renderLiveCard(){const box=$("#liveBox");if(!live){box.hidden=true;$("#
    <div class="pl"><div class="who"><span class="n">${esc(live.oppCoach)}</span><span class="ro">${esc(live.oppRoster)}${live.oppNaf?" · NAF "+esc(live.oppNaf):""}</span></div><span class="t num" data-lt="opp"></span></div></div>
    <div class="acts"><div class="rotate"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="11" rx="2"/><path d="M8 3h8"/></svg>Tournez le téléphone en paysage pour le chrono</div>
    <button class="btn small" id="lShow">Afficher le chrono</button><button class="btn small" id="lEnd">Terminer</button><button class="btn small danger" id="lQuit">Abandonner</button></div></div>`;
+  box.querySelector(".live").insertAdjacentHTML("beforeend",live.broadcast
+    ?`<div class="lbc"><span class="badge live"><i class="pulse"></i>En direct</span><span class="hint" style="flex-basis:auto">${fbOnline?"Visible dans l'onglet Direct":"Hors ligne : envoi au retour du réseau"}</span><button class="btn small" id="lChat">Tchat du direct</button><button class="btn small" id="lShare">Partager</button><button class="btn small danger" id="lStop">Arrêter la diffusion</button></div>`
+    :`<div class="lbc"><button class="btn small" id="lStart">Diffuser ce match en direct</button></div>`);
+  if(live.broadcast){$("#lChat").onclick=()=>{markChatSeen(live.id);openDetail(live.id)};$("#lShare").onclick=()=>shareLive({id:live.id,coachA:settings.coachName||live.myRoster,coachB:live.oppCoach,comp:live.competition});
+    $("#lStop").onclick=()=>confirmBox("Arrêter la diffusion ?","Le direct et son tchat seront supprimés pour tout le monde. Le chrono continue normalement.","Arrêter",true,stopBroadcast);renderUnread()}
+  else $("#lStart").onclick=startBroadcast;
   $("#lShow").onclick=()=>{forceClock=true;renderClockVisibility();goFull(false)};
   $("#lEnd").onclick=endMatch;
-  $("#lQuit").onclick=()=>confirmBox("Abandonner ce match ?","Le chrono et le score en cours seront effacés sans être enregistrés.","Abandonner",true,()=>{live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll()})}
+  $("#lQuit").onclick=()=>confirmBox("Abandonner ce match ?","Le chrono et le score en cours seront effacés sans être enregistrés.","Abandonner",true,()=>{if(live.broadcast)liveAbort(live.id);unwatchOwnChat();live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll()})}
 
 function endMatch(){if(!live)return;commit();if(live.running){live.running=false;live.paused=true}saveLive();
   const m={id:live.id,date:live.date,competition:live.competition||"",oppNaf:live.oppNaf||"",myRoster:live.myRoster,oppCoach:live.oppCoach,oppRoster:live.oppRoster,myTD:live.td.me,oppTD:live.td.opp,myCas:live.cas.me,oppCas:live.cas.opp,minutes:live.minutes,usedMe:live.minutes*60000-live.remaining.me,usedOpp:live.minutes*60000-live.remaining.opp};
   modal(`<h3>Fin du match</h3><p>Vérifiez le score avant d'enregistrer.</p>${matchForm(m)}<div class="acts"><button class="btn small danger" data-ab>Abandonner</button><button class="btn small" data-x>Reprendre le match</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{
     d.querySelector("[data-x]").onclick=close;
-    d.querySelector("[data-ab]").onclick=()=>{close();confirmBox("Abandonner ce match ?","Il ne sera pas enregistré : le chrono et le score en cours seront effacés.","Abandonner",true,()=>{live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll();toast("Match abandonné")})};
+    d.querySelector("[data-ab]").onclick=()=>{close();confirmBox("Abandonner ce match ?","Il ne sera pas enregistré : le chrono et le score en cours seront effacés.","Abandonner",true,()=>{if(live.broadcast)liveAbort(live.id);unwatchOwnChat();live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll();toast("Match abandonné")})};
     bindFormHelpers(d);const ph=bindPhoto(d,m);
-    d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);live=null;saveLive();releaseWake();exitFull();forceClock=false;close();await applyPhoto(fin,ph);saveWithNaf(fin,`Match enregistré : ${result(fin)==="V"?"victoire":result(fin)==="D"?"défaite":"nul"} ${fin.myTD}–${fin.oppTD}`)}})}
+    d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);const L=live;live=null;saveLive();liveEnd(L,fin);unwatchOwnChat();releaseWake();exitFull();forceClock=false;close();await applyPhoto(fin,ph);saveWithNaf(fin,`Match enregistré : ${result(fin)==="V"?"victoire":result(fin)==="D"?"défaite":"nul"} ${fin.myTD}–${fin.oppTD}`)}})}
 
 /* ---------- clock view ---------- */
 let forceClock=false;
@@ -705,15 +783,16 @@ let lastSwitch=0;
 $$(".half").forEach(h=>{const side=h.dataset.side;
   h.addEventListener("click",e=>{if(e.target.closest("button")||!live)return;const now=Date.now();if(now-lastSwitch<700)return;
     if(!isFull())goFull(false);
-    if(live.paused){live.active=side;live.paused=false;live.running=true;live.since=now;lastSwitch=now;requestWake();saveLive();renderClock();return}
-    if(live.running){if(live.active!==side)return;commit();live.active=other(side);lastSwitch=now}
-    else{live.active=side;live.running=true;live.since=now;live.started=true;lastSwitch=now;requestWake();unlockAudio()}
-    saveLive();renderClock()});
-  h.querySelectorAll(".h-ctrs button").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();if(!live)return;const k=b.dataset.k,d=+b.dataset.d;live[k][side]=Math.max(0,live[k][side]+d);saveLive();renderClock();
+    if(live.paused){live.active=side;live.paused=false;live.running=true;live.since=now;lastSwitch=now;requestWake();saveLive();renderClock();liveEvent("resume",side);return}
+    let ev;
+    if(live.running){if(live.active!==side)return;commit();live.active=other(side);lastSwitch=now;ev="turn"}
+    else{ev=live.started?"turn":"start";live.active=side;live.running=true;live.since=now;live.started=true;lastSwitch=now;requestWake();unlockAudio()}
+    saveLive();renderClock();liveEvent(ev,live.active)});
+  h.querySelectorAll(".h-ctrs button").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();if(!live)return;const k=b.dataset.k,d=+b.dataset.d;const before=live[k][side];live[k][side]=Math.max(0,live[k][side]+d);if(live[k][side]===before)return;saveLive();renderClock();liveEvent(d>0?k:k+"fix",side);
     if(d>0)toast(`${k==="td"?"Touchdown":"Sortie"} : ${sideName(side)}`)}))});
 
-$("#cPause").onclick=()=>{if(!live)return;if(live.running){commit();live.running=false;live.paused=true}else if(live.paused){live.running=true;live.paused=false;live.since=Date.now()}else return;saveLive();renderClock()};
-$("#cReset").onclick=()=>{if(!live)return;confirmBox("Remettre les chronos à zéro ?",`Les deux joueurs repartent à ${live.minutes} min. Le score et les sorties sont conservés.`,"Remettre à zéro",true,()=>{live.remaining={me:live.minutes*60000,opp:live.minutes*60000};live.running=false;live.paused=false;live.active=null;live.alerted={me:false,opp:false};saveLive();renderClock()})};
+$("#cPause").onclick=()=>{if(!live)return;if(live.running){commit();live.running=false;live.paused=true}else if(live.paused){live.running=true;live.paused=false;live.since=Date.now()}else return;saveLive();renderClock();liveEvent(live.paused?"pause":"resume",live.active)};
+$("#cReset").onclick=()=>{if(!live)return;confirmBox("Remettre les chronos à zéro ?",`Les deux joueurs repartent à ${live.minutes} min. Le score et les sorties sont conservés.`,"Remettre à zéro",true,()=>{live.remaining={me:live.minutes*60000,opp:live.minutes*60000};live.running=false;live.paused=false;live.active=null;live.alerted={me:false,opp:false};saveLive();renderClock();liveEvent("reset")})};
 $("#cSwap").onclick=()=>{settings.swap=!settings.swap;saveSettings();renderClock()};
 $("#cEnd").onclick=endMatch;
 $("#cClose").onclick=()=>{forceClock=false;$("#clock").hidden=true;exitFull();renderLiveCard();if(landscape.matches&&coarse.matches)toast("Tournez en portrait pour le menu")};
@@ -740,7 +819,7 @@ function renderClock(){if(!live)return;const c=$("#clock");c.classList.toggle("s
   p.disabled=!live.running&&!live.paused}
 
 function tick(){if(!live)return;
-  if(live.running&&live.active){const s=live.active,r=rem(s);if(r<0&&!live.alerted[s]){live.alerted[s]=true;saveLive();beep()}}
+  if(live.running&&live.active){const s=live.active,r=rem(s);if(r<0&&!live.alerted[s]){live.alerted[s]=true;saveLive();beep();liveEvent("over",s)}}
   if(!$("#clock").hidden)renderClock();
   $$("[data-lt]").forEach(el=>{const s=el.dataset.lt;el.textContent=fmt(rem(s));el.style.color=rem(s)<0?"var(--danger)":(live.active===s&&live.running?"var(--fg)":"var(--muted)")})}
 setInterval(tick,250);
@@ -769,7 +848,7 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 function renderSettings(){$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
 $("#sMinutes").addEventListener("change",e=>{const v=parseInt(e.target.value,10);if(v>0){settings.minutes=v;saveSettings();$("#fMinutes").value=v;toast(`Temps par défaut : ${v} min`)}});
 $("#sBeep").addEventListener("change",e=>{settings.beep=e.target.checked;saveSettings();if(e.target.checked){unlockAudio();beep()}});
-$("#sName").addEventListener("change",e=>{settings.coachName=e.target.value.trim();saveSettings();renderAll()});
+$("#sName").addEventListener("change",e=>{settings.coachName=e.target.value.trim();saveSettings();renderAll();if(live&&live.broadcast)pushLive();if(dOpen)renderForm(dOpen)});
 $("#sWake").addEventListener("change",e=>{settings.wake=e.target.checked;saveSettings();if(!e.target.checked)releaseWake()});
 $("#bSyncNow").onclick=()=>sync(true);
 $("#sUrl").addEventListener("change",e=>{settings.syncUrl=e.target.value.trim();saveSettings();allToPending();sync(true)});
@@ -791,19 +870,169 @@ $("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)r
   arr.forEach(m=>{if(!m||!m.id)return;const l=matches[m.id];if(!l||(m.updatedAt||0)>(l.updatedAt||0)){matches[m.id]=Object.assign({},m,{updatedAt:Math.max(Date.now(),m.updatedAt||0)});pending.add(m.id);n++}});
   saveMatches();setSync();sync();renderAll();toast(`${n} match(s) importé(s)`)}catch(err){toast("Fichier invalide : choisissez un export Dugout (.json)")}e.target.value=""};rd.readAsText(f)});
 
+/* ================= DIRECT + TCHAT (Firebase) ================= */
+const FB_CONFIG={apiKey:["AIzaSyD8QIoRCu","IXFjVNoDJuGTf_EKOTtbX3fs8"].join(""),authDomain:"horloge-bloodbowl.firebaseapp.com",databaseURL:"https://horloge-bloodbowl-default-rtdb.europe-west1.firebasedatabase.app",projectId:"horloge-bloodbowl",appId:"1:537254942429:web:c97387f391bf5338c12d34"};
+const FB_V="10.12.2", H3=3*3600e3, H6=6*3600e3, RATE=5000;
+let fbP=null,fdb=null,fuid=null,srvOff=0,fbOnline=false,isAdmin=false,fbErr="";
+const srvNow=()=>Date.now()+srvOff;
+const TS=()=>firebase.database.ServerValue.TIMESTAMP;
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.async=false;s.onload=res;s.onerror=()=>rej(new Error("script"));document.head.appendChild(s)})}
+function fb(){if(fbP)return fbP;
+  fbP=(async()=>{
+    if(!window.firebase){const b=`https://www.gstatic.com/firebasejs/${FB_V}/`;await loadScript(b+"firebase-app-compat.js");await loadScript(b+"firebase-auth-compat.js");await loadScript(b+"firebase-database-compat.js")}
+    if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
+    const auth=firebase.auth();
+    const user=await new Promise((res,rej)=>{const un=auth.onAuthStateChanged(u=>{un();if(u)res(u);else auth.signInAnonymously().then(c=>res(c.user),rej)},rej)});
+    fuid=user.uid;fdb=firebase.database();fbErr="";
+    fdb.ref(".info/serverTimeOffset").on("value",s=>{srvOff=Number(s.val())||0});
+    fdb.ref(".info/connected").on("value",s=>{fbOnline=!!s.val();renderDirectStatus();renderLiveCard();if(fbOnline&&live&&live.broadcast)pushLive()});
+    fdb.ref("admins/"+fuid).once("value").then(s=>{isAdmin=s.val()===true;renderLiveSettings();if(dOpen)renderDetail()}).catch(()=>{});
+    renderLiveSettings();
+    return fdb})();
+  fbP.catch(e=>{fbP=null;fbErr=navigator.onLine?"Connexion au direct impossible. Réessayez plus tard.":"Pas de réseau : le direct reviendra avec la connexion.";renderDirectStatus()});
+  return fbP}
+
+/* ---------- diffusion (joueur) ---------- */
+const sideAB=s=>s==="me"?"A":s==="opp"?"B":"";
+function remOf(l,side){let r=l.remaining[side];if(l.running&&l.active===side)r-=Date.now()-l.since;return Math.round(r)}
+function nameOf(l,side){return side==="me"?(settings.coachName||l.myRoster||"Coach"):(l.oppCoach||"Adversaire")}
+function liveDoc(l,over){return Object.assign({owner:fuid,coachA:String(settings.coachName||l.myRoster||"Coach").slice(0,60),rosterA:String(l.myRoster||"").slice(0,60),
+  coachB:String(l.oppCoach||"Adversaire").slice(0,60),rosterB:String(l.oppRoster||"").slice(0,60),nafB:String(l.oppNaf||"").slice(0,12),comp:String(l.competition||"").slice(0,80),
+  minutes:Number(l.minutes)||0,remA:remOf(l,"me"),remB:remOf(l,"opp"),active:sideAB(l.active),running:!!l.running,paused:!!l.paused,
+  tdA:l.td.me,tdB:l.td.opp,casA:l.cas.me,casB:l.cas.opp,startedAt:Date.parse(l.date)||Date.now(),updatedAt:TS()},over||{})}
+async function writeLive(l,k,side,txt,over){
+  try{const db=await fb();const up={};up["lives/"+l.id]=liveDoc(l,over);
+    if(k){const key=db.ref("events/"+l.id).push().key;const ev={k,t:TS()};if(side)ev.s=sideAB(side);if(txt)ev.txt=String(txt).slice(0,120);up["events/"+l.id+"/"+key]=ev}
+    await db.ref().update(up)}catch(e){/* file d'attente du SDK ou hors ligne : renvoyé à la reconnexion */}}
+function pushLive(k,side,txt){if(live&&live.broadcast)writeLive(JSON.parse(JSON.stringify(live)),k,side,txt)}
+function liveEvent(k,side){if(!live||!live.broadcast)return;const n=nameOf(live,side);
+  const T={start:`Coup d'envoi · ${n} joue`,turn:`Tour de ${n}`,resume:`Reprise · ${n} joue`,pause:"Pause",reset:"Chronos remis à zéro",
+    td:`Touchdown de ${n}`,cas:`Sortie infligée par ${n}`,tdfix:`Correction : TD retiré à ${n}`,casfix:`Correction : sortie retirée à ${n}`,over:`Temps écoulé pour ${n}`};
+  pushLive(k.endsWith("fix")?"fix":k,side,T[k]||"")}
+function liveEnd(l,fin){if(!l||!l.broadcast)return;l=JSON.parse(JSON.stringify(l));l.running=false;l.active=null;
+  writeLive(l,"end",null,`Fin du match : ${nameOf(l,"me")} ${fin.myTD}–${fin.oppTD} ${nameOf(l,"opp")}`,{tdA:fin.myTD,tdB:fin.oppTD,casA:fin.myCas,casB:fin.oppCas,running:false,active:"",paused:false,endedAt:TS()})}
+async function liveAbort(id){try{const db=await fb();await db.ref().update({["lives/"+id]:null,["events/"+id]:null,["chats/"+id]:null})}catch(e){}}
+function startBroadcast(){if(!live)return;live.broadcast=true;saveLive();watchOwnChat();pushLive("new",null,"Match en préparation");renderLiveCard()}
+function stopBroadcast(){if(!live)return;const id=live.id;live.broadcast=false;saveLive();unwatchOwnChat();liveAbort(id);renderLiveCard()}
+
+/* tchat du joueur : compteur de non-lus */
+let ownChatRef=null,ownChatMsgs=[];
+function chatSeen(id){return (settings.chatSeen&&settings.chatSeen[id])||0}
+function markChatSeen(id){settings.chatSeen=settings.chatSeen||{};settings.chatSeen[id]=srvNow();const ks=Object.keys(settings.chatSeen);if(ks.length>30)delete settings.chatSeen[ks[0]];saveSettings();renderUnread()}
+async function watchOwnChat(){if(!live||!live.broadcast)return;try{const db=await fb();unwatchOwnChat();const id=live.id;
+  ownChatRef=db.ref("chats/"+id).limitToLast(100);ownChatRef.on("value",s=>{const v=s.val()||{};ownChatMsgs=Object.values(v).filter(m=>m&&m.uid!==fuid);renderUnread()})}catch(e){}}
+function unwatchOwnChat(){if(ownChatRef){ownChatRef.off();ownChatRef=null}ownChatMsgs=[];renderUnread()}
+function unreadCount(){if(!live||!live.broadcast)return 0;const seen=chatSeen(live.id);return ownChatMsgs.filter(m=>(Number(m.t)||0)>seen).length}
+function renderUnread(){const n=unreadCount();const b=$("#cClose");if(b){let d=b.querySelector(".ubadge");if(n&&!d){d=document.createElement("i");d.className="ubadge";b.appendChild(d)}if(d){if(n)d.textContent=n>9?"9+":n;else d.remove()}}
+  const lc=$("#lChat");if(lc)lc.textContent=n?`Tchat du direct (${n})`:"Tchat du direct"}
+
+/* ---------- onglet Direct (spectateurs) ---------- */
+let livesRef=null,livesData={},dComp="",dOpen=null,evRef=null,chRef=null,evData={},chData={},cleaned=new Set(),lastSend=0;
+function liveStatus(m){const now=srvNow();if(m.endedAt)return "end";if(now-(Number(m.updatedAt)||0)>15*60e3)return "idle";if(m.paused)return "pause";return m.running?"live":"wait"}
+function expired(m){const now=srvNow();return (m.endedAt&&now-m.endedAt>H3)||(now-(Number(m.updatedAt)||0)>H6)}
+function liveRem(m,ab){let r=Number(m["rem"+ab])||0;if(m.running&&m.active===ab&&!m.endedAt)r-=srvNow()-(Number(m.updatedAt)||srvNow());return r}
+async function openDirect(){renderDirectStatus();try{const db=await fb();if(livesRef)return;
+  livesRef=db.ref("lives").orderByChild("updatedAt").startAt(srvNow()-H6);
+  livesRef.on("value",s=>{livesData=s.val()||{};cleanup();renderDirect();if(dOpen)renderDetail()},()=>{fbErr="Lecture du direct refusée.";renderDirectStatus()});
+  sweepOld()}catch(e){renderDirectStatus()}}
+// Directs abandonnés depuis plus de 6 h : hors de la liste chargée, on les balaie à part.
+async function sweepOld(){try{const s=await fdb.ref("lives").orderByChild("updatedAt").endAt(srvNow()-H6).limitToFirst(25).once("value");
+  Object.keys(s.val()||{}).forEach(id=>{if(cleaned.has(id))return;cleaned.add(id);fdb.ref().update({["lives/"+id]:null,["events/"+id]:null,["chats/"+id]:null}).catch(()=>{})})}catch(e){}}
+function cleanup(){Object.entries(livesData).forEach(([id,m])=>{if(!m||!expired(m)||cleaned.has(id))return;cleaned.add(id);fdb.ref().update({["lives/"+id]:null,["events/"+id]:null,["chats/"+id]:null}).catch(()=>{})})}
+function liveList(){const q=fold($("#dSearch").value.trim());
+  let list=Object.entries(livesData).map(([id,m])=>Object.assign({id},m)).filter(m=>m&&m.coachA!=null&&!expired(m));
+  // doublons : même affiche diffusée par les deux joueurs -> on garde la plus récente
+  const seen=new Map();list.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).forEach(m=>{const k=[norm(m.coachA),norm(m.coachB)].sort().join("|")+"|"+norm(m.comp)+"|"+(m.endedAt?"e":"o");if(!seen.has(k))seen.set(k,m)});
+  list=[...seen.values()];
+  const comps=[...new Set(list.map(m=>m.comp).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+  if(dComp&&!comps.includes(dComp))dComp="";
+  if(dComp)list=list.filter(m=>m.comp===dComp);
+  if(q)list=list.filter(m=>[m.coachA,m.coachB,m.rosterA,m.rosterB,m.comp,m.nafB].some(x=>fold(x).includes(q)));
+  const rank={live:0,pause:1,wait:2,idle:3,end:4};
+  list.sort((a,b)=>rank[liveStatus(a)]-rank[liveStatus(b)]||(b.updatedAt||0)-(a.updatedAt||0));
+  return {list,comps}}
+const BADGE={live:["live","En direct"],pause:["pause","Pause"],wait:["wait","Prêt"],idle:["idle","Inactif"],end:["end","Terminé"]};
+function badge(m){const [c,t]=BADGE[liveStatus(m)];return `<span class="badge ${c}">${c==="live"?'<i class="pulse"></i>':""}${t}</span>`}
+function sideRow(m,ab,big){const act=m.active===ab&&!m.endedAt;const r=liveRem(m,ab);
+  return `<div class="dr${act?" on":""}"><div class="dw"><b>${esc(m["coach"+ab])}</b><small>${esc(m["roster"+ab]||"")}${ab==="B"&&m.nafB?" · NAF "+esc(m.nafB):""}</small>${big?`<small class="dcs">Sorties : <b class="num">${Number(m["cas"+ab])||0}</b></small>`:""}</div>
+  <span class="dsc num">${Number(m["td"+ab])||0}</span><span class="dt num${r<0?" neg":""}" data-dt="${esc(m.id)}|${ab}">${fmt(r)}</span></div>`}
+function renderDirectStatus(){const el=$("#dStat");if(!el)return;
+  el.className="dstat "+(fbErr?"err":fbOnline?"ok":"wait");el.textContent=fbErr||(fbOnline?"Connecté":"Connexion…")}
+function renderDirect(){if($("#v-direct").hidden)return;renderDirectStatus();const {list,comps}=liveList();
+  $("#dComps").innerHTML=comps.length?[`<button type="button" class="chip" aria-pressed="${!dComp}" data-c="">Toutes</button>`,...comps.map(c=>`<button type="button" class="chip" aria-pressed="${dComp===c}" data-c="${esc(c)}">${esc(c)}</button>`)].join(""):"";
+  $$("#dComps .chip").forEach(b=>b.onclick=()=>{dComp=b.dataset.c;renderDirect()});
+  $("#dCards").innerHTML=list.length?list.map(m=>`<button type="button" class="dcard" data-mid="${esc(m.id)}"><div class="dtop">${badge(m)}<span class="dcomp">${esc(m.comp||"Match amical")}</span></div>${sideRow(m,"A")}${sideRow(m,"B")}</button>`).join("")
+    :`<div class="empty">${fbErr?esc(fbErr):"Aucun match en direct pour le moment. Pour diffuser les vôtres, activez « Diffuser mes matchs en direct » dans Réglages."}</div>`;
+  $$("#dCards .dcard").forEach(b=>b.onclick=()=>openDetail(b.dataset.mid))}
+async function openDetail(id){dOpen=id;try{history.replaceState(null,"","#d-"+id)}catch(e){}showTab("direct");$("#dList").hidden=true;$("#dDetail").hidden=false;$("#dDetail").innerHTML='<div class="empty">Chargement du match…</div>';
+  try{const db=await fb();await openDirect();if(dOpen!==id)return;
+    if(evRef)evRef.off();if(chRef)chRef.off();evData={};chData={};
+    evRef=db.ref("events/"+id).limitToLast(60);evRef.on("value",s=>{evData=s.val()||{};renderDetail()});
+    chRef=db.ref("chats/"+id).limitToLast(150);chRef.on("value",s=>{chData=s.val()||{};renderDetail();if(live&&live.id===id)markChatSeen(id)});
+    if(!livesData[id]){const s=await db.ref("lives/"+id).once("value");if(s.exists())livesData[id]=s.val()}
+    renderDetail()}catch(e){$("#dDetail").innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button></div><div class="empty">${esc(fbErr||"Direct indisponible.")}</div>`;$("#dBack").onclick=closeDetail}}
+function closeDetail(){dOpen=null;$("#dDetail").dataset.mid="";if(evRef){evRef.off();evRef=null}if(chRef){chRef.off();chRef=null}$("#dDetail").hidden=true;$("#dDetail").innerHTML="";$("#dList").hidden=false;try{history.replaceState(null,"","#direct")}catch(e){}renderDirect()}
+const hhmm=t=>{try{return new Date(Number(t)-srvOff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
+function renderDetail(){const id=dOpen;if(!id)return;const m=livesData[id]?Object.assign({id},livesData[id]):null;const box=$("#dDetail");
+  if(!m||expired(m)){box.dataset.mid="";box.innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button></div><div class="empty">Ce direct est terminé ou n'existe plus.</div>`;$("#dBack").onclick=closeDetail;return}
+  if(box.dataset.mid!==id){box.dataset.mid=id;
+    box.innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button><button class="btn small" type="button" id="dShare">Partager</button></div>
+     <div class="dd-board" id="dBoard"></div><h2>Tchat</h2><div class="chat" id="dChat"></div><div id="dForm"></div><h2>Déroulé</h2><ol class="feed" id="dFeed"></ol><div id="dKillBox"></div>`;
+    $("#dBack").onclick=closeDetail;$("#dShare").onclick=()=>{const x=livesData[id];if(x)shareLive(Object.assign({id},x))};renderForm(id);chatStick=true}
+  const mine=m.owner===fuid, canMod=mine||isAdmin;
+  $("#dBoard").innerHTML=`<div class="dtop">${badge(m)}<span class="dcomp">${esc(m.comp||"Match amical")}</span></div>${sideRow(m,"A",true)}${sideRow(m,"B",true)}${m.endedAt?"":`<p class="hint dd-upd">Mis à jour à ${hhmm(m.updatedAt)}</p>`}`;
+  const msgs=Object.entries(chData).map(([k,v])=>Object.assign({k},v)).filter(x=>x&&x.text).sort((a,b)=>(a.t||0)-(b.t||0));
+  const ch=$("#dChat");const atBottom=chatStick||ch.scrollHeight-ch.scrollTop-ch.clientHeight<40;
+  ch.innerHTML=msgs.length?msgs.map(x=>`<div class="msg${x.uid===fuid?" me":""}${x.uid===m.owner?" pl":""}"><div class="mh"><b>${esc(x.name)}</b>${x.uid===m.owner?'<span class="tag">joueur</span>':""}<span class="mt">${hhmm(x.t)}</span>${(x.uid===fuid||canMod)?`<button type="button" class="mdel" data-k="${esc(x.k)}" aria-label="Supprimer le message">×</button>`:""}</div><div class="mb">${esc(x.text)}</div></div>`).join(""):'<p class="hint">Aucun message. Lancez la discussion !</p>';
+  if(atBottom)ch.scrollTop=ch.scrollHeight;chatStick=false;
+  $$("#dChat .mdel").forEach(b=>b.onclick=()=>fdb.ref("chats/"+id+"/"+b.dataset.k).remove().catch(()=>toast("Suppression refusée")));
+  const evs=Object.values(evData).filter(Boolean).sort((a,b)=>(b.t||0)-(a.t||0));
+  $("#dFeed").innerHTML=evs.length?evs.map(e=>`<li><span class="mt">${hhmm(e.t)}</span><span class="fk k-${esc(e.k)}">${esc(e.txt||e.k)}</span></li>`).join(""):'<li class="hint">Pas encore d\'événement.</li>';
+  const kb=$("#dKillBox");kb.innerHTML=canMod?`<button class="btn small danger" type="button" id="dKill">${mine?"Arrêter et supprimer ce direct":"Supprimer ce direct (administrateur)"}</button>`:"";
+  const k=$("#dKill");if(k)k.onclick=()=>confirmBox("Supprimer ce direct ?","Le match, son déroulé et tout le tchat seront effacés pour tout le monde.","Supprimer",true,()=>{
+    if(live&&live.id===id){live.broadcast=false;saveLive();unwatchOwnChat();renderLiveCard()}
+    fdb.ref().update({["lives/"+id]:null,["events/"+id]:null,["chats/"+id]:null}).then(()=>{toast("Direct supprimé");closeDetail()}).catch(()=>toast("Suppression refusée"))})}
+let chatStick=true;
+function renderForm(id){const f=$("#dForm");if(!f)return;const name=settings.coachName||settings.chatName||"";
+  f.innerHTML=name?`<form class="send" id="dSend" autocomplete="off"><input id="dMsg" maxlength="280" enterkeyhint="send" placeholder="Message en tant que ${esc(name)}…" aria-label="Votre message"><button class="btn small primary" type="submit">Envoyer</button></form>`
+    :`<form class="send" id="dNameF" autocomplete="off"><input id="dNameI" maxlength="30" placeholder="Choisissez un pseudo pour écrire" aria-label="Pseudo"><button class="btn small primary" type="submit">Valider</button></form>`;
+  const sf=$("#dSend");if(sf)sf.onsubmit=e=>{e.preventDefault();sendMsg(id,name)};
+  const nf=$("#dNameF");if(nf)nf.onsubmit=e=>{e.preventDefault();const v=$("#dNameI").value.trim().slice(0,30);if(!v){toast("Choisissez un pseudo");return}settings.chatName=v;saveSettings();renderForm(id);const i=$("#dMsg");i&&i.focus()}}
+async function sendMsg(id,name){const inp=$("#dMsg");const text=inp.value.trim().slice(0,280);if(!text)return;
+  const wait=RATE-(Date.now()-lastSend);if(wait>0){toast(`Patientez ${Math.ceil(wait/1000)} s entre deux messages`);return}
+  if(!fbOnline){toast("Hors ligne : message non envoyé");return}
+  lastSend=Date.now();inp.value="";
+  try{const key=fdb.ref("chats/"+id).push().key;await fdb.ref().update({["chats/"+id+"/"+key]:{uid:fuid,name:String(name).slice(0,30),text,t:TS()},["rate/"+fuid]:TS()})}
+  catch(e){inp.value=text;toast("Message refusé : patientez quelques secondes et réessayez")}}
+async function shareLive(m){const url=location.origin+location.pathname+"#d-"+m.id;const title=`${m.coachA} vs ${m.coachB}${m.comp?" · "+m.comp:""}`;
+  try{if(navigator.share){await navigator.share({title:"Dugout · Direct",text:title,url});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(url);toast("Lien copié")}catch(e){modal(`<h3>Lien du direct</h3><p>Copiez ce lien pour le partager :</p><input class="search" readonly value="${esc(url)}" id="shareUrl"><div class="acts"><button class="btn small" data-x>Fermer</button></div>`,(d,close)=>{d.querySelector("[data-x]").onclick=close;const i=d.querySelector("#shareUrl");i.focus();i.select()})}}
+function directTick(){$$("[data-dt]").forEach(el=>{const [id,ab]=el.dataset.dt.split("|");const m=livesData[id];if(!m)return;const r=liveRem(m,ab);el.textContent=fmt(r);el.classList.toggle("neg",r<0)})}
+setInterval(directTick,500);
+
+/* réglages du direct */
+function renderLiveSettings(){const s=$("#sBroadcast");if(!s)return;s.checked=!!settings.broadcast;
+  $("#sUid").textContent=fuid||"(connexion au premier usage du direct)";$("#sAdmin").hidden=!isAdmin}
+
 /* ---------- tabs ---------- */
-const TABS={match:"#v-match",stats:"#v-stats",hist:"#v-hist",set:"#v-set"};
-function showTab(t){Object.entries(TABS).forEach(([k,s])=>$(s).hidden=k!==t);$$(".tabs button").forEach(b=>b.dataset.tab===t?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));window.scrollTo(0,0)}
-$$(".tabs button").forEach(b=>b.onclick=()=>{showTab(b.dataset.tab);try{history.replaceState(null,"","#"+(b.dataset.tab==="set"?"options":b.dataset.tab))}catch(e){}});
+const TABS={match:"#v-match",direct:"#v-direct",stats:"#v-stats",hist:"#v-hist",set:"#v-set"};
+function showTab(t){Object.entries(TABS).forEach(([k,s])=>$(s).hidden=k!==t);$$(".tabs button").forEach(b=>b.dataset.tab===t?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));window.scrollTo(0,0);
+  if(t==="direct"){openDirect();renderDirect()}else if(dOpen)closeDetail()}
+$$(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="direct"&&dOpen){closeDetail();return}showTab(b.dataset.tab);try{history.replaceState(null,"","#"+(b.dataset.tab==="set"?"options":b.dataset.tab))}catch(e){}});
 $$(".seg button").forEach(b=>b.onclick=()=>{group=b.dataset.g;openCoach=null;$$(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderStats()});
 $("#statSearch").addEventListener("input",renderStats);
+$("#dSearch").addEventListener("input",renderDirect);
+$("#sBroadcast").addEventListener("change",e=>{settings.broadcast=e.target.checked;saveSettings();if(e.target.checked)fb().catch(()=>{});toast(e.target.checked?"Vos prochains matchs seront diffusés en direct":"Diffusion désactivée pour les prochains matchs")});
+function routeHash(){const h=(location.hash||"").slice(1);if(h.startsWith("d-")){openDetail(h.slice(2));return true}if(h==="direct"){showTab("direct");return true}return false}
+addEventListener("hashchange",()=>{const h=(location.hash||"").slice(1);if(h.startsWith("d-")&&h.slice(2)!==dOpen)openDetail(h.slice(2))});
 
 function renderAll(){renderLiveCard();renderStats();renderHist();renderClockVisibility();tick()}
 
 /* ---------- boot ---------- */
 $("#fMinutes").value=settings.minutes;attachAC($("#fMyRoster"),"mine");attachAC($("#fOppRoster"),"opp");attachAC($("#fCoach"),"coach");attachAC($("#fComp"),"comp");$("#fComp").value=settings.lastComp||"";
 renderSettings();setSync();renderAll();
-const h=(location.hash||"").slice(1);if(h==="stats"||h==="hist")showTab(h);else if(h==="options")showTab("set");
+const h=(location.hash||"").slice(1);if(!routeHash()){if(h==="stats"||h==="hist")showTab(h);else if(h==="options")showTab("set")}
+renderLiveSettings();if(live&&live.broadcast){watchOwnChat();pushLive()}
 sync();
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 })();
