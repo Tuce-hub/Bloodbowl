@@ -97,7 +97,7 @@ th:first-child,td:first-child{text-align:left}
 td{padding:11px 10px;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 td:first-child{white-space:normal;font-weight:600}
 tr.clk{cursor:pointer} tr.clk:hover td{background:var(--surface)}
-tr.sub td{background:var(--surface);font-weight:400;font-size:14px;color:var(--muted)}
+tr.sub{cursor:pointer} tr.sub td{background:var(--surface);font-weight:400;font-size:14px;color:var(--muted)}
 .vnd{font-family:var(--f-label);font-weight:600;letter-spacing:.02em}
 .vnd .w{color:var(--win)} .vnd .d{color:var(--draw)} .vnd .l{color:var(--loss)}
 .pm{color:var(--muted);font-size:13px}
@@ -132,6 +132,15 @@ label.btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .wheel .it.sel{color:var(--fg);font-size:22px}
 .field textarea{font:16px/1.4 var(--f-body);min-height:84px;padding:10px 12px;resize:vertical}
 .match .info dd.note{white-space:pre-wrap}
+.dlg .acts3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;justify-content:stretch}
+.acts3 .btn{padding:9px 4px;font-size:14px;letter-spacing:.03em}
+.sheet-h{display:flex;align-items:center;gap:12px}
+.sheet-h h3{font-size:22px;line-height:1.2;min-width:0}
+.sheet-h .sc{white-space:nowrap;font-family:var(--f-display);font-size:28px;font-weight:600;vertical-align:-2px}
+.sheet .info{margin:0;display:grid;grid-template-columns:76px minmax(0,1fr);gap:6px 12px;font-size:16px;line-height:1.35}
+.sheet .info dt{font-family:var(--f-label);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+.sheet .info dd{margin:0;min-width:0;overflow-wrap:break-word}
+.sheet .info dd.note{white-space:pre-wrap}
 .ph-full{width:100%;max-height:70vh;object-fit:contain;border-radius:8px;background:#000;display:block}
 .icon-btn{width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);display:grid;place-items:center}
 .icon-btn svg{width:18px;height:18px}
@@ -271,7 +280,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
     </div>
     <input class="search" id="statSearch" type="search" placeholder="Filtrer : nom, roster, NAF…">
     <div id="statTable"></div>
-    <p class="hint">TD et sorties : pour – contre. Touchez un coach pour voir ses matchs.</p>
+    <p class="hint">TD et sorties : pour – contre. Touchez une ligne pour voir ses matchs, puis un match pour sa fiche.</p>
   </section>
 
   <!-- HISTORIQUE -->
@@ -589,11 +598,12 @@ function renderStats(){const list=allMatches();const a=agg(list);
   if(!rows.length){$("#statTable").innerHTML='<div class="empty">Aucun résultat pour ce filtre.</div>';return}
   const head={coach:"Coach",opp:"Roster adverse",mine:"Mon roster",comp:"Compétition"}[group];
   let h=`<div class="tbl-wrap"><table><thead><tr><th>${head}</th><th>J</th><th>V-N-D</th><th>TD</th><th>Sorties</th></tr></thead><tbody>`;
-  rows.forEach(r=>{const k=norm(r.label);const isOpen=group==="coach"&&openCoach===k;
-    h+=`<tr class="${group==="coach"?"clk":""}" data-k="${esc(k)}"><td>${esc(r.label)}${group==="coach"&&nafOf(r.label)?` <span class="pm">NAF ${esc(nafOf(r.label))}</span>`:""}</td><td>${r.a.j}</td><td>${vnd(r.a)}</td><td>${r.a.tdF}–${r.a.tdC}</td><td>${r.a.casF}–${r.a.casC}</td></tr>`;
-    if(isOpen)r.ms.forEach(m=>{h+=`<tr class="sub"><td colspan="5"><span class="vnd"><span class="${{V:"w",N:"d",D:"l"}[result(m)]}">${result(m)}</span></span> · ${esc(m.myRoster)} <b class="num">${m.myTD}–${m.oppTD}</b> ${esc(m.oppRoster)} · ${fdate(m.date)}${m.competition?" · "+esc(m.competition):""} · sorties ${m.myCas}–${m.oppCas}</td></tr>`})});
+  rows.forEach(r=>{const k=norm(r.label);const isOpen=openCoach===k;
+    h+=`<tr class="clk" data-k="${esc(k)}"><td>${esc(r.label)}${group==="coach"&&nafOf(r.label)?` <span class="pm">NAF ${esc(nafOf(r.label))}</span>`:""}</td><td>${r.a.j}</td><td>${vnd(r.a)}</td><td>${r.a.tdF}–${r.a.tdC}</td><td>${r.a.casF}–${r.a.casC}</td></tr>`;
+    if(isOpen)r.ms.forEach(m=>{h+=`<tr class="sub" data-mid="${esc(m.id)}"><td colspan="5"><span class="vnd"><span class="${{V:"w",N:"d",D:"l"}[result(m)]}">${result(m)}</span></span> · ${esc(m.myRoster)} <b class="num">${m.myTD}–${m.oppTD}</b> ${esc(m.oppRoster)} · ${group!=="coach"?esc(m.oppCoach)+" · ":""}${fdate(m.date)}${m.competition?" · "+esc(m.competition):""} · sorties ${m.myCas}–${m.oppCas}</td></tr>`})});
   h+="</tbody></table></div>";$("#statTable").innerHTML=h;
-  $$("#statTable tr.clk").forEach(tr=>tr.onclick=()=>{openCoach=openCoach===tr.dataset.k?null:tr.dataset.k;renderStats()})}
+  $$("#statTable tr.clk").forEach(tr=>tr.onclick=()=>{openCoach=openCoach===tr.dataset.k?null:tr.dataset.k;renderStats()});
+  $$("#statTable tr.sub").forEach(tr=>tr.onclick=()=>{const m=matches[tr.dataset.mid];if(m)showMatch(m)})}
 
 /* ---------- history ---------- */
 function renderHist(){const list=allMatches();$("#histTitle").textContent=`Historique · ${list.length} match${list.length>1?"s":""}`;
@@ -601,10 +611,20 @@ function renderHist(){const list=allMatches();$("#histTitle").textContent=`Histo
   $("#histList").innerHTML=list.map(m=>{const r=result(m);return `<div class="match"><span class="pill ${r}">${r}</span>
   <div class="line1">${esc(m.myRoster)} <span class="sc num">${m.myTD}–${m.oppTD}</span> ${esc(m.oppRoster)}</div>
   <div class="mact">${hasPhoto(m)?`<button class="thumb" data-ph="${esc(m.id)}" aria-label="Voir la photo">${CAM}</button>`:""}<button class="icon-btn" data-ed="${esc(m.id)}" aria-label="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button class="icon-btn" data-del="${esc(m.id)}" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
-  <dl class="info"><dt>Coach</dt><dd>${esc(m.oppCoach)}</dd>${m.oppNaf?`<dt>NAF</dt><dd class="num">${esc(m.oppNaf)}</dd>`:""}<dt>Date</dt><dd>${fdate(m.date)}</dd>${m.competition?`<dt>Compét.</dt><dd>${esc(m.competition)}</dd>`:""}<dt>Sorties</dt><dd class="num">${m.myCas}–${m.oppCas}</dd>${m.note?`<dt>Notes</dt><dd class="note">${esc(m.note)}</dd>`:""}</dl></div>`}).join("");
+  ${infoHTML(m)}</div>`}).join("");
   $$("[data-ed]").forEach(b=>b.onclick=()=>editMatch(matches[b.dataset.ed]));
   $$("[data-ph]").forEach(b=>{const m=matches[b.dataset.ph];b.onclick=()=>viewPhoto(m);photoFor(m).then(src=>{if(src&&b.isConnected)b.innerHTML=`<img src="${src}" alt="">`})});
-  $$("[data-del]").forEach(b=>b.onclick=()=>{const m=matches[b.dataset.del];confirmBox("Supprimer ce match ?",`${m.myRoster} ${m.myTD}–${m.oppTD} ${m.oppRoster}, contre ${m.oppCoach} (${fdate(m.date)}). Cette suppression est définitive.`,"Supprimer",true,()=>{photoDel(m.id);photoPending.delete(m.id);savePhotoPending();forgetPhoto(m.id);markDirty({id:m.id,deleted:true});toast("Match supprimé")})})}
+  $$("[data-del]").forEach(b=>b.onclick=()=>deleteMatch(matches[b.dataset.del]))}
+function infoHTML(m){return `<dl class="info"><dt>Coach</dt><dd>${esc(m.oppCoach)}</dd>${m.oppNaf?`<dt>NAF</dt><dd class="num">${esc(m.oppNaf)}</dd>`:""}<dt>Date</dt><dd>${fdate(m.date)}</dd>${m.competition?`<dt>Compét.</dt><dd>${esc(m.competition)}</dd>`:""}<dt>Sorties</dt><dd class="num">${m.myCas}–${m.oppCas}</dd>${m.note?`<dt>Notes</dt><dd class="note">${esc(m.note)}</dd>`:""}</dl>`}
+function deleteMatch(m){confirmBox("Supprimer ce match ?",`${m.myRoster} ${m.myTD}–${m.oppTD} ${m.oppRoster}, contre ${m.oppCoach} (${fdate(m.date)}). Cette suppression est définitive.`,"Supprimer",true,()=>{photoDel(m.id);photoPending.delete(m.id);savePhotoPending();forgetPhoto(m.id);markDirty({id:m.id,deleted:true});toast("Match supprimé")})}
+function showMatch(m){const r=result(m);
+  modal(`<div class="sheet-h"><span class="pill ${r}">${r}</span><h3>${esc(m.myRoster)} <span class="sc num">${m.myTD}–${m.oppTD}</span> ${esc(m.oppRoster)}</h3></div>
+  <div class="sheet">${infoHTML(m)}</div>${hasPhoto(m)?'<img class="ph-full" id="shPh" alt="Photo du match" hidden><p class="hint" id="shPhMsg">Chargement de la photo…</p>':""}
+  <div class="acts acts3"><button class="btn small danger" data-sdel>Supprimer</button><button class="btn small" data-sed>Modifier</button><button class="btn small primary" data-x>Fermer</button></div>`,(d,close)=>{
+    d.querySelector("[data-x]").onclick=close;
+    d.querySelector("[data-sed]").onclick=()=>{close();editMatch(matches[m.id]||m)};
+    d.querySelector("[data-sdel]").onclick=()=>{close();deleteMatch(m)};
+    if(hasPhoto(m))photoFor(m).then(src=>{const im=d.querySelector("#shPh"),msg=d.querySelector("#shPhMsg");if(!im)return;if(src){im.src=src;im.hidden=false;msg.remove()}else msg.textContent="Photo indisponible : vérifiez la connexion et la synchro."})})}
 
 function matchForm(m){return `${dateWheels(toLocalInput(m.date))}
   <div class="field"><label for="eComp">Compétition</label><input id="eComp" value="${esc(m.competition||"")}" placeholder="Vide si match amical"></div>
