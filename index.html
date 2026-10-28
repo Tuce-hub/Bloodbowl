@@ -51,7 +51,9 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .field label{font-family:var(--f-label);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .field input,.field select{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:12px 12px;font-size:18px;width:100%;min-width:0}
 .field input:focus{border-color:var(--gold);outline:none}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.row2>*,.grid4>*{min-width:0}
+input[type="datetime-local"]{min-width:0;max-width:100%}
 .side-tag{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
 .btn{border:0;border-radius:8px;padding:14px 18px;font-family:var(--f-label);font-weight:700;font-size:19px;letter-spacing:.06em;text-transform:uppercase;background:var(--surface2);border:1px solid var(--line)}
 .btn.primary{background:var(--me);color:var(--me-ink);border-color:var(--me)}
@@ -85,7 +87,7 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .tile .v{font-family:var(--f-display);font-size:30px;line-height:1;font-weight:600}
 .tile .s{font-size:12px;color:var(--muted)}
 .seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px}
-.seg button{flex:1;border:0;background:transparent;border-radius:6px;padding:9px 4px;font-family:var(--f-label);font-weight:600;font-size:15px;letter-spacing:.04em;color:var(--muted)}
+.seg button{flex:1;min-width:0;border:0;background:transparent;border-radius:6px;padding:9px 2px;font-family:var(--f-label);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--surface2);color:var(--fg);box-shadow:inset 0 -2px 0 var(--gold)}
 .search{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:16px;width:100%}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
@@ -106,9 +108,18 @@ tr.sub td{background:var(--surface);font-weight:400;font-size:14px;color:var(--m
 .pill{font-family:var(--f-label);font-weight:700;font-size:15px;width:30px;height:30px;border-radius:6px;display:grid;place-items:center;grid-row:span 2}
 .pill.V{background:var(--win);color:var(--me-ink)} .pill.N{background:var(--draw);color:#2a2410} .pill.D{background:var(--loss);color:#360808}
 .match .line1{font-family:var(--f-label);font-weight:600;font-size:18px;min-width:0}
-.match .line1 .sc{font-family:var(--f-display);font-size:24px;margin:0 6px;vertical-align:-2px}
+.match .line1 .sc{white-space:nowrap;font-family:var(--f-display);font-size:24px;margin:0 6px;vertical-align:-2px}
 .match .line2{color:var(--muted);font-size:14px;min-width:0}
-.match .mact{grid-row:span 2;display:flex;gap:6px}
+.match .mact{grid-row:span 2;display:flex;gap:6px;align-items:center}
+.thumb{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);padding:0;overflow:hidden;flex:none;display:grid;place-items:center;color:var(--muted)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.flabel{font-family:var(--f-label);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.photo-f{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ph-prev{width:96px;height:96px;border-radius:8px;background:var(--surface2);border:1px dashed var(--line);display:grid;place-items:center;overflow:hidden;flex:none;color:var(--muted);font-size:12px;text-align:center;padding:4px}
+.ph-prev img{width:96px;height:96px;object-fit:cover;margin:-4px}
+.ph-acts{display:flex;gap:8px;flex-wrap:wrap}
+label.btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.ph-full{width:100%;max-height:70vh;object-fit:contain;border-radius:8px;background:#000;display:block}
 .icon-btn{width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);display:grid;place-items:center}
 .icon-btn svg{width:18px;height:18px}
 .empty{border:1px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--muted)}
@@ -171,11 +182,11 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;z-index:40;background:#000b;display:grid;place-items:center;padding:16px}
-.dlg{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(520px,100%);max-height:calc(100% - 8px);overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.dlg{overflow-x:hidden;background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(520px,100%);max-height:calc(100% - 8px);overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
 .dlg h3{font-family:var(--f-label);font-weight:700;font-size:22px;letter-spacing:.03em;margin:0}
 .dlg p{margin:0;color:var(--muted)}
 .dlg .acts{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
-.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--fg);color:var(--bg);font-family:var(--f-label);font-weight:600;font-size:16px;padding:10px 16px;border-radius:8px;max-width:calc(100% - 32px)}
 
 @media (max-width:420px){.tiles{grid-template-columns:repeat(2,1fr)}.brand span{display:none}}
@@ -198,8 +209,18 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
         <input id="fMyRoster" list="dlRosters" placeholder="Ex. Orques" required>
       </div>
       <div class="field">
-        <label for="fCoach"><span class="side-tag" style="background:var(--opp)"></span>Coach adverse</label>
-        <input id="fCoach" list="dlCoaches" placeholder="Nom du coach" required>
+        <label for="fComp">Compétition</label>
+        <input id="fComp" list="dlComps" placeholder="Vide si match amical">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="fCoach"><span class="side-tag" style="background:var(--opp)"></span>Coach adverse</label>
+          <input id="fCoach" list="dlCoaches" placeholder="Nom du coach" required>
+        </div>
+        <div class="field">
+          <label for="fNaf">N° NAF</label>
+          <input id="fNaf" inputmode="numeric" placeholder="Facultatif">
+        </div>
       </div>
       <div id="intel" hidden></div>
       <div class="field">
@@ -213,17 +234,19 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button class="btn primary" type="submit">Lancer le match</button>
       <p class="hint">Une fois lancé, tournez le téléphone en paysage et posez-le entre les deux joueurs.</p>
     </form>
+    <button class="btn" type="button" id="bPast">Saisir un match passé</button>
   </section>
 
   <!-- STATS -->
   <section class="view" id="v-stats" hidden>
     <div class="tiles" id="tiles"></div>
     <div class="seg" role="group" aria-label="Regrouper par">
-      <button type="button" data-g="coach" aria-pressed="true">Par coach</button>
-      <button type="button" data-g="opp" aria-pressed="false">Roster adverse</button>
+      <button type="button" data-g="coach" aria-pressed="true">Coach</button>
+      <button type="button" data-g="opp" aria-pressed="false">Son roster</button>
       <button type="button" data-g="mine" aria-pressed="false">Mon roster</button>
+      <button type="button" data-g="comp" aria-pressed="false">Compét.</button>
     </div>
-    <input class="search" id="statSearch" type="search" placeholder="Filtrer…">
+    <input class="search" id="statSearch" type="search" placeholder="Filtrer (nom, roster, compétition, n° NAF)…">
     <div id="statTable"></div>
     <p class="hint">TD et sorties : pour – contre. Touchez un coach pour voir ses matchs.</p>
   </section>
@@ -298,7 +321,6 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
   </section>
   <div class="strip">
     <button type="button" id="cPause"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg><span>Pause</span></button>
-    <button type="button" id="cStop"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg><span>Arrêt</span></button>
     <button type="button" id="cReset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>Zéro</span></button>
     <button type="button" id="cSwap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></svg><span>Côtés</span></button>
     <button type="button" id="cFull"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Écran</span></button>
@@ -321,6 +343,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 
 <datalist id="dlRosters"></datalist>
 <datalist id="dlCoaches"></datalist>
+<datalist id="dlComps"></datalist>
 
 <script>
 (function(){
@@ -333,7 +356,7 @@ const norm=s=>String(s||"").trim().toLowerCase();
 
 /* ---------- local storage ---------- */
 const LS={get(k,d){try{const v=localStorage.getItem("dugout."+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("dugout."+k,JSON.stringify(v))}catch(e){}}};
-let settings=Object.assign({minutes:75,beep:true,wake:true,swap:false,lastMyRoster:"",coachName:"",syncUrl:"",syncToken:""},LS.get("settings",{}));
+let settings=Object.assign({minutes:75,beep:true,wake:true,swap:false,lastMyRoster:"",lastComp:"",coachName:"",syncUrl:"",syncToken:""},LS.get("settings",{}));
 let matches=LS.get("matches",{});      // id -> match (tombstones: deleted:true)
 let pending=new Set(LS.get("pending",[]));
 let live=LS.get("live",null);
@@ -358,36 +381,104 @@ const syncConf=()=>!!(settings.syncUrl&&settings.syncToken);
 function setSync(){const n=pending.size,dot=$("#syncDot"),txt=$("#syncTxt"),long=$("#syncLong");dot.className="dot";
   if(!syncConf()){dot.classList.add("off");txt.textContent="Local";long.textContent="Synchro non configurée : les matchs restent sur ce téléphone. Renseignez l'adresse du script et le code secret pour les retrouver partout et dans votre Google Sheet.";return}
   if(syncState==="err"){dot.classList.add("err");txt.textContent=n?`${n} en attente`:"Erreur synchro";long.textContent="La synchro a échoué : vérifiez l'adresse du script (elle finit par /exec) et le code secret. Les matchs restent enregistrés sur ce téléphone.";return}
-  if(n||syncState==="wait"||busy){dot.classList.add("wait");txt.textContent=n?`${n} en attente`:"Synchro…";long.textContent=`Hors ligne ou synchro en cours : ${n} match(s) seront envoyés dès que le réseau revient. Rien n'est perdu.`;return}
+  if(n||photoPending.size||syncState==="wait"||busy){dot.classList.add("wait");txt.textContent=n?`${n} en attente`:"Synchro…";long.textContent=`Hors ligne ou synchro en cours : ${n} match(s) et ${photoPending.size} photo(s) seront envoyés dès que le réseau revient. Rien n'est perdu.`;return}
   dot.classList.add("ok");txt.textContent="Synchronisé";long.textContent="Vos matchs sont sur ce téléphone et dans votre Google Sheet. Ouvrez l'appli depuis n'importe quel navigateur pour les consulter."}
 async function api(method,body){
   let r;
-  if(method==="GET"){const u=new URL(settings.syncUrl);u.searchParams.set("token",settings.syncToken);u.searchParams.set("action","list");r=await fetch(u.toString(),{redirect:"follow",cache:"no-store"})}
+  if(method==="GET"){const u=new URL(settings.syncUrl);u.searchParams.set("token",settings.syncToken);Object.entries(body||{action:"list"}).forEach(([k,v])=>u.searchParams.set(k,v));r=await fetch(u.toString(),{redirect:"follow",cache:"no-store"})}
   else r=await fetch(settings.syncUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({token:settings.syncToken},body))});
   const j=await r.json();if(!j.ok)throw new Error(j.error||"Erreur");return j}
 async function sync(manual){
   if(!syncConf()){setSync();if(manual)toast("Renseignez l'adresse et le code secret");return}
   if(busy)return;busy=true;setSync();
   try{
-    if(pending.size){const sent=[...pending].map(id=>matches[id]).filter(Boolean);
-      await api("POST",{action:"upsert",matches:sent});
-      sent.forEach(m=>{const cur=matches[m.id];if(!cur||cur.updatedAt===m.updatedAt)pending.delete(m.id)});saveMatches()}
-    const j=await api("GET");let changed=false;
+    await pushUpserts();
+    const j=await api("GET",{action:"list"});let changed=false;
     (j.matches||[]).forEach(r=>{if(!r||!r.id)return;const l=matches[r.id];if(!l||(+r.updatedAt||0)>(+l.updatedAt||0)){matches[r.id]=r;pending.delete(r.id);changed=true}});
     if(changed){saveMatches();renderAll()}
+    if(await uploadPhotos()){await pushUpserts();renderAll()}
     syncState="ok";if(manual)toast(`Synchronisé · ${allMatches().length} match(s)`);
   }catch(e){syncState=navigator.onLine?"err":"wait";if(manual)toast(navigator.onLine?"Échec : vérifiez l'adresse et le code secret":"Hors ligne : nouvel essai automatique")}
   finally{busy=false;setSync()}}
-function markDirty(m){m.updatedAt=Date.now();matches[m.id]=m;pending.add(m.id);saveMatches();setSync();sync();renderAll()}
+async function pushUpserts(){if(!pending.size)return;const sent=[...pending].map(id=>matches[id]).filter(Boolean);
+  await api("POST",{action:"upsert",matches:sent});
+  sent.forEach(m=>{const cur=matches[m.id];if(!cur||cur.updatedAt===m.updatedAt)pending.delete(m.id)});saveMatches()}
+function dirty(m){m.updatedAt=Date.now();matches[m.id]=m;pending.add(m.id);saveMatches()}
+function markDirty(m){dirty(m);setSync();sync();renderAll()}
 window.addEventListener("online",()=>sync());
-setInterval(()=>{if(pending.size)sync()},45000);
+setInterval(()=>{if(pending.size||photoPending.size)sync()},45000);
 
+
+/* ---------- photos (téléphone + Google Drive) ---------- */
+const PHOTO_MAX=1600, PHOTO_Q=.8;
+let idbP=null;
+function idb(){if(!idbP)idbP=new Promise((res,rej)=>{try{const r=indexedDB.open("dugout",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos",{keyPath:"id"});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});return idbP}
+async function idbDo(mode,fn){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction("photos",mode);const req=fn(tx.objectStore("photos"));tx.oncomplete=()=>res(req&&req.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+const photoGet=id=>idbDo("readonly",s=>s.get(id)).catch(()=>null);
+const photoPut=e=>idbDo("readwrite",s=>s.put(e));
+const photoDel=id=>idbDo("readwrite",s=>s.delete(id)).catch(()=>{});
+let photoPending=new Set(LS.get("photoPending",[]));
+const savePhotoPending=()=>LS.set("photoPending",[...photoPending]);
+const hasPhoto=m=>!!(m&&(m.photoId||photoPending.has(m.id)));
+const memPhoto=new Map(), inflight=new Map();
+function forgetPhoto(id){[...memPhoto.keys()].forEach(k=>{if(k.startsWith(id+"|"))memPhoto.delete(k)})}
+async function photoFor(m){
+  if(!hasPhoto(m))return null;
+  const key=m.id+"|"+(photoPending.has(m.id)?"local":m.photoId);
+  if(memPhoto.has(key))return memPhoto.get(key);
+  if(inflight.has(key))return inflight.get(key);
+  const p=(async()=>{
+    const e=await photoGet(m.id);
+    if(e&&(e.pending||e.fileId===m.photoId)){memPhoto.set(key,e.data);return e.data}
+    if(!m.photoId||!syncConf())return null;
+    try{const j=await api("GET",{action:"photo",id:m.photoId});const data="data:"+(j.mime||"image/jpeg")+";base64,"+j.data;
+      await photoPut({id:m.id,data,fileId:m.photoId,pending:false}).catch(()=>{});memPhoto.set(key,data);return data}
+    catch(err){return null}})();
+  inflight.set(key,p);try{return await p}finally{inflight.delete(key)}}
+function compress(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();
+  img.onload=()=>{try{const k=Math.min(1,PHOTO_MAX/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement("canvas");c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",PHOTO_Q))}catch(e){rej(e)}};
+  img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("image"))};img.src=url})}
+const photoName=m=>`${String(m.date||"").slice(0,10)} ${m.myRoster||""} vs ${m.oppCoach||""}${m.competition?" - "+m.competition:""}.jpg`;
+const CAM='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+function photoBlock(){return `<div class="field"><span class="flabel">Photo du match</span><div class="photo-f"><div class="ph-prev" id="ePhPrev"><span>Aucune photo</span></div>
+  <div class="ph-acts"><label class="btn small" for="ePhFile">${CAM}<span id="ePhLbl">Ajouter</span></label><input id="ePhFile" type="file" accept="image/*" hidden><button type="button" class="btn small danger" id="ePhDel" hidden>Retirer</button></div></div></div>`}
+function bindPhoto(d,m){const st={action:null,data:null};const prev=d.querySelector("#ePhPrev"),del=d.querySelector("#ePhDel"),inp=d.querySelector("#ePhFile"),lbl=d.querySelector("#ePhLbl");
+  const show=(src,msg)=>{prev.innerHTML=src?`<img src="${src}" alt="Photo du match">`:`<span>${msg||"Aucune photo"}</span>`;del.hidden=!src&&!msg;lbl.textContent=(src||msg)?"Remplacer":"Ajouter"};
+  if(hasPhoto(m)){show(null,"Chargement…");photoFor(m).then(src=>{if(!st.action)show(src,src?null:"Photo indisponible hors ligne")})}
+  inp.addEventListener("change",async()=>{const f=inp.files&&inp.files[0];if(!f)return;show(null,"Préparation…");
+    try{st.data=await compress(f);st.action="set";show(st.data)}catch(e){toast("Image illisible : choisissez une photo JPEG ou PNG");show(null)}inp.value=""});
+  del.onclick=()=>{st.action="remove";st.data=null;show(null)};
+  return st}
+async function applyPhoto(fin,st){if(!st||!st.action)return;forgetPhoto(fin.id);
+  if(st.action==="set"){try{await photoPut({id:fin.id,data:st.data,fileId:null,pending:true});photoPending.add(fin.id);savePhotoPending()}catch(e){toast("Photo non enregistrée : stockage du téléphone indisponible")}}
+  else{await photoDel(fin.id);photoPending.delete(fin.id);savePhotoPending();if(fin.photoId){fin.removePhotoId=fin.photoId;fin.photoId=""}}}
+async function uploadPhotos(){let n=0;
+  for(const id of [...photoPending]){const m=matches[id];
+    if(!m||m.deleted){photoPending.delete(id);savePhotoPending();photoDel(id);continue}
+    const e=await photoGet(id);if(!e||!e.pending){photoPending.delete(id);savePhotoPending();continue}
+    const j=await api("POST",{action:"photo",matchId:id,data:e.data.split(",")[1],mime:"image/jpeg",name:photoName(m),replaces:m.photoId||""});
+    const now=await photoGet(id);
+    if(now&&now.data===e.data){await photoPut({id,data:e.data,fileId:j.fileId,pending:false});photoPending.delete(id);savePhotoPending()}
+    dirty(Object.assign({},matches[id],{photoId:j.fileId,removePhotoId:""}));forgetPhoto(id);n++}
+  return n}
+function viewPhoto(m){modal(`<img class="ph-full" id="phFull" alt="Photo du match"><p class="hint">${esc(fdate(m.date))} · ${esc(m.myRoster)} ${m.myTD}–${m.oppTD} ${esc(m.oppCoach)}</p><div class="acts"><button class="btn small" data-x>Fermer</button></div>`,(d,close)=>{d.querySelector("[data-x]").onclick=close;
+  photoFor(m).then(src=>{const im=d.querySelector("#phFull");if(!im)return;if(src)im.src=src;else{im.replaceWith(Object.assign(document.createElement("p"),{textContent:"Photo indisponible : vérifiez la connexion et la synchro."}))}})})}
+
+/* ---------- dates, NAF ---------- */
+const p2=n=>String(n).padStart(2,"0");
+function toLocalInput(iso){const d=new Date(iso||Date.now());if(isNaN(d))return "";return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`}
+function fromLocalInput(v,fallback){const d=new Date(v);return isNaN(d)?fallback:d.toISOString()}
+const cleanNaf=v=>String(v||"").replace(/\D/g,"");
+function nafOf(coach){const k=norm(coach);const m=allMatches().find(x=>norm(x.oppCoach)===k&&x.oppNaf);return m?String(m.oppNaf):""}
+function coachByNaf(naf){naf=cleanNaf(naf);if(!naf)return null;const m=allMatches().find(x=>String(x.oppNaf||"")===naf);return m?m.oppCoach:null}
 
 /* ---------- datalists ---------- */
 function coachesList(){const map=new Map();allMatches().forEach(m=>{const k=norm(m.oppCoach);if(k&&!map.has(k))map.set(k,m.oppCoach)});return [...map.values()].sort((a,b)=>a.localeCompare(b,"fr"))}
 function fillLists(){const used=new Set(allMatches().flatMap(m=>[m.myRoster,m.oppRoster]).filter(Boolean));const r=[...new Set([...ROSTERS,...used])].sort((a,b)=>a.localeCompare(b,"fr"));
   $("#dlRosters").innerHTML=r.map(x=>`<option value="${esc(x)}">`).join("");
-  $("#dlCoaches").innerHTML=coachesList().map(x=>`<option value="${esc(x)}">`).join("")}
+  $("#dlCoaches").innerHTML=coachesList().map(x=>`<option value="${esc(x)}">`).join("");
+  const comps=[...new Set(allMatches().map(m=>m.competition).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+  $("#dlComps").innerHTML=comps.map(x=>`<option value="${esc(x)}">`).join("")}
 
 /* ---------- stats ---------- */
 function agg(list){const a={j:0,V:0,N:0,D:0,tdF:0,tdC:0,casF:0,casC:0};list.forEach(m=>{a.j++;a[result(m)]++;a.tdF+=+m.myTD||0;a.tdC+=+m.oppTD||0;a.casF+=+m.myCas||0;a.casC+=+m.oppCas||0});return a}
@@ -397,10 +488,11 @@ function renderIntel(){const box=$("#intel");const k=norm($("#fCoach").value);if
   const a=agg(list);const rc={};list.forEach(m=>{rc[m.oppRoster]=(rc[m.oppRoster]||0)+1});
   const rost=Object.entries(rc).sort((x,y)=>y[1]-x[1]).map(([r,n])=>`${esc(r)} ×${n}`).join(", ");
   const last=list[0];
-  box.hidden=false;box.innerHTML=`<div class="intel"><div class="ttl">Déjà affronté ${a.j} fois</div>
+  const naf=nafOf(last.oppCoach);
+  box.hidden=false;box.innerHTML=`<div class="intel"><div class="ttl">Déjà affronté ${a.j} fois${naf?` · NAF ${esc(naf)}`:""}</div>
   <div class="facts num"><span><b>${vnd(a)}</b> V-N-D</span><span><b>${a.tdF}–${a.tdC}</b> TD</span><span><b>${a.casF}–${a.casC}</b> sorties</span></div>
   <div class="hint">Rosters joués : ${rost}</div>
-  <div class="hint">Dernier match (${fdate(last.date)}) : ${esc(last.myRoster)} ${last.myTD}–${last.oppTD} ${esc(last.oppRoster)}</div></div>`}
+  <div class="hint">Dernier match (${fdate(last.date)}${last.competition?", "+esc(last.competition):""}) : ${esc(last.myRoster)} ${last.myTD}–${last.oppTD} ${esc(last.oppRoster)}</div></div>`}
 
 let group="coach", openCoach=null;
 function renderStats(){const list=allMatches();const a=agg(list);
@@ -409,17 +501,17 @@ function renderStats(){const list=allMatches();const a=agg(list);
   <div class="tile"><span class="k">V-N-D</span><span class="v num">${vnd(a)}</span><span class="s">victoires · nuls · défaites</span></div>
   <div class="tile"><span class="k">TD</span><span class="v num">${a.tdF}–${a.tdC}</span><span class="s">diff. ${a.tdF-a.tdC>=0?"+":""}${a.tdF-a.tdC}</span></div>
   <div class="tile"><span class="k">Sorties</span><span class="v num">${a.casF}–${a.casC}</span><span class="s">diff. ${a.casF-a.casC>=0?"+":""}${a.casF-a.casC}</span></div>`;
-  const keyFn={coach:m=>m.oppCoach,opp:m=>m.oppRoster,mine:m=>m.myRoster}[group];
+  const keyFn={coach:m=>m.oppCoach,opp:m=>m.oppRoster,mine:m=>m.myRoster,comp:m=>m.competition||"Sans compétition"}[group];
   const q=norm($("#statSearch").value);
   const groups=new Map();list.forEach(m=>{const label=keyFn(m)||"—";const k=norm(label);if(!groups.has(k))groups.set(k,{label,ms:[]});groups.get(k).ms.push(m)});
-  let rows=[...groups.values()].filter(g=>!q||norm(g.label).includes(q)).map(g=>({...g,a:agg(g.ms)})).sort((x,y)=>y.a.j-x.a.j||x.label.localeCompare(y.label,"fr"));
+  let rows=[...groups.values()].filter(g=>!q||norm(g.label).includes(q)||(group==="coach"&&nafOf(g.label).includes(q))).map(g=>({...g,a:agg(g.ms)})).sort((x,y)=>y.a.j-x.a.j||x.label.localeCompare(y.label,"fr"));
   if(!list.length){$("#statTable").innerHTML='<div class="empty">Aucun match enregistré. Lancez un match depuis l\'onglet Match : les stats apparaîtront ici.</div>';return}
   if(!rows.length){$("#statTable").innerHTML='<div class="empty">Aucun résultat pour ce filtre.</div>';return}
-  const head={coach:"Coach",opp:"Roster adverse",mine:"Mon roster"}[group];
+  const head={coach:"Coach",opp:"Roster adverse",mine:"Mon roster",comp:"Compétition"}[group];
   let h=`<div class="tbl-wrap"><table><thead><tr><th>${head}</th><th>J</th><th>V-N-D</th><th>TD</th><th>Sorties</th></tr></thead><tbody>`;
   rows.forEach(r=>{const k=norm(r.label);const isOpen=group==="coach"&&openCoach===k;
-    h+=`<tr class="${group==="coach"?"clk":""}" data-k="${esc(k)}"><td>${esc(r.label)}</td><td>${r.a.j}</td><td>${vnd(r.a)}</td><td>${r.a.tdF}–${r.a.tdC}</td><td>${r.a.casF}–${r.a.casC}</td></tr>`;
-    if(isOpen)r.ms.forEach(m=>{h+=`<tr class="sub"><td colspan="5">${fdate(m.date)} · ${result(m)} · ${esc(m.myRoster)} <b class="num">${m.myTD}–${m.oppTD}</b> ${esc(m.oppRoster)} · sorties ${m.myCas}–${m.oppCas}</td></tr>`})});
+    h+=`<tr class="${group==="coach"?"clk":""}" data-k="${esc(k)}"><td>${esc(r.label)}${group==="coach"&&nafOf(r.label)?` <span class="pm">NAF ${esc(nafOf(r.label))}</span>`:""}</td><td>${r.a.j}</td><td>${vnd(r.a)}</td><td>${r.a.tdF}–${r.a.tdC}</td><td>${r.a.casF}–${r.a.casC}</td></tr>`;
+    if(isOpen)r.ms.forEach(m=>{h+=`<tr class="sub"><td colspan="5">${fdate(m.date)}${m.competition?" · "+esc(m.competition):""} · ${result(m)} · ${esc(m.myRoster)} <b class="num">${m.myTD}–${m.oppTD}</b> ${esc(m.oppRoster)} · sorties ${m.myCas}–${m.oppCas}</td></tr>`})});
   h+="</tbody></table></div>";$("#statTable").innerHTML=h;
   $$("#statTable tr.clk").forEach(tr=>tr.onclick=()=>{openCoach=openCoach===tr.dataset.k?null:tr.dataset.k;renderStats()})}
 
@@ -428,21 +520,42 @@ function renderHist(){const list=allMatches();$("#histTitle").textContent=`Histo
   if(!list.length){$("#histList").innerHTML='<div class="empty">Vos matchs terminés s\'afficheront ici, du plus récent au plus ancien.</div>';return}
   $("#histList").innerHTML=list.map(m=>{const r=result(m);return `<div class="match"><span class="pill ${r}">${r}</span>
   <div class="line1">${esc(m.myRoster)}<span class="sc num">${m.myTD}–${m.oppTD}</span>${esc(m.oppCoach)}</div>
-  <div class="mact"><button class="icon-btn" data-ed="${esc(m.id)}" aria-label="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button class="icon-btn" data-del="${esc(m.id)}" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
-  <div class="line2">${fdate(m.date)} · ${esc(m.oppRoster)} · sorties ${m.myCas}–${m.oppCas}</div></div>`}).join("");
+  <div class="mact">${hasPhoto(m)?`<button class="thumb" data-ph="${esc(m.id)}" aria-label="Voir la photo">${CAM}</button>`:""}<button class="icon-btn" data-ed="${esc(m.id)}" aria-label="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button class="icon-btn" data-del="${esc(m.id)}" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
+  <div class="line2">${fdate(m.date)}${m.competition?" · "+esc(m.competition):""} · ${esc(m.oppRoster)} · sorties ${m.myCas}–${m.oppCas}</div></div>`}).join("");
   $$("[data-ed]").forEach(b=>b.onclick=()=>editMatch(matches[b.dataset.ed]));
-  $$("[data-del]").forEach(b=>b.onclick=()=>{const m=matches[b.dataset.del];confirmBox("Supprimer ce match ?",`${m.myRoster} ${m.myTD}–${m.oppTD} ${m.oppCoach} (${fdate(m.date)}). Cette suppression est définitive.`,"Supprimer",true,()=>{markDirty({id:m.id,deleted:true});toast("Match supprimé")})})}
+  $$("[data-ph]").forEach(b=>{const m=matches[b.dataset.ph];b.onclick=()=>viewPhoto(m);photoFor(m).then(src=>{if(src&&b.isConnected)b.innerHTML=`<img src="${src}" alt="">`})});
+  $$("[data-del]").forEach(b=>b.onclick=()=>{const m=matches[b.dataset.del];confirmBox("Supprimer ce match ?",`${m.myRoster} ${m.myTD}–${m.oppTD} ${m.oppCoach} (${fdate(m.date)}). Cette suppression est définitive.`,"Supprimer",true,()=>{photoDel(m.id);photoPending.delete(m.id);savePhotoPending();forgetPhoto(m.id);markDirty({id:m.id,deleted:true});toast("Match supprimé")})})}
 
-function matchForm(m){return `<div class="field"><label for="eMyRoster">Mon roster</label><input id="eMyRoster" list="dlRosters" value="${esc(m.myRoster)}"></div>
+function matchForm(m){return `<div class="field"><label for="eDate">Date et heure</label><input id="eDate" type="datetime-local" value="${toLocalInput(m.date)}"></div>
+  <div class="field"><label for="eComp">Compétition</label><input id="eComp" list="dlComps" value="${esc(m.competition||"")}" placeholder="Vide si match amical"></div>
+  <div class="field"><label for="eMyRoster">Mon roster</label><input id="eMyRoster" list="dlRosters" value="${esc(m.myRoster)}"></div>
   <div class="row2"><div class="field"><label for="eCoach">Coach adverse</label><input id="eCoach" list="dlCoaches" value="${esc(m.oppCoach)}"></div>
-  <div class="field"><label for="eOppRoster">Son roster</label><input id="eOppRoster" list="dlRosters" value="${esc(m.oppRoster)}"></div></div>
+  <div class="field"><label for="eNaf">N° NAF</label><input id="eNaf" inputmode="numeric" value="${esc(m.oppNaf||"")}" placeholder="Facultatif"></div></div>
+  <div class="field">
+<label for="eOppRoster">Son roster</label><input id="eOppRoster" list="dlRosters" value="${esc(m.oppRoster)}"></div>
   <div class="grid4"><div class="field"><label for="eMyTD">Mes TD</label><input id="eMyTD" type="number" inputmode="numeric" min="0" value="${m.myTD}"></div>
   <div class="field"><label for="eOppTD">TD adverses</label><input id="eOppTD" type="number" inputmode="numeric" min="0" value="${m.oppTD}"></div>
   <div class="field"><label for="eMyCas">Mes sorties</label><input id="eMyCas" type="number" inputmode="numeric" min="0" value="${m.myCas}"></div>
-  <div class="field"><label for="eOppCas">Sorties adverses</label><input id="eOppCas" type="number" inputmode="numeric" min="0" value="${m.oppCas}"></div></div>`}
+  <div class="field"><label for="eOppCas">Sorties adverses</label><input id="eOppCas" type="number" inputmode="numeric" min="0" value="${m.oppCas}"></div></div>${photoBlock()}`}
 function readForm(d,m){const v=id=>d.querySelector(id).value;const n=id=>Math.max(0,parseInt(v(id),10)||0);
-  return Object.assign({},m,{myRoster:v("#eMyRoster").trim()||m.myRoster,oppCoach:v("#eCoach").trim()||m.oppCoach,oppRoster:v("#eOppRoster").trim()||m.oppRoster,myTD:n("#eMyTD"),oppTD:n("#eOppTD"),myCas:n("#eMyCas"),oppCas:n("#eOppCas")})}
-function editMatch(m){modal(`<h3>Modifier le match du ${fdate(m.date)}</h3>${matchForm(m)}<div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{d.querySelector("[data-x]").onclick=close;d.querySelector("[data-ok]").onclick=()=>{markDirty(readForm(d,m));close();toast("Match modifié")}})}
+  return Object.assign({},m,{date:fromLocalInput(v("#eDate"),m.date),competition:v("#eComp").trim(),oppNaf:cleanNaf(v("#eNaf")),myRoster:v("#eMyRoster").trim()||m.myRoster,oppCoach:v("#eCoach").trim()||m.oppCoach,oppRoster:v("#eOppRoster").trim()||m.oppRoster,myTD:n("#eMyTD"),oppTD:n("#eOppTD"),myCas:n("#eMyCas"),oppCas:n("#eOppCas")})}
+function bindFormHelpers(d){const c=d.querySelector("#eCoach"),f=d.querySelector("#eNaf");
+  c.addEventListener("change",()=>{if(!f.value)f.value=nafOf(c.value)});
+  f.addEventListener("change",()=>{const k=coachByNaf(f.value);if(k&&!c.value.trim())c.value=k})}
+function saveWithNaf(fin,msg){markDirty(fin);toast(msg);
+  if(!fin.oppNaf)return;const k=norm(fin.oppCoach);
+  const others=allMatches().filter(x=>x.id!==fin.id&&norm(x.oppCoach)===k&&String(x.oppNaf||"")!==fin.oppNaf);
+  if(others.length)confirmBox("Appliquer ce N° NAF partout ?",`${others.length} autre(s) match(s) contre ${fin.oppCoach} ont un N° NAF différent ou vide. Les mettre à ${fin.oppNaf} ?`,"Appliquer",false,()=>{others.forEach(x=>markDirty(Object.assign({},x,{oppNaf:fin.oppNaf})));toast("N° NAF mis à jour")})}
+function editMatch(m){modal(`<h3>Modifier le match du ${fdate(m.date)}</h3>${matchForm(m)}<div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{bindFormHelpers(d);const ph=bindPhoto(d,m);d.querySelector("[data-x]").onclick=close;d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);close();await applyPhoto(fin,ph);saveWithNaf(fin,"Match modifié")}})}
+function pastMatch(){const m={id:uid(),date:new Date().toISOString(),competition:settings.lastComp||"",myRoster:settings.lastMyRoster||"",oppCoach:"",oppNaf:"",oppRoster:"",myTD:0,oppTD:0,myCas:0,oppCas:0};
+  modal(`<h3>Saisir un match passé</h3><p>Pour un match joué sans le chrono.</p>${matchForm(m)}<div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{bindFormHelpers(d);const ph=bindPhoto(d,m);
+    d.querySelector("#eDate").value="";
+    d.querySelector("[data-x]").onclick=close;
+    d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);
+      if(!d.querySelector("#eDate").value){toast("Indiquez la date du match");return}
+      if(!fin.oppCoach||!fin.myRoster||!fin.oppRoster){toast("Renseignez les deux rosters et le coach adverse");return}
+      close();await applyPhoto(fin,ph);saveWithNaf(fin,`Match ajouté : ${result(fin)==="V"?"victoire":result(fin)==="D"?"défaite":"nul"} ${fin.myTD}–${fin.oppTD}`)}})}
+$("#bPast").onclick=pastMatch;
 
 /* ---------- live match ---------- */
 const other=s=>s==="me"?"opp":"me";
@@ -453,20 +566,21 @@ function commit(){if(live&&live.running&&live.active){const now=Date.now();live.
 
 $("#newMatch").addEventListener("submit",e=>{e.preventDefault();
   const minutes=Math.max(1,parseInt($("#fMinutes").value,10)||settings.minutes);
-  live={id:uid(),date:new Date().toISOString(),myRoster:$("#fMyRoster").value.trim(),oppCoach:$("#fCoach").value.trim(),oppRoster:$("#fOppRoster").value.trim(),minutes,
+  live={id:uid(),date:new Date().toISOString(),competition:$("#fComp").value.trim(),myRoster:$("#fMyRoster").value.trim(),oppCoach:$("#fCoach").value.trim(),oppNaf:cleanNaf($("#fNaf").value),oppRoster:$("#fOppRoster").value.trim(),minutes,
     remaining:{me:minutes*60000,opp:minutes*60000},active:null,running:false,paused:false,since:0,started:false,td:{me:0,opp:0},cas:{me:0,opp:0},alerted:{me:false,opp:false}};
-  settings.lastMyRoster=live.myRoster;saveSettings();saveLive();
-  $("#fCoach").value="";$("#fOppRoster").value="";renderIntel();
+  settings.lastMyRoster=live.myRoster;settings.lastComp=live.competition;saveSettings();saveLive();
+  $("#fCoach").value="";$("#fNaf").value="";$("#fOppRoster").value="";renderIntel();
   forceClock=true;renderAll();goFull(false);toast("Match lancé")});
 
-$("#fCoach").addEventListener("input",()=>{renderIntel();const k=norm($("#fCoach").value);const last=allMatches().find(m=>norm(m.oppCoach)===k);if(last&&!$("#fOppRoster").value)$("#fOppRoster").value=last.oppRoster});
+$("#fCoach").addEventListener("input",()=>{renderIntel();const k=norm($("#fCoach").value);const last=allMatches().find(m=>norm(m.oppCoach)===k);if(last&&!$("#fOppRoster").value)$("#fOppRoster").value=last.oppRoster;if(last&&!$("#fNaf").value)$("#fNaf").value=nafOf(last.oppCoach)});
+$("#fNaf").addEventListener("input",()=>{const k=coachByNaf($("#fNaf").value);if(k&&!$("#fCoach").value.trim()){$("#fCoach").value=k;$("#fCoach").dispatchEvent(new Event("input"))}});
 
 function renderLiveCard(){const box=$("#liveBox");if(!live){box.hidden=true;$("#newMatch").hidden=false;return}
   box.hidden=false;$("#newMatch").hidden=true;
   box.innerHTML=`<div class="live"><div class="sb">
    <div class="tm"><span class="n">${esc(settings.coachName||"Moi")}</span><span class="ro">${esc(live.myRoster)}</span><span class="t num" data-lt="me"></span></div>
    <div class="score num">${live.td.me}–${live.td.opp}</div>
-   <div class="tm r"><span class="n">${esc(live.oppCoach)}</span><span class="ro">${esc(live.oppRoster)}</span><span class="t num" data-lt="opp"></span></div></div>
+   <div class="tm r"><span class="n">${esc(live.oppCoach)}${live.oppNaf?` <span class="pm">NAF ${esc(live.oppNaf)}</span>`:""}</span><span class="ro">${esc(live.oppRoster)}</span><span class="t num" data-lt="opp"></span></div></div>
    <div class="acts"><div class="rotate"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="11" rx="2"/><path d="M8 3h8"/></svg>Tournez le téléphone en paysage pour le chrono</div>
    <button class="btn small" id="lShow">Afficher le chrono</button><button class="btn small" id="lEnd">Terminer</button><button class="btn small danger" id="lQuit">Abandonner</button></div></div>`;
   $("#lShow").onclick=()=>{forceClock=true;renderClockVisibility();goFull(false)};
@@ -474,10 +588,12 @@ function renderLiveCard(){const box=$("#liveBox");if(!live){box.hidden=true;$("#
   $("#lQuit").onclick=()=>confirmBox("Abandonner ce match ?","Le chrono et le score en cours seront effacés sans être enregistrés.","Abandonner",true,()=>{live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll()})}
 
 function endMatch(){if(!live)return;commit();if(live.running){live.running=false;live.paused=true}saveLive();
-  const m={id:live.id,date:live.date,myRoster:live.myRoster,oppCoach:live.oppCoach,oppRoster:live.oppRoster,myTD:live.td.me,oppTD:live.td.opp,myCas:live.cas.me,oppCas:live.cas.opp,minutes:live.minutes,usedMe:live.minutes*60000-live.remaining.me,usedOpp:live.minutes*60000-live.remaining.opp};
-  modal(`<h3>Fin du match</h3><p>Vérifiez le score avant d'enregistrer.</p>${matchForm(m)}<div class="acts"><button class="btn small" data-x>Reprendre le match</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{
+  const m={id:live.id,date:live.date,competition:live.competition||"",oppNaf:live.oppNaf||"",myRoster:live.myRoster,oppCoach:live.oppCoach,oppRoster:live.oppRoster,myTD:live.td.me,oppTD:live.td.opp,myCas:live.cas.me,oppCas:live.cas.opp,minutes:live.minutes,usedMe:live.minutes*60000-live.remaining.me,usedOpp:live.minutes*60000-live.remaining.opp};
+  modal(`<h3>Fin du match</h3><p>Vérifiez le score avant d'enregistrer.</p>${matchForm(m)}<div class="acts"><button class="btn small danger" data-ab>Abandonner</button><button class="btn small" data-x>Reprendre le match</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{
     d.querySelector("[data-x]").onclick=close;
-    d.querySelector("[data-ok]").onclick=()=>{const fin=readForm(d,m);live=null;saveLive();releaseWake();exitFull();forceClock=false;close();markDirty(fin);toast(`Match enregistré : ${result(fin)==="V"?"victoire":result(fin)==="D"?"défaite":"nul"} ${fin.myTD}–${fin.oppTD}`)}})}
+    d.querySelector("[data-ab]").onclick=()=>{close();confirmBox("Abandonner ce match ?","Il ne sera pas enregistré : le chrono et le score en cours seront effacés.","Abandonner",true,()=>{live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll();toast("Match abandonné")})};
+    bindFormHelpers(d);const ph=bindPhoto(d,m);
+    d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);live=null;saveLive();releaseWake();exitFull();forceClock=false;close();await applyPhoto(fin,ph);saveWithNaf(fin,`Match enregistré : ${result(fin)==="V"?"victoire":result(fin)==="D"?"défaite":"nul"} ${fin.myTD}–${fin.oppTD}`)}})}
 
 /* ---------- clock view ---------- */
 let forceClock=false;
@@ -490,7 +606,7 @@ let lastSwitch=0;
 $$(".half").forEach(h=>{const side=h.dataset.side;
   h.addEventListener("click",e=>{if(e.target.closest("button")||!live)return;const now=Date.now();if(now-lastSwitch<700)return;
     if(!isFull())goFull(false);
-    if(live.paused){toast("Chrono en pause : touchez Reprendre");return}
+    if(live.paused){live.active=side;live.paused=false;live.running=true;live.since=now;lastSwitch=now;requestWake();saveLive();renderClock();return}
     if(live.running){if(live.active!==side)return;commit();live.active=other(side);lastSwitch=now}
     else{live.active=side;live.running=true;live.since=now;live.started=true;lastSwitch=now;requestWake();unlockAudio()}
     saveLive();renderClock()});
@@ -498,14 +614,13 @@ $$(".half").forEach(h=>{const side=h.dataset.side;
     if(d>0)toast(`${k==="td"?"Touchdown":"Sortie"} : ${sideName(side)}`)}))});
 
 $("#cPause").onclick=()=>{if(!live)return;if(live.running){commit();live.running=false;live.paused=true}else if(live.paused){live.running=true;live.paused=false;live.since=Date.now()}else return;saveLive();renderClock()};
-$("#cStop").onclick=()=>{if(!live)return;commit();live.running=false;live.paused=false;live.active=null;saveLive();renderClock()};
 $("#cReset").onclick=()=>{if(!live)return;confirmBox("Remettre les chronos à zéro ?",`Les deux joueurs repartent à ${live.minutes} min. Le score et les sorties sont conservés.`,"Remettre à zéro",true,()=>{live.remaining={me:live.minutes*60000,opp:live.minutes*60000};live.running=false;live.paused=false;live.active=null;live.alerted={me:false,opp:false};saveLive();renderClock()})};
 $("#cSwap").onclick=()=>{settings.swap=!settings.swap;saveSettings();renderClock()};
 $("#cEnd").onclick=endMatch;
 $("#cClose").onclick=()=>{forceClock=false;$("#clock").hidden=true;exitFull();renderLiveCard();if(landscape.matches&&coarse.matches)toast("Tournez en portrait pour le menu")};
 
 function statusText(side,r){if(!live.running&&!live.paused&&!live.active)return live.started?"Arrêté · touchez pour démarrer votre tour":"Touchez ici pour démarrer votre tour";
-  if(live.paused)return "Pause";
+  if(live.paused)return live.active===side?"Pause · touchez pour reprendre":"Pause · touchez pour jouer";
   if(live.active===side)return (r<0?"Temps écoulé · ":"")+"Votre tour · touchez pour finir";
   return r<0?"Temps écoulé":"En attente"}
 function renderClock(){if(!live)return;const c=$("#clock");c.classList.toggle("swap",!!settings.swap);
@@ -585,7 +700,7 @@ $("#statSearch").addEventListener("input",renderStats);
 function renderAll(){fillLists();renderLiveCard();renderStats();renderHist();renderClockVisibility();tick()}
 
 /* ---------- boot ---------- */
-$("#fMinutes").value=settings.minutes;$("#fMyRoster").value=settings.lastMyRoster||"";
+$("#fMinutes").value=settings.minutes;$("#fMyRoster").value=settings.lastMyRoster||"";$("#fComp").value=settings.lastComp||"";
 renderSettings();setSync();renderAll();
 const h=(location.hash||"").slice(1);if(h==="stats"||h==="hist")showTab(h);else if(h==="options")showTab("set");
 sync();
