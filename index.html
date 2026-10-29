@@ -377,7 +377,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <h2>Direct</h2>
       <label class="tog"><span>Diffuser mes matchs en direct</span><span class="switch"><input type="checkbox" id="sBroadcast"><i></i></span></label>
       <p class="hint">Les matchs que vous lancez sont visibles par tous dans l'onglet Direct, avec votre nom de coach et celui de votre adversaire. Ils disparaissent 3 heures après la fin, avec leur tchat.</p>
-      <div class="field"><span class="flabel">Identifiant de cet appareil</span><span class="uidbox" id="sUid"></span><span class="hint" id="sAdmin" hidden>✓ Administrateur du direct</span></div>
+      <div class="field"><span class="flabel">Identifiant de cet appareil</span><span class="uidbox" id="sUid"></span><span class="hint" id="sAdmin" hidden>✓ Administrateur du direct</span><button class="btn small" type="button" id="bAdmin" hidden style="align-self:flex-start">Accès administrateur</button></div>
       <p class="hint" id="sDiscordState"></p>
       <div class="field" id="sDiscordBox" hidden><label for="sDiscord">Webhook Discord (administrateur)</label><input id="sDiscord" type="url" inputmode="url" placeholder="https://discord.com/api/webhooks/…" autocomplete="off"><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn small" type="button" id="bDiscordSave">Enregistrer</button><button class="btn small" type="button" id="bDiscordTest">Envoyer un message test</button></div></div>
     </div>
@@ -1043,7 +1043,7 @@ function updateTabBadge(){const b=document.querySelector('.tabs button[data-tab=
   else{if(d)d.remove();b.classList.remove("lit");b.removeAttribute("aria-label")}}
 setInterval(updateTabBadge,30000);
 function renderLiveSettings(){const s=$("#sBroadcast");if(!s)return;s.checked=!!settings.broadcast;$("#fEtoRow").hidden=!settings.broadcast;
-  $("#sUid").textContent=fuid||"(connexion au premier usage du direct)";$("#sAdmin").hidden=!isAdmin;
+  $("#sUid").textContent=fuid||"(connexion au premier usage du direct)";$("#sAdmin").hidden=!isAdmin;$("#bAdmin").hidden=isAdmin||!fuid;
   $("#sDiscordState").textContent=discordHook?"Annonces Discord actives : début et résultat de chaque match diffusé.":"Annonces Discord : non configurées.";
   $("#sDiscordBox").hidden=!isAdmin;const inp=$("#sDiscord");if(inp&&document.activeElement!==inp)inp.value=discordHook}
 
@@ -1056,6 +1056,12 @@ $$(".seg button").forEach(b=>b.onclick=()=>{group=b.dataset.g;openCoach=null;$$(
 $("#statSearch").addEventListener("input",renderStats);
 $("#dSearch").addEventListener("input",renderDirect);
 $("#sBroadcast").addEventListener("change",e=>{settings.broadcast=e.target.checked;saveSettings();renderLiveSettings();if(e.target.checked)fb().catch(()=>{});toast(e.target.checked?"Vos prochains matchs seront diffusés en direct":"Diffusion désactivée pour les prochains matchs")});
+$("#bAdmin").onclick=()=>modal(`<h3>Accès administrateur</h3><p>Saisissez le code administrateur du direct. Il est réservé au gestionnaire de l'appli.</p><div class="field"><label for="admCode">Code</label><input id="admCode" type="password" autocomplete="off" maxlength="80"></div><div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small primary" data-ok>Valider</button></div>`,(d,close)=>{
+  d.querySelector("[data-x]").onclick=close;
+  const go=async()=>{const code=d.querySelector("#admCode").value.trim();if(!code){toast("Saisissez le code");return}
+    try{const db=await fb();await db.ref().update({["adminCodes/"+fuid]:code,["admins/"+fuid]:true});isAdmin=true;close();renderLiveSettings();if(dOpen)renderDetail();toast("Vous êtes administrateur du direct")}
+    catch(e){toast(fbOnline?"Code incorrect":"Hors ligne : réessayez avec du réseau")}};
+  d.querySelector("[data-ok]").onclick=go;d.querySelector("#admCode").addEventListener("keydown",e=>{if(e.key==="Enter")go()})});
 $("#bDiscordSave").onclick=async()=>{const v=$("#sDiscord").value.trim();
   if(v&&!/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(v)){toast("Adresse invalide : elle doit commencer par https://discord.com/api/webhooks/");return}
   try{await fb();await fdb.ref("config/discordWebhook").set(v);toast(v?"Webhook Discord enregistré":"Annonces Discord désactivées")}catch(e){toast("Enregistrement refusé : vérifiez que vous êtes administrateur et que les règles sont à jour")}};
