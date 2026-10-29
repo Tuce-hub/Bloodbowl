@@ -203,6 +203,10 @@ label.btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .tabs .in{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:720px}
 .tabs button{border:0;background:transparent;padding:10px 2px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--f-label);font-weight:600;font-size:13px;letter-spacing:.03em;min-width:0;text-transform:uppercase;color:var(--muted)}
 .tabs button svg{width:22px;height:22px}
+.tabs button{position:relative}
+.tbadge{position:absolute;top:5px;left:calc(50% + 5px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--danger);color:#fff;font:700 11px/18px var(--f-label);letter-spacing:0;text-align:center;box-shadow:0 0 0 2px var(--surface);animation:pulse 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.tbadge{animation:none}}
+.tabs button.lit{color:var(--fg)}
 .tabs button[aria-current="page"]{color:var(--gold)}
 
 /* toggle */
@@ -316,6 +320,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
         <label for="fMinutes">Temps par joueur (minutes)</label>
         <input id="fMinutes" type="number" inputmode="numeric" min="1" max="600" step="1" required>
       </div>
+      <label class="tog" id="fEtoRow"><span>Annonce ETO <small class="hint" style="display:block">Annonce le match et son résultat sur le Discord du club</small></span><span class="switch"><input type="checkbox" id="fEto"><i></i></span></label>
       <button class="btn primary" type="submit">Lancer le match</button>
       <p class="hint">Une fois lancé, tournez le téléphone en paysage et posez-le entre les deux joueurs.</p>
     </form>
@@ -373,6 +378,8 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <label class="tog"><span>Diffuser mes matchs en direct</span><span class="switch"><input type="checkbox" id="sBroadcast"><i></i></span></label>
       <p class="hint">Les matchs que vous lancez sont visibles par tous dans l'onglet Direct, avec votre nom de coach et celui de votre adversaire. Ils disparaissent 3 heures après la fin, avec leur tchat.</p>
       <div class="field"><span class="flabel">Identifiant de cet appareil</span><span class="uidbox" id="sUid"></span><span class="hint" id="sAdmin" hidden>✓ Administrateur du direct</span></div>
+      <p class="hint" id="sDiscordState"></p>
+      <div class="field" id="sDiscordBox" hidden><label for="sDiscord">Webhook Discord (administrateur)</label><input id="sDiscord" type="url" inputmode="url" placeholder="https://discord.com/api/webhooks/…" autocomplete="off"><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn small" type="button" id="bDiscordSave">Enregistrer</button><button class="btn small" type="button" id="bDiscordTest">Envoyer un message test</button></div></div>
     </div>
     <div class="panel">
       <h2>Synchronisation Google Sheets</h2>
@@ -737,7 +744,7 @@ $("#newMatch").addEventListener("submit",e=>{e.preventDefault();
   const minutes=Math.max(1,parseInt($("#fMinutes").value,10)||settings.minutes);
   live={id:uid(),date:new Date().toISOString(),competition:$("#fComp").value.trim(),myRoster:$("#fMyRoster").value.trim(),oppCoach:$("#fCoach").value.trim(),oppNaf:cleanNaf($("#fNaf").value),oppRoster:$("#fOppRoster").value.trim(),minutes,
     remaining:{me:minutes*60000,opp:minutes*60000},active:null,running:false,paused:false,since:0,started:false,td:{me:0,opp:0},cas:{me:0,opp:0},alerted:{me:false,opp:false}};
-  live.broadcast=!!settings.broadcast;
+  live.broadcast=!!settings.broadcast;live.eto=live.broadcast&&$("#fEto").checked;settings.lastEto=$("#fEto").checked;
   settings.lastMyRoster=live.myRoster;settings.lastComp=live.competition;saveSettings();saveLive();
   if(live.broadcast){watchOwnChat();pushLive("new",null,"Match en préparation")}
   $("#fMyRoster").value="";$("#fCoach").value="";$("#fNaf").value="";$("#fOppRoster").value="";renderIntel();
@@ -755,9 +762,10 @@ function renderLiveCard(){const box=$("#liveBox");if(!live){box.hidden=true;$("#
    <div class="acts"><div class="rotate"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="11" rx="2"/><path d="M8 3h8"/></svg>Tournez le téléphone en paysage pour le chrono</div>
    <button class="btn small" id="lShow">Afficher le chrono</button><button class="btn small" id="lEnd">Terminer</button><button class="btn small danger" id="lQuit">Abandonner</button></div></div>`;
   box.querySelector(".live").insertAdjacentHTML("beforeend",live.broadcast
-    ?`<div class="lbc"><span class="badge live"><i class="pulse"></i>En direct</span><span class="hint" style="flex-basis:auto">${fbOnline?"Visible dans l'onglet Direct":"Hors ligne : envoi au retour du réseau"}</span><button class="btn small" id="lChat">Tchat du direct</button><button class="btn small" id="lShare">Partager</button><button class="btn small danger" id="lStop">Arrêter la diffusion</button></div>`
+    ?`<div class="lbc"><span class="badge live"><i class="pulse"></i>En direct</span><span class="hint" style="flex-basis:auto">${fbOnline?"Visible dans l'onglet Direct":"Hors ligne : envoi au retour du réseau"}</span><button class="btn small" id="lChat">Tchat du direct</button><button class="btn small" id="lShare">Partager</button><label class="tog" style="flex-basis:100%"><span>Annonce ETO${live.dStart?" <small class=\"hint\">(début déjà annoncé)</small>":""}</span><span class="switch"><input type="checkbox" id="lEto" ${live.eto?"checked":""}><i></i></span></label><button class="btn small danger" id="lStop">Arrêter la diffusion</button></div>`
     :`<div class="lbc"><button class="btn small" id="lStart">Diffuser ce match en direct</button></div>`);
   if(live.broadcast){$("#lChat").onclick=()=>{markChatSeen(live.id);openDetail(live.id)};$("#lShare").onclick=()=>shareLive({id:live.id,coachA:settings.coachName||live.myRoster,coachB:live.oppCoach,comp:live.competition});
+    $("#lEto").onchange=e=>{live.eto=e.target.checked;saveLive();if(live.eto&&live.started)announceStart(live);toast(live.eto?(live.dStart?"Annonce ETO activée":"Annonce ETO activée : le début sera annoncé au coup d'envoi"):"Annonce ETO désactivée : pas de résultat sur Discord");renderLiveCard()};
     $("#lStop").onclick=()=>confirmBox("Arrêter la diffusion ?","Le direct et son tchat seront supprimés pour tout le monde. Le chrono continue normalement.","Arrêter",true,stopBroadcast);renderUnread()}
   else $("#lStart").onclick=startBroadcast;
   $("#lShow").onclick=()=>{forceClock=true;renderClockVisibility();goFull(false)};
@@ -887,6 +895,7 @@ function fb(){if(fbP)return fbP;
     fdb.ref(".info/serverTimeOffset").on("value",s=>{srvOff=Number(s.val())||0});
     fdb.ref(".info/connected").on("value",s=>{fbOnline=!!s.val();renderDirectStatus();renderLiveCard();if(fbOnline&&live&&live.broadcast)pushLive()});
     fdb.ref("admins/"+fuid).once("value").then(s=>{isAdmin=s.val()===true;renderLiveSettings();if(dOpen)renderDetail()}).catch(()=>{});
+    fdb.ref("config/discordWebhook").on("value",s=>{discordHook=String(s.val()||"");renderLiveSettings();flushDiscord()},()=>{});
     renderLiveSettings();
     return fdb})();
   fbP.catch(e=>{fbP=null;fbErr=navigator.onLine?"Connexion au direct impossible. Réessayez plus tard.":"Pas de réseau : le direct reviendra avec la connexion.";renderDirectStatus()});
@@ -905,14 +914,31 @@ async function writeLive(l,k,side,txt,over){
     if(k){const key=db.ref("events/"+l.id).push().key;const ev={k,t:TS()};if(side)ev.s=sideAB(side);if(txt)ev.txt=String(txt).slice(0,120);up["events/"+l.id+"/"+key]=ev}
     await db.ref().update(up)}catch(e){/* file d'attente du SDK ou hors ligne : renvoyé à la reconnexion */}}
 function pushLive(k,side,txt){if(live&&live.broadcast)writeLive(JSON.parse(JSON.stringify(live)),k,side,txt)}
-function liveEvent(k,side){if(!live||!live.broadcast)return;const n=nameOf(live,side);
+/* ---------- annonces Discord (début + résultat) ---------- */
+let discordHook="";
+const dEsc=t=>String(t||"").replace(/([\\*_~`|>#@\[\]()])/g,"\\$1");
+const liveUrl=id=>location.origin+location.pathname+"#d-"+id;
+function postDiscord(content){const q=LS.get("discordQ",[]);q.push({content,at:Date.now()});LS.set("discordQ",q.slice(-10));flushDiscord()}
+let flushing=false;
+async function flushDiscord(){if(flushing)return;let q=LS.get("discordQ",[]).filter(x=>Date.now()-x.at<2*3600e3);
+  if(!q.length||!discordHook||!navigator.onLine){LS.set("discordQ",q);return}
+  flushing=true;const rest=[];
+  for(const x of q){try{const fd=new FormData();fd.append("payload_json",JSON.stringify({content:x.content.slice(0,1900),username:"Dugout",allowed_mentions:{parse:[]}}));
+    await fetch(discordHook,{method:"POST",body:fd,mode:"no-cors"})}catch(e){rest.push(x)}}
+  LS.set("discordQ",rest);flushing=false}
+addEventListener("online",()=>{flushDiscord();openDirect()});
+function announceStart(l){if(!l||!l.broadcast||!l.eto||l.dStart)return;l.dStart=true;saveLive();
+  postDiscord(`🔴 **Match en direct** — **${dEsc(nameOf(l,"me"))}** (${dEsc(l.myRoster)}) vs **${dEsc(nameOf(l,"opp"))}** (${dEsc(l.oppRoster)})${l.competition?" · "+dEsc(l.competition):""}\nÀ suivre ici : ${liveUrl(l.id)}`)}
+function announceEnd(l,fin){if(!l||!l.broadcast||!l.eto)return;
+  postDiscord(`🏁 **Résultat** — **${dEsc(nameOf(l,"me"))}** (${dEsc(fin.myRoster||l.myRoster)}) **${fin.myTD} – ${fin.oppTD}** **${dEsc(fin.oppCoach||nameOf(l,"opp"))}** (${dEsc(fin.oppRoster||l.oppRoster)})${(fin.competition||l.competition)?" · "+dEsc(fin.competition||l.competition):""}\nSorties : ${fin.myCas} – ${fin.oppCas}`)}
+function liveEvent(k,side){if(!live||!live.broadcast)return;const n=nameOf(live,side);if(k==="start")announceStart(live);
   const T={start:`Coup d'envoi · ${n} joue`,turn:`Tour de ${n}`,resume:`Reprise · ${n} joue`,pause:"Pause",reset:"Chronos remis à zéro",
     td:`Touchdown de ${n}`,cas:`Sortie infligée par ${n}`,tdfix:`Correction : TD retiré à ${n}`,casfix:`Correction : sortie retirée à ${n}`,over:`Temps écoulé pour ${n}`};
   pushLive(k.endsWith("fix")?"fix":k,side,T[k]||"")}
-function liveEnd(l,fin){if(!l||!l.broadcast)return;l=JSON.parse(JSON.stringify(l));l.running=false;l.active=null;
+function liveEnd(l,fin){if(!l||!l.broadcast)return;announceEnd(l,fin);l=JSON.parse(JSON.stringify(l));l.running=false;l.active=null;
   writeLive(l,"end",null,`Fin du match : ${nameOf(l,"me")} ${fin.myTD}–${fin.oppTD} ${nameOf(l,"opp")}`,{tdA:fin.myTD,tdB:fin.oppTD,casA:fin.myCas,casB:fin.oppCas,running:false,active:"",paused:false,endedAt:TS()})}
 async function liveAbort(id){try{const db=await fb();await db.ref().update({["lives/"+id]:null,["events/"+id]:null,["chats/"+id]:null})}catch(e){}}
-function startBroadcast(){if(!live)return;live.broadcast=true;saveLive();watchOwnChat();pushLive("new",null,"Match en préparation");renderLiveCard()}
+function startBroadcast(){if(!live)return;live.broadcast=true;saveLive();watchOwnChat();pushLive("new",null,"Match en préparation");if(live.started)announceStart(live);renderLiveCard()}
 function stopBroadcast(){if(!live)return;const id=live.id;live.broadcast=false;saveLive();unwatchOwnChat();liveAbort(id);renderLiveCard()}
 
 /* tchat du joueur : compteur de non-lus */
@@ -933,7 +959,7 @@ function expired(m){const now=srvNow();return (m.endedAt&&now-m.endedAt>H3)||(no
 function liveRem(m,ab){let r=Number(m["rem"+ab])||0;if(m.running&&m.active===ab&&!m.endedAt)r-=srvNow()-(Number(m.updatedAt)||srvNow());return r}
 async function openDirect(){renderDirectStatus();try{const db=await fb();if(livesRef)return;
   livesRef=db.ref("lives").orderByChild("updatedAt").startAt(srvNow()-H6);
-  livesRef.on("value",s=>{livesData=s.val()||{};cleanup();renderDirect();if(dOpen)renderDetail()},()=>{fbErr="Lecture du direct refusée.";renderDirectStatus()});
+  livesRef.on("value",s=>{livesData=s.val()||{};cleanup();renderDirect();updateTabBadge();if(dOpen)renderDetail()},()=>{fbErr="Lecture du direct refusée.";renderDirectStatus()});
   sweepOld()}catch(e){renderDirectStatus()}}
 // Directs abandonnés depuis plus de 6 h : hors de la liste chargée, on les balaie à part.
 async function sweepOld(){try{const s=await fdb.ref("lives").orderByChild("updatedAt").endAt(srvNow()-H6).limitToFirst(25).once("value");
@@ -961,7 +987,7 @@ function renderDirectStatus(){const el=$("#dStat");if(!el)return;
 function renderDirect(){if($("#v-direct").hidden)return;renderDirectStatus();const {list,comps}=liveList();
   $("#dComps").innerHTML=comps.length?[`<button type="button" class="chip" aria-pressed="${!dComp}" data-c="">Toutes</button>`,...comps.map(c=>`<button type="button" class="chip" aria-pressed="${dComp===c}" data-c="${esc(c)}">${esc(c)}</button>`)].join(""):"";
   $$("#dComps .chip").forEach(b=>b.onclick=()=>{dComp=b.dataset.c;renderDirect()});
-  $("#dCards").innerHTML=list.length?list.map(m=>`<button type="button" class="dcard" data-mid="${esc(m.id)}"><div class="dtop">${badge(m)}<span class="dcomp">${esc(m.comp||"Match amical")}</span></div>${sideRow(m,"A")}${sideRow(m,"B")}</button>`).join("")
+  $("#dCards").innerHTML=list.length?list.map(m=>`<button type="button" class="dcard" data-mid="${esc(m.id)}"><div class="dtop">${badge(m)}<span class="dcomp">${esc(m.comp||"Match amical")}</span></div>${sideRow(m,"A",true)}${sideRow(m,"B",true)}</button>`).join("")
     :`<div class="empty">${fbErr?esc(fbErr):"Aucun match en direct pour le moment. Pour diffuser les vôtres, activez « Diffuser mes matchs en direct » dans Réglages."}</div>`;
   $$("#dCards .dcard").forEach(b=>b.onclick=()=>openDetail(b.dataset.mid))}
 async function openDetail(id){dOpen=id;try{history.replaceState(null,"","#d-"+id)}catch(e){}showTab("direct");$("#dList").hidden=true;$("#dDetail").hidden=false;$("#dDetail").innerHTML='<div class="empty">Chargement du match…</div>';
@@ -1011,8 +1037,15 @@ function directTick(){$$("[data-dt]").forEach(el=>{const [id,ab]=el.dataset.dt.s
 setInterval(directTick,500);
 
 /* réglages du direct */
-function renderLiveSettings(){const s=$("#sBroadcast");if(!s)return;s.checked=!!settings.broadcast;
-  $("#sUid").textContent=fuid||"(connexion au premier usage du direct)";$("#sAdmin").hidden=!isAdmin}
+function liveCount(){return Object.values(livesData).filter(m=>m&&m.coachA!=null&&!expired(m)&&["live","pause","wait"].includes(liveStatus(m))).length}
+function updateTabBadge(){const b=document.querySelector('.tabs button[data-tab="direct"]');if(!b)return;const n=liveCount();let d=b.querySelector(".tbadge");
+  if(n){if(!d){d=document.createElement("i");d.className="tbadge";b.appendChild(d)}d.textContent=n>9?"9+":n;b.classList.add("lit");b.setAttribute("aria-label",`Direct : ${n} match${n>1?"s":""} en cours`)}
+  else{if(d)d.remove();b.classList.remove("lit");b.removeAttribute("aria-label")}}
+setInterval(updateTabBadge,30000);
+function renderLiveSettings(){const s=$("#sBroadcast");if(!s)return;s.checked=!!settings.broadcast;$("#fEtoRow").hidden=!settings.broadcast;
+  $("#sUid").textContent=fuid||"(connexion au premier usage du direct)";$("#sAdmin").hidden=!isAdmin;
+  $("#sDiscordState").textContent=discordHook?"Annonces Discord actives : début et résultat de chaque match diffusé.":"Annonces Discord : non configurées.";
+  $("#sDiscordBox").hidden=!isAdmin;const inp=$("#sDiscord");if(inp&&document.activeElement!==inp)inp.value=discordHook}
 
 /* ---------- tabs ---------- */
 const TABS={match:"#v-match",direct:"#v-direct",stats:"#v-stats",hist:"#v-hist",set:"#v-set"};
@@ -1022,7 +1055,11 @@ $$(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="direct"&&dOpen)
 $$(".seg button").forEach(b=>b.onclick=()=>{group=b.dataset.g;openCoach=null;$$(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderStats()});
 $("#statSearch").addEventListener("input",renderStats);
 $("#dSearch").addEventListener("input",renderDirect);
-$("#sBroadcast").addEventListener("change",e=>{settings.broadcast=e.target.checked;saveSettings();if(e.target.checked)fb().catch(()=>{});toast(e.target.checked?"Vos prochains matchs seront diffusés en direct":"Diffusion désactivée pour les prochains matchs")});
+$("#sBroadcast").addEventListener("change",e=>{settings.broadcast=e.target.checked;saveSettings();renderLiveSettings();if(e.target.checked)fb().catch(()=>{});toast(e.target.checked?"Vos prochains matchs seront diffusés en direct":"Diffusion désactivée pour les prochains matchs")});
+$("#bDiscordSave").onclick=async()=>{const v=$("#sDiscord").value.trim();
+  if(v&&!/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(v)){toast("Adresse invalide : elle doit commencer par https://discord.com/api/webhooks/");return}
+  try{await fb();await fdb.ref("config/discordWebhook").set(v);toast(v?"Webhook Discord enregistré":"Annonces Discord désactivées")}catch(e){toast("Enregistrement refusé : vérifiez que vous êtes administrateur et que les règles sont à jour")}};
+$("#bDiscordTest").onclick=()=>{if(!discordHook){toast("Enregistrez d'abord le webhook");return}postDiscord("✅ Test Dugout : les annonces de matchs en direct arriveront dans ce salon.");toast("Message test envoyé : vérifiez le salon Discord")};
 function routeHash(){const h=(location.hash||"").slice(1);if(h.startsWith("d-")){openDetail(h.slice(2));return true}if(h==="direct"){showTab("direct");return true}return false}
 addEventListener("hashchange",()=>{const h=(location.hash||"").slice(1);if(h.startsWith("d-")&&h.slice(2)!==dOpen)openDetail(h.slice(2))});
 
@@ -1032,7 +1069,8 @@ function renderAll(){renderLiveCard();renderStats();renderHist();renderClockVisi
 $("#fMinutes").value=settings.minutes;attachAC($("#fMyRoster"),"mine");attachAC($("#fOppRoster"),"opp");attachAC($("#fCoach"),"coach");attachAC($("#fComp"),"comp");$("#fComp").value=settings.lastComp||"";
 renderSettings();setSync();renderAll();
 const h=(location.hash||"").slice(1);if(!routeHash()){if(h==="stats"||h==="hist")showTab(h);else if(h==="options")showTab("set")}
-renderLiveSettings();if(live&&live.broadcast){watchOwnChat();pushLive()}
+$("#fEto").checked=!!settings.lastEto;renderLiveSettings();if(live&&live.broadcast){watchOwnChat();pushLive()}
+openDirect();flushDiscord();
 sync();
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 })();
