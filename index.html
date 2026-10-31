@@ -1195,7 +1195,17 @@ $("#bExport").onclick=async()=>{const data=JSON.stringify({app:"dugout-bloodbowl
 /* ---------- import FUMBBL (API publique fumbbl.com) ---------- */
 const FUMBBL_RACES={"Amazon":"Amazones","Black Orc":"Orques Noirs","Bretonnian":"Bretonniens","Chaos Chosen":"Élus du Chaos","Chaos Dwarf":"Nains du chaos","Chaos Renegade":"Renégats du Chaos","Chaos Renegades":"Renégats du Chaos","Dark Elf":"Elfes noirs","Dwarf":"Nains","Elven Union":"Union elfique","Gnome":"Gnomes","Goblin":"Gobelins","Halfling":"Halflings","High Elf":"Hauts elfes","Human":"Humains","Imperial Nobility":"Noblesse Impériale","Khorne":"Khorne","Lizardmen":"Hommes Lézard","Necromantic Horror":"Horreurs nécromantiques","Norse":"Nordiques","Nurgle":"Nurgle","Ogre":"Ogres","Old World Alliance":"Alliance du Vieux Monde","Orc":"Orques","Shambling Undead":"Morts ambulants","Skaven":"Skavens","Slann":"Slanns","Snotling":"Snotlings","Tomb Kings":"Rois des tombes","Underworld Denizens":"Bas-Fonds","Vampire":"Vampires","Wood Elf":"Elfes sylvains"};
 const frRace=r=>{const n=typeof r==="string"?r:(r&&r.name)||"";return FUMBBL_RACES[n]||n};
-async function fumbblGet(path){const r=await fetch("https://fumbbl.com/api/"+path);if(!r.ok)throw new Error("FUMBBL "+r.status);return r.json()}
+// Requête JSON avec délai max (30 s) et jusqu'à 3 essais si le site ne répond pas ou renvoie une erreur serveur.
+async function fetchJson(url,site,opts){let last;
+  for(let k=0;k<3;k++){if(k)await new Promise(r=>setTimeout(r,1500*k));
+    const ctl=typeof AbortController!=="undefined"?new AbortController():null;const tm=ctl&&setTimeout(()=>ctl.abort(),30000);
+    try{const r=await fetch(url,Object.assign({cache:"no-store"},opts||{},ctl?{signal:ctl.signal}:{}));
+      if(r.ok)return await r.json();
+      last=new Error(`${site} a répondu ${r.status}${r.status>=500?" (site momentanément en panne, réessayez plus tard)":""}`);if(r.status<500)break}
+    catch(e){last=new Error(e&&e.name==="AbortError"?`${site} ne répond pas (délai dépassé)`:`${site} injoignable (connexion ou blocage du navigateur : ${e&&e.message||e})`)}
+    finally{if(tm)clearTimeout(tm)}}
+  throw last}
+async function fumbblGet(path){return fetchJson("https://fumbbl.com/api/"+path,"FUMBBL")}
 /* Confirmation avant tout import : résumé de ce qui va être ajouté. */
 function confirmImport(label,list,done,fixes){fixes=fixes||[];if(!list.length&&!fixes.length){toast("Rien de nouveau à importer");if(done)done(0);return}
   const parts=[];
@@ -1224,7 +1234,7 @@ async function importFumbbl(){const name=$("#sFumbbl").value.trim(),msg=$("#fumb
           note:`FUMBBL · ${mine.name} contre ${opp.name}`})})}
     msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""} trouvé${fresh.length>1?"s":""}`:"Aucun nouveau match")+` (${seen} sur FUMBBL).`;
     confirmImport("FUMBBL",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""} (${seen} sur FUMBBL).`})}
-  catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";toast("Import FUMBBL impossible")}
+  catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";msg.classList.add("warn");toast("Import FUMBBL impossible : voir le message sous le bouton")}
   finally{btn.disabled=false}}
 $("#bFumbbl").onclick=importFumbbl;
 $$(".sortrow [data-sort]").forEach(b=>b.onclick=()=>{statSort=b.dataset.sort;LS.set("statSort",statSort);renderStats()});
@@ -1233,14 +1243,14 @@ $("#srcSeg").addEventListener("click",e=>{const b=e.target.closest("[data-src]")
 /* ---------- import Blood Bowl 3 (API de Spike, spike.bugeat.com) ---------- */
 const SPIKE_API="https://optiplex.apiplatform.bugeat.com/api/bb2020";
 const BB3_RACES={1:"Humains",2:"Nains",3:"Skavens",4:"Orques",5:"Hommes Lézard",6:"Gobelins",7:"Elfes sylvains",8:"Élus du Chaos",9:"Elfes noirs",10:"Morts ambulants",11:"Halflings",12:"Amazones",13:"Vampires",14:"Union elfique",15:"Nordiques",16:"Nains du chaos",17:"Horreurs nécromantiques",18:"Nurgle",22:"Bas-Fonds",23:"Khorne",24:"Noblesse Impériale",1000:"Orques Noirs",1001:"Renégats du Chaos",1002:"Alliance du Vieux Monde"};
-async function spikeGet(path){const r=await fetch(SPIKE_API+path,{headers:{Accept:"application/ld+json"}});if(!r.ok)throw new Error("Spike "+r.status);return r.json()}
+async function spikeGet(path){return fetchJson(SPIKE_API+path,"Spike",{headers:{Accept:"application/ld+json"}})}
 async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
-  settings.bb3Name=name;saveSettings();btn.disabled=true;msg.textContent="Recherche du compte…";
-  try{const f=await spikeGet("/coaches?name="+encodeURIComponent(name));const me=(f["hydra:member"]||[]).find(c=>String(c.name).toLowerCase()===name.toLowerCase());
-    if(!me)throw new Error("Aucun coach Blood Bowl 3 « "+name+" » sur Spike");
+  settings.bb3Name=name;saveSettings();btn.disabled=true;msg.classList.remove("warn");msg.textContent="Recherche du compte…";
+  try{const f=await spikeGet("/coaches?name="+encodeURIComponent(name));const found=f["hydra:member"]||[],me=found.find(c=>String(c.name).toLowerCase()===name.toLowerCase());
+    if(!me)throw new Error(`aucun coach Blood Bowl 3 nommé exactement « ${name} » sur Spike${found.length?" (proches : "+found.slice(0,4).map(c=>c.name).join(", ")+")":""}`);
     let page=1,seen=0,total=0;const fresh=[],fixes=[],ids=new Set();
     for(;;){msg.textContent=`Téléchargement des matchs… ${seen}${total?" / "+total:""}`;
-      const j=await spikeGet(`/data/games?page=${page}&itemsPerPage=200&coach_uuid=${me.uuid}`);total=j["hydra:totalItems"]||0;const L=j["hydra:member"]||[];
+      const j=await spikeGet(`/data/games?page=${page}&itemsPerPage=100&coach_uuid=${me.uuid}`);total=j["hydra:totalItems"]||0;const L=j["hydra:member"]||[];
       L.forEach(g=>{seen++;
         const tm=g.coach_uuid_1===me.uuid?g.team_uuid_1:g.team_uuid_2,mine=(g.teams||[]).find(t=>t.idteamlisting===tm),opp=(g.teams||[]).find(t=>t.idteamlisting!==tm),oc=(g.coaches||[]).find(c=>c.idcoach!==me.uuid);if(!mine||!opp)return;
         const id="bb3-"+g.uuid;if(ids.has(id))return;ids.add(id);
@@ -1253,7 +1263,7 @@ async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),b
       if(!L.length||seen>=total)break;page++}
     msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""} trouvé${fresh.length>1?"s":""}`:"Aucun nouveau match")+(fixes.length?`, ${fixes.length} à corriger`:"")+` (${seen} sur Spike).`;
     confirmImport("Blood Bowl 3",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""} (${seen} sur Spike).`},fixes)}
-  catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";toast("Import BB3 impossible")}
+  catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";msg.classList.add("warn");toast("Import BB3 impossible : voir le message sous le bouton")}
   finally{btn.disabled=false}}
 $("#bBb3").onclick=importBB3;
 
