@@ -61,6 +61,7 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .btn.small{padding:8px 12px;font-size:15px}
 .btn:disabled{opacity:.45;cursor:default}
 .hint{color:var(--muted);font-size:14px;margin:0}
+.ver{color:var(--faint);font-size:12px;text-align:center;margin:0;letter-spacing:.04em}
 
 /* intel card */
 .intel{border-left:4px solid var(--opp);background:var(--surface2);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
@@ -450,6 +451,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button class="btn primary" type="submit">Lancer le match</button>
       <p class="hint">Une fois lancé, tournez le téléphone en paysage et posez-le entre les deux joueurs.</p>
     </form>
+    <p class="ver" id="appVer"></p>
   </section>
 
   <!-- DIRECT -->
@@ -1362,6 +1364,8 @@ openDirect();flushDiscord();
 sync();
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 })();
+// Version affichée sur l'accueil — à garder identique au numéro de VERSION dans sw.js (dugout-v19 → 0.19).
+document.getElementById("appVer").textContent="Version 0.19";
 </script>
 </body>
 </html>
