@@ -557,6 +557,12 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button class="btn small" type="button" id="bSyncNow">Tester et synchroniser</button>
     </div>
     <div class="panel">
+      <h2>FUMBBL</h2>
+      <div class="field"><label for="sFumbbl">Mon pseudo FUMBBL</label><input id="sFumbbl" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
+      <button class="btn small" type="button" id="bFumbbl">Importer mes matchs FUMBBL</button>
+      <p class="hint" id="fumbblMsg">Récupère vos matchs joués sur fumbbl.com. Ils comptent dans vos stats, avec la compétition « FUMBBL ». Relancez l'import pour ajouter les nouveaux.</p>
+    </div>
+    <div class="panel">
       <h2>Sauvegarde et installation</h2>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn small" type="button" id="bExport">Exporter (JSON)</button>
@@ -1145,7 +1151,7 @@ function renderBackups(){const ex=settings.lastExport?Math.floor((Date.now()-Dat
   box.querySelectorAll("[data-snap]").forEach(b=>b.onclick=()=>{const x=snaps[+b.dataset.snap];
     confirmBox("Restaurer cette sauvegarde ?",`Les ${x.matches.length} matchs du ${fdate(x.at)} reviennent tels qu'ils étaient ce jour-là (y compris ceux supprimés depuis). Les matchs ajoutés après sont conservés.`,"Restaurer",false,()=>{
       const now=Date.now();x.matches.forEach(m=>{matches[m.id]=fixRosters(Object.assign({},m,{deleted:false,updatedAt:now}));pending.add(m.id)});saveMatches();setSync();sync();renderAll();toast("Sauvegarde restaurée")})})}
-function renderSettings(){renderBackups();$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
+function renderSettings(){renderBackups();if($("#sFumbbl"))$("#sFumbbl").value=settings.fumbblName||"";$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
 $("#sMinutes").addEventListener("change",e=>{const v=parseInt(e.target.value,10);if(v>0){settings.minutes=v;saveSettings();$("#fMinutes").value=v;toast(`Temps par défaut : ${v} min`)}});
 $("#sBeep").addEventListener("change",e=>{settings.beep=e.target.checked;saveSettings();if(e.target.checked){unlockAudio();beep()}});
 $("#sNaf").addEventListener("change",e=>{settings.myNaf=cleanNaf(e.target.value);e.target.value=settings.myNaf;saveSettings();$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";if(live&&live.broadcast)pushLive()});
@@ -1165,6 +1171,33 @@ $("#bExport").onclick=async()=>{const data=JSON.stringify({app:"dugout-bloodbowl
   try{const url=URL.createObjectURL(new Blob([data],{type:"application/json"}));const el=document.createElement("a");el.href=url;el.download=name;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);settings.lastExport=new Date().toISOString();saveSettings();renderBackups();toast("Export téléchargé");return}catch(e){}
   const box=$("#exportBox");box.hidden=false;box.innerHTML=`<p class="hint">Copiez ce texte et gardez-le dans un fichier ${esc(name)}.</p><textarea id="exportTxt" readonly>${esc(data)}</textarea><button class="btn small" id="bCopy" type="button">Copier</button>`;
   $("#bCopy").onclick=async()=>{try{await navigator.clipboard.writeText(data);settings.lastExport=new Date().toISOString();saveSettings();renderBackups();toast("Copié")}catch(e){$("#exportTxt").select();toast("Texte sélectionné : copiez-le")}}};
+
+
+/* ---------- import FUMBBL (API publique fumbbl.com) ---------- */
+const FUMBBL_RACES={"Amazon":"Amazones","Black Orc":"Orques Noirs","Bretonnian":"Bretonniens","Chaos Chosen":"Élus du Chaos","Chaos Dwarf":"Nains du chaos","Chaos Renegade":"Renégats du Chaos","Chaos Renegades":"Renégats du Chaos","Dark Elf":"Elfes noirs","Dwarf":"Nains","Elven Union":"Union elfique","Gnome":"Gnomes","Goblin":"Gobelins","Halfling":"Halflings","High Elf":"Hauts elfes","Human":"Humains","Imperial Nobility":"Noblesse Impériale","Khorne":"Khorne","Lizardmen":"Hommes Lézard","Necromantic Horror":"Horreurs nécromantiques","Norse":"Nordiques","Nurgle":"Nurgle","Ogre":"Ogres","Old World Alliance":"Alliance du Vieux Monde","Orc":"Orques","Shambling Undead":"Morts ambulants","Skaven":"Skavens","Slann":"Slanns","Snotling":"Snotlings","Tomb Kings":"Rois des tombes","Underworld Denizens":"Bas-Fonds","Vampire":"Vampires","Wood Elf":"Elfes sylvains"};
+const frRace=r=>{const n=typeof r==="string"?r:(r&&r.name)||"";return FUMBBL_RACES[n]||n};
+async function fumbblGet(path){const r=await fetch("https://fumbbl.com/api/"+path);if(!r.ok)throw new Error("FUMBBL "+r.status);return r.json()}
+async function importFumbbl(){const name=$("#sFumbbl").value.trim(),msg=$("#fumbblMsg"),btn=$("#bFumbbl");if(!name){toast("Indiquez votre pseudo FUMBBL");return}
+  settings.fumbblName=name;saveSettings();btn.disabled=true;msg.textContent="Recherche du compte…";
+  try{const found=await fumbblGet("coach/search/"+encodeURIComponent(name));const me=(Array.isArray(found)?found:[]).find(c=>c.name.toLowerCase()===name.toLowerCase());
+    if(!me)throw new Error("Aucun compte FUMBBL « "+name+" »");
+    const t=await fumbblGet("coach/teams/"+me.id);const teams=(t.teams||[]).filter(x=>+x.games>0);
+    let added=0,seen=0;
+    for(let i=0;i<teams.length;i++){msg.textContent=`Équipe ${i+1}/${teams.length} : ${teams[i].name}…`;
+      const list=await fumbblGet("team/matches/"+teams[i].id);
+      (Array.isArray(list)?list:[]).forEach(fm=>{const mine=fm.team1&&fm.team1.coach&&fm.team1.coach.id===me.id?fm.team1:fm.team2,opp=mine===fm.team1?fm.team2:fm.team1;
+        if(!mine||!opp||!mine.coach||mine.coach.id!==me.id)return;seen++;
+        const id="fumbbl-"+fm.id;if(matches[id])return; // déjà importé (ou supprimé volontairement)
+        const cas=x=>x&&x.casualties?(+x.casualties.bh||0)+(+x.casualties.si||0)+(+x.casualties.rip||0):0;
+        const d=new Date(`${fm.date}T${fm.time||"12:00:00"}`);
+        dirty({id,date:isNaN(d)?new Date().toISOString():d.toISOString(),competition:"FUMBBL",source:"fumbbl",fumbblId:fm.id,
+          myRoster:frRace(mine.roster),oppCoach:opp.coach.name,oppNaf:"",oppRoster:frRace(opp.roster),myTD:+mine.score||0,oppTD:+opp.score||0,myCas:cas(mine),oppCas:cas(opp),
+          note:`FUMBBL · ${mine.name} contre ${opp.name}`});added++})}
+    setSync();sync();renderAll();
+    msg.textContent=added?`${added} match${added>1?"s":""} importé${added>1?"s":""} (${seen} trouvés sur FUMBBL).`:`Aucun nouveau match (${seen} déjà dans Dugout).`;toast(added?`${added} match(s) FUMBBL importé(s)`:"Rien de nouveau sur FUMBBL")}
+  catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";toast("Import FUMBBL impossible")}
+  finally{btn.disabled=false}}
+$("#bFumbbl").onclick=importFumbbl;
 
 $("#bImport").onclick=()=>$("#fileImport").click();
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const arr=Array.isArray(j)?j:j.matches;if(!Array.isArray(arr))throw 0;let n=0;
