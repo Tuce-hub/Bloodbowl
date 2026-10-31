@@ -634,6 +634,11 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button class="btn small" type="button" id="bSyncNow">Tester et synchroniser</button>
     </div>
     <div class="panel">
+      <h2>NAF (tournois sur table)</h2>
+      <button class="btn small" type="button" id="bNaf">Importer mes matchs NAF</button>
+      <p class="hint" id="nafMsg">Récupère vos matchs de tournois NAF avec le n° NAF de « Profil et chrono ». Ils comptent comme des matchs sur table ; les matchs déjà saisis à la main sont repérés et ignorés. Les sorties ne sont pas connues de la NAF (0).</p>
+    </div>
+    <div class="panel">
       <h2>FUMBBL</h2>
       <div class="field"><label for="sFumbbl">Mon pseudo FUMBBL</label><input id="sFumbbl" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
       <button class="btn small" type="button" id="bFumbbl">Importer mes matchs FUMBBL</button>
@@ -1351,7 +1356,7 @@ async function spikeRelay(path){if(!syncConf())throw new Error("Spike injoignabl
 async function spikeGet(path){
   if(spikeViaRelay)return spikeRelay(path);
   try{return await fetchJson(SPIKE_API+path,"Spike",{headers:{Accept:"application/ld+json"}})}
-  catch(e){if(!/injoignable|délai/.test(e.message))throw e;spikeViaRelay=true;const m=$("#bb3Msg");if(m)m.textContent="Spike injoignable en direct : passage par votre script Google…";return spikeRelay(path)}}
+  catch(e){if(!/injoignable|délai/.test(e.message))throw e;spikeViaRelay=true;toast("Spike injoignable en direct : passage par votre script Google…");return spikeRelay(path)}}
 async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
   settings.bb3Name=name;saveSettings();btn.disabled=true;msg.classList.remove("warn");msg.textContent="Recherche du compte…";
   try{const f=await spikeGet("/coaches?name="+encodeURIComponent(name));const found=f["hydra:member"]||[],me=found.find(c=>String(c.name).toLowerCase()===name.toLowerCase());
@@ -1374,10 +1379,40 @@ async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),b
   catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";msg.classList.add("warn");toast("Import BB3 impossible : voir le message sous le bouton")}
   finally{btn.disabled=false}}
 $("#bBb3").onclick=importBB3;
+/* ---------- import NAF (base NAF reprise par l'API de Spike) ---------- */
+// Un match NAF est un doublon s'il existe déjà un match saisi à la main le même jour, même score, même adversaire (n° NAF ou nom).
+function isManualDup(r,manual){const day=String(r.date||"").slice(0,10);return manual.some(m=>String(m.date||"").slice(0,10)===day&&m.myTD===r.myTD&&m.oppTD===r.oppTD&&((r.oppNaf&&String(m.oppNaf||"")===String(r.oppNaf))||norm(m.oppCoach)===norm(r.oppCoach)))}
+const NAF_RACES={1:"Orques",2:"Skavens",3:"Elfes noirs",4:"Humains",5:"Nains",6:"Hauts elfes",7:"Gobelins",8:"Halflings",9:"Nains du chaos",10:"Élus du Chaos",11:"Morts ambulants",12:"Elfes sylvains",13:"Nordiques",14:"Amazones",15:"Hommes Lézard",16:"Nurgle",17:"Rois des tombes",18:"Horreurs nécromantiques",19:"Union elfique",20:"Ogres",21:"Vampires",22:"Slanns",23:"Bas-Fonds",24:"Renégats du Chaos",25:"Khorne",26:"Bretonniens",28:"Alliance du Vieux Monde",29:"Snotlings",30:"Orques Noirs",31:"Noblesse Impériale",33:"Gnomes"};
+async function spikeAll(path){let page=1,out=[];for(;;){const j=await spikeGet(`${path}${path.includes("?")?"&":"?"}itemsPerPage=200&page=${page}`);const L=j["hydra:member"]||[];out=out.concat(L);if(!L.length||out.length>=(j["hydra:totalItems"]||0))break;page++}return out}
+async function importNaf(){const naf=cleanNaf(settings.myNaf||""),msg=$("#nafMsg"),btn=$("#bNaf");
+  if(!naf){toast("Renseignez d'abord votre n° NAF dans « Profil et chrono »");return}
+  btn.disabled=true;msg.classList.remove("warn");msg.textContent="Recherche de vos matchs NAF…";
+  try{const games=(await spikeAll(`/naf/games?homeCoachId=${naf}`)).concat(await spikeAll(`/naf/games?awayCoachId=${naf}`));
+    if(!games.length)throw new Error(`aucun match NAF trouvé pour le n° ${naf}`);
+    const tIds=[...new Set(games.map(g=>g.tournamentId))],oIds=[...new Set(games.map(g=>String(g.homeCoachId)===naf?g.awayCoachId:g.homeCoachId))];
+    msg.textContent=`${games.length} matchs trouvés : noms des tournois et des adversaires…`;
+    const tour={},coach={};
+    for(let i=0;i<tIds.length;i+=40){(await spikeAll("/naf/tournaments?"+tIds.slice(i,i+40).map(x=>"tournamentId[]="+x).join("&"))).forEach(t=>tour[t.tournamentId]=t)}
+    for(let i=0;i<oIds.length;i+=40){(await spikeAll("/naf/coaches?"+oIds.slice(i,i+40).map(x=>"nafNumber[]="+x).join("&"))).forEach(c=>coach[c.nafNumber]=c.name)}
+    const manual=allMatches().filter(m=>srcOf(m)==="table"&&m.source!=="naf");const fresh=[];let dup=0;
+    games.sort((a,b)=>String(a.date).localeCompare(String(b.date))).forEach(g=>{const home=String(g.homeCoachId)===naf,opp=home?g.awayCoachId:g.homeCoachId;
+      const id="naf-"+g.gameId;if(matches[id])return;
+      const day=String(g.date||"").slice(0,10),myTD=+(home?g.goalsHome:g.goalsAway)||0,oppTD=+(home?g.goalsAway:g.goalsHome)||0,oc=coach[opp]||("NAF "+opp),t=tour[g.tournamentId]||{};
+      const rec={id,date:new Date(day+"T12:00:00").toISOString(),competition:t.tournamentName||("Tournoi NAF "+g.tournamentId),source:"naf",nafGameId:g.gameId,
+        myRoster:NAF_RACES[home?g.raceHome:g.raceAway]||"",oppCoach:oc,oppNaf:String(opp),oppRoster:NAF_RACES[home?g.raceAway:g.raceHome]||"",
+        myTD,oppTD,myCas:0,oppCas:0,note:`NAF · ${t.tournamentName||""}${t.tournamentCity?" ("+t.tournamentCity+")":""}`};
+      if(isManualDup(rec,manual)){dup++;return}fresh.push(rec)});
+    msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""} trouvé${fresh.length>1?"s":""}`:"Aucun nouveau match")+` (${games.length} sur la NAF${dup?`, ${dup} déjà saisi${dup>1?"s":""} à la main`:""}).`;
+    confirmImport("NAF",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""} (${games.length} sur la NAF${dup?`, ${dup} déjà saisi${dup>1?"s":""} à la main, ignoré${dup>1?"s":""}`:""}).`})}
+  catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";msg.classList.add("warn");toast("Import NAF impossible : voir le message sous le bouton")}
+  finally{btn.disabled=false}}
+$("#bNaf").onclick=importNaf;
+
 
 $("#bImport").onclick=()=>$("#fileImport").click();
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const arr=Array.isArray(j)?j:j.matches;if(!Array.isArray(arr))throw 0;
-  const fresh=arr.filter(m=>{if(!m||!m.id)return false;const l=matches[m.id];return !l||(m.updatedAt||0)>(l.updatedAt||0)}).map(m=>fixRosters(Object.assign({},m,{updatedAt:Math.max(Date.now(),m.updatedAt||0)})));
+  const manual=allMatches().filter(m=>srcOf(m)==="table"&&m.source!=="naf");
+  const fresh=arr.filter(m=>{if(!m||!m.id)return false;const l=matches[m.id];if(l)return (m.updatedAt||0)>(l.updatedAt||0);return !(m.source==="naf"&&isManualDup(m,manual))}).map(m=>fixRosters(Object.assign({},m,{updatedAt:Math.max(Date.now(),m.updatedAt||0)})));
   confirmImport("du fichier",fresh)}catch(err){toast("Fichier invalide : choisissez un export Dugout (.json)")}e.target.value=""};rd.readAsText(f)});
 
 /* ================= DIRECT + TCHAT (Firebase) ================= */
