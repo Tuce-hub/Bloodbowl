@@ -883,18 +883,6 @@ function renderCharts(list){const host=$("#charts");if(!host)return;host.replace
      const lb=svgEl("text",{x:cx,y:H-4,"text-anchor":"middle",class:"ax"},g);const d=new Date(k+"-01T12:00:00");lb.textContent=d.toLocaleDateString("fr-FR",{month:"short"}).replace(".","");
      const hit=svgEl("rect",{x:cx-step/2,y:T,width:step,height:ih,class:"hit"},g);
      const sh=()=>{const r=g.getBoundingClientRect();tip.show(cx*r.width/W+12,(T+ih-y(tot))*r.height/H+56,[{v:d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}),l:`· ${tot} match${tot>1?"s":""}`},...RES.filter(x=>e[x[0]]).map(x=>({v:String(e[x[0]]),l:plur(x[1],e[x[0]]),c:x[2]}))])};
-     hit.addEventListener("pointerenter",sh);hit.addEventListener("pointerdown",sh);hit.addEventListener("pointerleave",()=>tip.hide())})}}
-  // 3. Bilan contre chaque roster adverse (8 plus joués)
-  {const by=new Map();ms.forEach(m=>{const k=m.oppRoster||"?";const e=by.get(k)||{V:0,N:0,D:0,n:0};e[result(m)]++;e.n++;by.set(k,e)});
-   const rows=[...by.entries()].sort((a,b)=>b[1].n-a[1].n).slice(0,8);if(rows.length>=2){
-   const box=chartBox(host,"Contre chaque roster adverse","Les 8 rosters les plus affrontés · % de points à droite");legend(box,RES.map(r=>[r[1],r[2]]));const tip=tipFor(box);
-   const rh=26,L=Math.min(130,W*0.38),R=44,H=rows.length*rh+4,iw=W-L-R,mx=rows[0][1].n,sc=v=>v/mx*iw;
-   const g=svgEl("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Bilan par roster adverse"},box);
-   rows.forEach(([name,e],i)=>{const cy=i*rh+rh/2;const t=svgEl("text",{x:L-8,y:cy+4,"text-anchor":"end",class:"lbl"},g);t.textContent=name.length>18?name.slice(0,17)+"…":name;
-     let acc=0;RES.forEach(([r,,c])=>{if(!e[r])return;const w=sc(e[r]);svgEl("rect",{x:L+acc,y:cy-8,width:Math.max(1,w-2),height:16,rx:(acc+w>=sc(e.n)-0.1)?3:0,fill:c,class:"mk"},g);acc+=w});
-     const pc=svgEl("text",{x:W-R+6,y:cy+4,class:"val"},g);pc.textContent=Math.round((e.V+e.N/2)/e.n*100)+"%";
-     const hit=svgEl("rect",{x:0,y:i*rh,width:W,height:rh,class:"hit"},g);
-     const sh=()=>{const r=g.getBoundingClientRect();tip.show((L+sc(e.n)/2)*r.width/W,cy*r.height/H+46,[{v:`${e.n} match${e.n>1?"s":""}`,l:name},...RES.filter(x=>e[x[0]]).map(x=>({v:String(e[x[0]]),l:plur(x[1],e[x[0]]),c:x[2]}))])};
      hit.addEventListener("pointerenter",sh);hit.addEventListener("pointerdown",sh);hit.addEventListener("pointerleave",()=>tip.hide())})}}}
 const plur=(w,n)=>(n>1?w:w.replace(/s$/,"")).toLowerCase();
 
