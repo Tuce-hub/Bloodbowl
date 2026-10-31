@@ -1243,7 +1243,16 @@ $("#srcSeg").addEventListener("click",e=>{const b=e.target.closest("[data-src]")
 /* ---------- import Blood Bowl 3 (API de Spike, spike.bugeat.com) ---------- */
 const SPIKE_API="https://optiplex.apiplatform.bugeat.com/api/bb2020";
 const BB3_RACES={1:"Humains",2:"Nains",3:"Skavens",4:"Orques",5:"Hommes Lézard",6:"Gobelins",7:"Elfes sylvains",8:"Élus du Chaos",9:"Elfes noirs",10:"Morts ambulants",11:"Halflings",12:"Amazones",13:"Vampires",14:"Union elfique",15:"Nordiques",16:"Nains du chaos",17:"Horreurs nécromantiques",18:"Nurgle",22:"Bas-Fonds",23:"Khorne",24:"Noblesse Impériale",1000:"Orques Noirs",1001:"Renégats du Chaos",1002:"Alliance du Vieux Monde"};
-async function spikeGet(path){return fetchJson(SPIKE_API+path,"Spike",{headers:{Accept:"application/ld+json"}})}
+// Spike d'abord en direct ; si le téléphone ne le joint pas, relais par le script Google de la synchro.
+let spikeViaRelay=false;
+async function spikeRelay(path){if(!syncConf())throw new Error("Spike injoignable depuis ce téléphone, et pas de synchro Google configurée pour servir de relais (Réglages › Synchronisation)");
+  let j;try{j=await api("GET",{action:"spike",path})}catch(e){throw new Error("relais Google : "+(e.message||e))}
+  if(j&&j.relay==="spike")return j.data;
+  throw new Error("Spike injoignable depuis ce téléphone : mettez à jour votre script Google (Code.gs) pour activer le relais, voir les étapes en tête du fichier");}
+async function spikeGet(path){
+  if(spikeViaRelay)return spikeRelay(path);
+  try{return await fetchJson(SPIKE_API+path,"Spike",{headers:{Accept:"application/ld+json"}})}
+  catch(e){if(!/injoignable|délai/.test(e.message))throw e;spikeViaRelay=true;const m=$("#bb3Msg");if(m)m.textContent="Spike injoignable en direct : passage par votre script Google…";return spikeRelay(path)}}
 async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
   settings.bb3Name=name;saveSettings();btn.disabled=true;msg.classList.remove("warn");msg.textContent="Recherche du compte…";
   try{const f=await spikeGet("/coaches?name="+encodeURIComponent(name));const found=f["hydra:member"]||[],me=found.find(c=>String(c.name).toLowerCase()===name.toLowerCase());

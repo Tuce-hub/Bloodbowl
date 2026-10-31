@@ -9,6 +9,9 @@
  *    (Première installation : Déployer > Nouveau déploiement > Application Web,
  *     Exécuter en tant que : Moi, Qui a accès : Tout le monde.)
  *
+ * Mise à jour « relais Spike » (Dugout 0.26.3) : refaites les étapes 2 et 3. Google demandera une
+ *    nouvelle autorisation (« se connecter à un service externe ») : acceptez-la.
+ *
  * Dans l'onglet « Matchs » :
  * - Triez et filtrez avec les flèches de la ligne d'en-tête (ne triez pas en sélectionnant la ligne 1).
  * - Vous pouvez corriger une valeur à la main : l'appli la reprendra à la synchro suivante.
@@ -53,6 +56,7 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.token !== TOKEN) return out({ ok: false, error: 'Code secret incorrect' });
   if (p.action === 'photo') return out(getPhoto(p.id));
+  if (p.action === 'spike') return out(spikeRelay(p.path));
   return out({ ok: true, matches: readAll() });
 }
 
@@ -298,7 +302,23 @@ const photoUrl = id => 'https://drive.google.com/file/d/' + id + '/view';
 /* ------------------------------------------------------------------ Divers */
 
 // À exécuter une fois depuis l'éditeur pour accorder les autorisations et mettre en forme le tableau.
+/**
+ * Relais vers l'API de Spike (Blood Bowl 3 / NAF) : certains téléphones n'arrivent pas à joindre
+ * directement ce serveur (IPv6 en 4G). Google le contacte à leur place.
+ * Seules les lectures publiques de Spike sont autorisées.
+ */
+const SPIKE_API = 'https://optiplex.apiplatform.bugeat.com/api/bb2020';
+function spikeRelay(path) {
+  path = String(path || '');
+  if (!/^\/(coaches|data\/games|naf\/[a-z_]+)(\?[^#\s]*)?$/.test(path)) return { ok: false, error: 'Chemin Spike non autorisé' };
+  const r = UrlFetchApp.fetch(SPIKE_API + path, { headers: { Accept: 'application/ld+json' }, muteHttpExceptions: true });
+  const code = r.getResponseCode();
+  if (code !== 200) return { ok: false, error: 'Spike a répondu ' + code };
+  return { ok: true, relay: 'spike', data: JSON.parse(r.getContentText()) };
+}
+
 function autoriser() {
+  UrlFetchApp.fetch(SPIKE_API + '/coaches?name=Tuce', { muteHttpExceptions: true }); // autorisation « accès à un service externe »
   photoFolder();
   PropertiesService.getScriptProperties().deleteProperty('format');
   sheet();
