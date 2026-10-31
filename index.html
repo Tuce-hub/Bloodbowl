@@ -84,6 +84,23 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .rotate{display:flex;align-items:center;gap:10px;color:var(--gold);font-family:var(--f-label);font-size:16px;letter-spacing:.04em}
 
 /* stats */
+.charts{display:flex;flex-direction:column;gap:14px;--cv:#199e70;--cn:#3987e5;--cd:#d95926}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 12px 8px;position:relative}
+.chart h3{margin:0;font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chart .sub{margin:2px 0 6px;font-size:13px;color:var(--faint)}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .ax{font:12px var(--f-body);fill:var(--faint)}
+.chart .lbl{font:13px var(--f-body);fill:var(--muted)}
+.chart .val{font:600 13px var(--f-label);fill:var(--fg)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ref{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 4}
+.chart .hit{fill:transparent;cursor:pointer}
+.chart .mk:hover,.chart .mk.on{filter:brightness(1.25)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:0 0 6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.ctip{position:absolute;pointer-events:none;background:#050806f2;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;color:var(--muted);white-space:nowrap;z-index:2;transform:translate(-50%,calc(-100% - 10px))}
+.ctip b{color:var(--fg);font-family:var(--f-label);font-size:15px}
+.ctip .k{display:inline-block;width:10px;height:2px;margin-right:6px;vertical-align:4px}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .tile .k{font-family:var(--f-label);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
@@ -479,6 +496,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
   <section class="view" id="v-stats" hidden>
     <form class="send" id="cSearchF" autocomplete="off"><div class="field" style="flex:1;min-width:0"><input id="cSearch" class="search" placeholder="Rechercher un coach (nom, n° NAF)" aria-label="Rechercher un coach" enterkeyhint="search"></div><button class="btn small" type="submit">Voir</button></form>
     <div class="tiles" id="tiles"></div>
+    <div id="charts" class="charts"></div>
     <div class="seg" role="group" aria-label="Regrouper par">
       <button type="button" data-g="coach" aria-pressed="true">Coach</button>
       <button type="button" data-g="opp" aria-pressed="false">Son roster</button>
@@ -824,8 +842,64 @@ function renderIntel(){const box=$("#intel");const k=norm($("#fCoach").value);if
   <div class="hint">Dernier match (${fdate(last.date)}${last.competition?", "+esc(last.competition):""}) : ${esc(last.myRoster)} ${last.myTD}–${last.oppTD} ${esc(last.oppRoster)}</div><button type="button" class="btn small" id="iFiche" style="align-self:flex-start">Fiche du coach</button></div>`;
   $("#iFiche").onclick=()=>openCoachSheet(last.oppCoach)}
 
+
+/* ---------- graphiques (Stats) ---------- */
+const SVGNS="http://www.w3.org/2000/svg";
+function svgEl(t,a,p){const e=document.createElementNS(SVGNS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function chartBox(host,title,sub){const c=document.createElement("div");c.className="chart";const h=document.createElement("h3");h.textContent=title;c.appendChild(h);
+  if(sub){const p=document.createElement("p");p.className="sub";p.textContent=sub;c.appendChild(p)}host.appendChild(c);return c}
+function tipFor(box){const t=document.createElement("div");t.className="ctip";t.hidden=true;box.appendChild(t);
+  return{show(x,y,rows){t.replaceChildren();rows.forEach((r,i)=>{const d=document.createElement("div");if(r.c){const k=document.createElement("span");k.className="k";k.style.background=r.c;d.appendChild(k)}
+      const b=document.createElement("b");b.textContent=r.v;d.appendChild(b);if(r.l)d.appendChild(document.createTextNode(" "+r.l));t.appendChild(d)});
+      t.hidden=false;const bw=box.clientWidth;t.style.left=Math.max(70,Math.min(bw-70,x))+"px";t.style.top=y+"px"},hide(){t.hidden=true}}}
+function legend(box,items){const l=document.createElement("div");l.className="legend";items.forEach(([n,c])=>{const s=document.createElement("span");const i=document.createElement("i");i.style.background=c;s.append(i,n);l.appendChild(s)});box.appendChild(l)}
+const RES=[["V","Victoires","var(--cv)"],["N","Nuls","var(--cn)"],["D","Défaites","var(--cd)"]];
+function renderCharts(list){const host=$("#charts");if(!host)return;host.replaceChildren();
+  const ms=list.slice().sort((a,b)=>(a.date||"").localeCompare(b.date||""));if(ms.length<3)return;
+  const W=Math.max(280,(host.clientWidth||340)-26);
+  // 1. Forme : % de points sur les 5 derniers matchs
+  {const N=Math.min(ms.length,30),sl=ms.slice(-N),pts=sl.map((m,i)=>{const w=ms.slice(Math.max(0,ms.length-N+i-4),ms.length-N+i+1);const p=w.reduce((s,x)=>s+({V:1,N:.5,D:0}[result(x)]),0)/w.length;return{m,p:Math.round(p*100)}});
+   const box=chartBox(host,"Forme","% de points sur les 5 derniers matchs · "+N+" derniers matchs");const tip=tipFor(box);
+   const H=150,L=30,R=8,T=8,B=20,iw=W-L-R,ih=H-T-B,x=i=>L+(N<2?iw/2:i*iw/(N-1)),y=v=>T+ih-v/100*ih;
+   const g=svgEl("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Forme récente en pourcentage de points"},box);
+   [0,50,100].forEach(v=>{svgEl("line",{x1:L,x2:W-R,y1:y(v),y2:y(v),class:v===50?"ref":"grid"},g);const t=svgEl("text",{x:L-6,y:y(v)+4,"text-anchor":"end",class:"ax"},g);t.textContent=v+"%"});
+   const first=svgEl("text",{x:L,y:H-4,class:"ax"},g);first.textContent=fdate(sl[0].date);const last=svgEl("text",{x:W-R,y:H-4,"text-anchor":"end",class:"ax"},g);last.textContent=fdate(sl[N-1].date);
+   svgEl("path",{d:pts.map((q,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(q.p).toFixed(1)).join(""),fill:"none",stroke:"var(--gold)","stroke-width":2,"stroke-linejoin":"round","stroke-linecap":"round"},g);
+   const dot=svgEl("circle",{r:5,fill:"var(--gold)",stroke:"var(--surface)","stroke-width":2,visibility:"hidden"},g),hair=svgEl("line",{y1:T,y2:T+ih,class:"grid",visibility:"hidden"},g);
+   const ov=svgEl("rect",{x:L,y:0,width:iw,height:H,class:"hit"},g);
+   const mv=e=>{const r=g.getBoundingClientRect(),sx=(e.clientX-r.left)*W/r.width;const i=Math.max(0,Math.min(N-1,Math.round((sx-L)/(iw/Math.max(1,N-1)))));const q=pts[i];
+     dot.setAttribute("cx",x(i));dot.setAttribute("cy",y(q.p));hair.setAttribute("x1",x(i));hair.setAttribute("x2",x(i));dot.setAttribute("visibility","visible");hair.setAttribute("visibility","visible");
+     tip.show(x(i)*r.width/W+12,y(q.p)*r.height/H+30,[{v:q.p+"%",l:"de points",c:"var(--gold)"},{v:`${q.m.myTD}–${q.m.oppTD}`,l:`${result(q.m)} contre ${q.m.oppCoach} · ${fdate(q.m.date)}`}])};
+   ov.addEventListener("pointermove",mv);ov.addEventListener("pointerdown",mv);ov.addEventListener("pointerleave",()=>{tip.hide();dot.setAttribute("visibility","hidden");hair.setAttribute("visibility","hidden")})}
+  // 2. Résultats par mois (12 derniers mois avec des matchs)
+  {const by=new Map();ms.forEach(m=>{const k=String(m.date||"").slice(0,7);if(!k)return;const e=by.get(k)||{V:0,N:0,D:0};e[result(m)]++;by.set(k,e)});
+   const keys=[...by.keys()].sort().slice(-12);if(keys.length>=2){
+   const box=chartBox(host,"Résultats par mois","Nombre de matchs");legend(box,RES.map(r=>[r[1],r[2]]));const tip=tipFor(box);
+   const H=160,L=24,R=4,T=8,B=20,iw=W-L-R,ih=H-T-B,mx=Math.max(...keys.map(k=>{const e=by.get(k);return e.V+e.N+e.D})),bw=Math.min(28,iw/keys.length*0.62),step=iw/keys.length,y=v=>v/mx*ih;
+   const g=svgEl("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Résultats par mois"},box);
+   [0,mx].forEach(v=>{svgEl("line",{x1:L,x2:W-R,y1:T+ih-y(v),y2:T+ih-y(v),class:"grid"},g);const t=svgEl("text",{x:L-6,y:T+ih-y(v)+4,"text-anchor":"end",class:"ax"},g);t.textContent=v});
+   keys.forEach((k,i)=>{const e=by.get(k),cx=L+step*i+step/2;let acc=0;const tot=e.V+e.N+e.D;
+     RES.forEach(([r,,c],j)=>{if(!e[r])return;const h=y(e[r]),top=T+ih-acc-h;const rr=svgEl("rect",{x:cx-bw/2,y:top+(acc?0:0),width:bw,height:Math.max(1,h-2),rx:(acc+h>=y(tot)-0.1)?3:0,fill:c,class:"mk"},g);acc+=h});
+     const lb=svgEl("text",{x:cx,y:H-4,"text-anchor":"middle",class:"ax"},g);const d=new Date(k+"-01T12:00:00");lb.textContent=d.toLocaleDateString("fr-FR",{month:"short"}).replace(".","");
+     const hit=svgEl("rect",{x:cx-step/2,y:T,width:step,height:ih,class:"hit"},g);
+     const sh=()=>{const r=g.getBoundingClientRect();tip.show(cx*r.width/W+12,(T+ih-y(tot))*r.height/H+56,[{v:d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}),l:`· ${tot} match${tot>1?"s":""}`},...RES.filter(x=>e[x[0]]).map(x=>({v:String(e[x[0]]),l:plur(x[1],e[x[0]]),c:x[2]}))])};
+     hit.addEventListener("pointerenter",sh);hit.addEventListener("pointerdown",sh);hit.addEventListener("pointerleave",()=>tip.hide())})}}
+  // 3. Bilan contre chaque roster adverse (8 plus joués)
+  {const by=new Map();ms.forEach(m=>{const k=m.oppRoster||"?";const e=by.get(k)||{V:0,N:0,D:0,n:0};e[result(m)]++;e.n++;by.set(k,e)});
+   const rows=[...by.entries()].sort((a,b)=>b[1].n-a[1].n).slice(0,8);if(rows.length>=2){
+   const box=chartBox(host,"Contre chaque roster adverse","Les 8 rosters les plus affrontés · % de points à droite");legend(box,RES.map(r=>[r[1],r[2]]));const tip=tipFor(box);
+   const rh=26,L=Math.min(130,W*0.38),R=44,H=rows.length*rh+4,iw=W-L-R,mx=rows[0][1].n,sc=v=>v/mx*iw;
+   const g=svgEl("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Bilan par roster adverse"},box);
+   rows.forEach(([name,e],i)=>{const cy=i*rh+rh/2;const t=svgEl("text",{x:L-8,y:cy+4,"text-anchor":"end",class:"lbl"},g);t.textContent=name.length>18?name.slice(0,17)+"…":name;
+     let acc=0;RES.forEach(([r,,c])=>{if(!e[r])return;const w=sc(e[r]);svgEl("rect",{x:L+acc,y:cy-8,width:Math.max(1,w-2),height:16,rx:(acc+w>=sc(e.n)-0.1)?3:0,fill:c,class:"mk"},g);acc+=w});
+     const pc=svgEl("text",{x:W-R+6,y:cy+4,class:"val"},g);pc.textContent=Math.round((e.V+e.N/2)/e.n*100)+"%";
+     const hit=svgEl("rect",{x:0,y:i*rh,width:W,height:rh,class:"hit"},g);
+     const sh=()=>{const r=g.getBoundingClientRect();tip.show((L+sc(e.n)/2)*r.width/W,cy*r.height/H+46,[{v:`${e.n} match${e.n>1?"s":""}`,l:name},...RES.filter(x=>e[x[0]]).map(x=>({v:String(e[x[0]]),l:plur(x[1],e[x[0]]),c:x[2]}))])};
+     hit.addEventListener("pointerenter",sh);hit.addEventListener("pointerdown",sh);hit.addEventListener("pointerleave",()=>tip.hide())})}}}
+const plur=(w,n)=>(n>1?w:w.replace(/s$/,"")).toLowerCase();
+
 let group="coach", openCoach=null;
-function renderStats(){const list=allMatches();const a=agg(list);
+function renderStats(){const list=allMatches();const a=agg(list);renderCharts(list);
   const pct=a.j?Math.round((a.V+a.N/2)/a.j*100):0;
   $("#tiles").innerHTML=`<div class="tile"><span class="k">Matchs</span><span class="v num">${a.j}</span><span class="s">${pct}% de points</span></div>
   <div class="tile"><span class="k">V-N-D</span><span class="v num">${vnd(a)}</span><span class="s">victoires · nuls · défaites</span></div>
