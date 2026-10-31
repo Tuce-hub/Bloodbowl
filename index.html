@@ -345,12 +345,11 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 .rules{position:absolute;inset:0;z-index:30;display:grid;place-items:center;cursor:pointer;background:#0008}
 .rules .pan{position:relative;width:90%;height:90%;border-radius:16px;border:2px solid color-mix(in srgb,var(--gold) 70%,transparent);background:rgba(8,12,10,.96);display:flex;flex-direction:column;cursor:default;overflow:hidden;padding:12px 64px 12px 14px}
 .rg-home{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;min-height:0}
-.rg-tile{--k:var(--gold);display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;column-gap:14px;align-items:center;text-align:left;padding:2vh 2.2vw;border-radius:14px;border:2px solid color-mix(in srgb,var(--k) 55%,transparent);background:color-mix(in srgb,var(--k) 10%,var(--surface));min-width:0}
-.rg-tile:active{transform:scale(.98)}
-.rg-tile svg{grid-row:1/3;width:min(13vh,7vw);height:min(13vh,7vw);color:var(--k)}
-.rg-tile b{align-self:end;font-family:var(--f-display);font-weight:600;font-size:min(10.5vh,4.3vw);line-height:.9;letter-spacing:.02em;text-transform:uppercase;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rg-tile small{align-self:start;font-family:var(--f-label);font-weight:600;font-size:clamp(12px,3.6vh,18px);letter-spacing:.06em;text-transform:uppercase;color:var(--k)}
-.rg-tile[data-rg="meteo"]{--k:#6cc4ff} .rg-tile[data-rg="kick"]{--k:var(--gold)} .rg-tile[data-rg="inj"]{--k:var(--danger)} .rg-tile[data-rg="skills"]{--k:var(--me)}
+.rg-tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:4px;text-align:left;padding:2vh 2vw;border-radius:12px;border:1px solid var(--line);background:var(--surface);min-width:0;position:relative}
+.rg-tile:active{background:var(--surface2);border-color:var(--gold)}
+.rg-tile svg{position:absolute;top:2vh;right:2vw;width:min(7vh,3.4vw);height:min(7vh,3.4vw);color:var(--faint)}
+.rg-tile b{font-family:var(--f-label);font-weight:700;font-size:min(7.5vh,3.4vw);line-height:1;letter-spacing:.04em;text-transform:uppercase;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rg-tile small{font-family:var(--f-label);font-weight:600;font-size:clamp(12px,3.4vh,17px);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .rg-view{flex:1;display:flex;flex-direction:column;min-height:0;gap:8px}
 .rg-hd{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .rg-back{height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);font-family:var(--f-label);font-weight:700;font-size:17px;letter-spacing:.05em;text-transform:uppercase}
@@ -366,7 +365,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 .rg-row.hl{background:color-mix(in srgb,var(--k,var(--gold)) 9%,transparent)}
 .rg-cats{display:flex;gap:6px;flex-wrap:wrap}
 .rg-cats button{height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line);background:var(--surface2);font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.rg-cats button[aria-pressed="true"]{background:var(--me);border-color:var(--me);color:var(--me-ink)}
+.rg-cats button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#2a1f00}
 .rg-sk{grid-template-columns:1fr}
 .rg-note{font-size:13px;color:var(--faint);margin:10px 0 0}
 .rules .x{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:#050806cc;color:var(--fg);display:grid;place-items:center}
@@ -944,7 +943,7 @@ $("#cKick").onclick=kickDone;
 $("#cRules").onclick=e=>{e.stopPropagation();rgShow(null);$("#cRulesBox").hidden=false};
 // ---- Écran Règles : 4 aide-mémoire (APERÇU — textes à valider avec le livre de règles) ----
 const RG={
- meteo:{t:"Météo",k:"#6cc4ff",dice:"2D6 · avant le match, et sur « Météo changeante »",secs:[["",[
+ meteo:{t:"Météo",k:"#f3c34f",dice:"2D6 · avant le match, et sur « Météo changeante »",secs:[["",[
   ["2","Chaleur accablante","À la fin de chaque drive, D3 joueurs au hasard de chaque équipe s’effondrent : ils ratent le drive suivant."],
   ["3","Très ensoleillé","−1 à tous les tests de passe."],
   ["4–10","Conditions idéales","Aucun effet.",1],
@@ -955,19 +954,19 @@ const RG={
   ["3","Temps mort","Équipe qui frappe au tour 6, 7 ou 8 : les deux compteurs reculent d’un tour. Sinon : ils avancent d’un tour."],
   ["4","Défense solide","D3+3 joueurs de l’équipe qui frappe peuvent être replacés."],
   ["5","Chandelle","Un joueur libre de l’équipe en réception peut se placer sous le ballon."],
-  ["6","Supporters en folie","D6 + pom-pom girls pour chaque coach : le plus haut fait une Prière à Nuffle."],
+  ["6","Supporters en folie","D6 + pom-pom girls pour chaque coach : le plus haut gagne un soutien offensif supplémentaire."],
   ["7","Coaching brillant","D6 + assistants pour chaque coach : le plus haut gagne une relance d’équipe pour ce drive.",1],
   ["8","Météo changeante","Relancez la météo. Si Conditions idéales : le ballon dévie avant d’atterrir."],
   ["9","Réaction rapide","D3+3 joueurs libres de l’équipe en réception se déplacent d’une case."],
-  ["10","Blitz !","D3+3 joueurs libres de l’équipe qui frappe jouent un tour gratuit."],
-  ["11","Arbitre zélé","D6 + popularité pour chaque coach : le perdant voit un joueur au hasard Sonné (expulsé sur 1)."],
+  ["10","Charge !","D3+3 joueurs libres de l’équipe qui frappe jouent un tour gratuit."],
+  ["11","En-cas suspect","Un joueur au hasard : sur 2+, −1 MA et −1 AV pour ce drive ; sur 1, il va en réserve pour le drive."],
   ["12","Invasion du terrain","D6 + popularité pour chaque coach : le perdant voit D3 joueurs au hasard Sonnés."]]]]},
- inj:{t:"Blessures",k:"#ff4f4f",dice:"Armure percée → blessure → sortie",secs:[
+ inj:{t:"Blessures",k:"#f3c34f",dice:"Armure percée → blessure → sortie",secs:[
   ["Jet de blessure · 2D6",[["2–7","Sonné","Le joueur reste à terre, face contre terre."],["8–9","KO","Hors du terrain. Revient sur 4+ au début de chaque drive."],["10–12","Sortie","Jet sur la table des sorties (D16).",1]]],
   ["Jet de blessure Minus (Stunty) · 2D6",[["2–6","Sonné",""],["7–8","KO",""],["9","Gravement touché","Pas de jet sur la table des sorties."],["10–12","Sortie","Table des sorties (D16)."]]],
-  ["Table des sorties · D16",[["1–6","Gravement touché","Rate le reste du match."],["7–9","Sérieusement blessé","Rate le prochain match."],["10–12","Blessure grave","Blessure tenace (+1 aux jets de sortie) et rate le prochain match."],["13–14","Blessure persistante","−1 à une caractéristique (D6 ci-dessous) et rate le prochain match."],["15–16","Mort","Retiré de l’effectif."]]],
+  ["Table des sorties · D16",[["1–8","Gravement touché","Aucune séquelle."],["9–10","Sérieusement blessé","Rate le prochain match."],["11–12","Blessure grave","Blessure tenace (+1 aux jets de sortie) et rate le prochain match."],["13–14","Blessure persistante","−1 à une caractéristique (D6 ci-dessous) et rate le prochain match."],["15–16","Mort","Retiré de l’effectif."]]],
   ["Blessure persistante · D6",[["1–2","Tête","−1 AV"],["3","Genou","−1 MA"],["4","Bras","−1 PA"],["5","Cou","−1 AG"],["6","Épaule","−1 ST"]]]]},
- skills:{t:"Compétences",k:"#3fd18f",dice:"",cats:{
+ skills:{t:"Compétences",k:"#f3c34f",dice:"",cats:{
   "Générales":[["Blocage","Ignore « Les deux plaqués » pour ce joueur."],["Frénésie","Doit suivre et refaire un blocage si l’adversaire est toujours debout."],["Lutte","Sur « Les deux plaqués », les deux joueurs sont mis à terre sans turnover."],["Tacle","L’adversaire ne peut pas utiliser Esquive contre ce joueur."],["Prise sûre","Relance un ramassage raté. Immunisé contre Arracher le ballon."]],
   "Agilité":[["Esquive","Relance une esquive ratée par tour. En défense, « Défenseur trébuche » devient « Repoussé »."],["Réception","Relance une réception ratée."],["Sprint","Peut Foncer trois fois au lieu de deux."],["Pied sûr","Relance un Foncer raté par tour."],["Glissade","Choisit la case où il est repoussé."]],
   "Force":[["Châtaigne","+1 au jet d’armure ou de blessure."],["Garde","Fournit des soutiens même s’il est marqué."],["Stabilité","Peut refuser d’être repoussé."],["Crâne épais","Sur un KO à 8, reste Sonné."]],
