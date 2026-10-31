@@ -101,6 +101,11 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .ctip{position:absolute;pointer-events:none;background:#050806f2;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;color:var(--muted);white-space:nowrap;z-index:2;transform:translate(-50%,calc(-100% - 10px))}
 .ctip b{color:var(--fg);font-family:var(--f-label);font-size:15px}
 .ctip .k{display:inline-block;width:10px;height:2px;margin-right:6px;vertical-align:4px}
+/* encart en chantier : recouvert et inactif */
+.wip-box{position:relative;overflow:hidden}
+.wip-box>:not(.wip-cover){pointer-events:none;user-select:none}
+.wip-cover{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:rgba(5,8,6,.6);border:2px solid color-mix(in srgb,var(--gold) 70%,transparent);border-radius:10px}
+.wip-cover span{font-family:var(--f-display);font-weight:600;font-size:clamp(30px,10vw,48px);line-height:.9;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);text-align:center;text-shadow:0 2px 12px #000c}
 .sortrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:var(--f-label);font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .sortrow button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-label);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .sortrow button[aria-pressed="true"]{background:var(--surface2);color:var(--fg);border-color:var(--gold)}
@@ -571,10 +576,11 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button class="btn small" type="button" id="bFumbbl">Importer mes matchs FUMBBL</button>
       <p class="hint" id="fumbblMsg">Récupère vos matchs joués sur fumbbl.com. Ils comptent dans vos stats, avec la compétition « FUMBBL ». Relancez l'import pour ajouter les nouveaux.</p>
     </div>
-    <div class="panel">
+    <div class="panel wip-box">
+      <div class="wip-cover" aria-hidden="true"><span>Work in progress</span></div>
       <h2>Blood Bowl 3</h2>
-      <div class="field"><label for="sBb3">Mon pseudo Blood Bowl 3</label><input id="sBb3" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
-      <button class="btn small" type="button" id="bBb3">Importer mes matchs Blood Bowl 3</button>
+      <div class="field"><label for="sBb3">Mon pseudo Blood Bowl 3</label><input id="sBb3" tabindex="-1" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
+      <button class="btn small" type="button" id="bBb3" tabindex="-1" disabled>Importer mes matchs Blood Bowl 3</button>
       <p class="hint" id="bb3Msg">Récupère vos matchs Blood Bowl 3 via le site Spike (spike.bugeat.com). Relancez l'import pour ajouter les nouveaux.</p>
     </div>
     <div class="panel">
