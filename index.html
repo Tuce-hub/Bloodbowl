@@ -101,6 +101,7 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .ctip{position:absolute;pointer-events:none;background:#050806f2;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;color:var(--muted);white-space:nowrap;z-index:2;transform:translate(-50%,calc(-100% - 10px))}
 .ctip b{color:var(--fg);font-family:var(--f-label);font-size:15px}
 .ctip .k{display:inline-block;width:10px;height:2px;margin-right:6px;vertical-align:4px}
+.seg.src{grid-template-columns:repeat(4,1fr)}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .tile .k{font-family:var(--f-label);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
@@ -496,6 +497,9 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
   <!-- STATS -->
   <section class="view" id="v-stats" hidden>
     <form class="send" id="cSearchF" autocomplete="off"><div class="field" style="flex:1;min-width:0"><input id="cSearch" class="search" placeholder="Rechercher un coach (nom, n° NAF)" aria-label="Rechercher un coach" enterkeyhint="search"></div><button class="btn small" type="submit">Voir</button></form>
+    <div class="seg src" id="srcSeg" role="group" aria-label="Source des matchs" hidden>
+      <button type="button" data-src="all" aria-pressed="true">Tout</button><button type="button" data-src="table" aria-pressed="false">Table</button><button type="button" data-src="fumbbl" aria-pressed="false">FUMBBL</button><button type="button" data-src="bb3" aria-pressed="false">BB3</button>
+    </div>
     <div class="tiles" id="tiles"></div>
     <div id="charts" class="charts"></div>
     <div class="seg" role="group" aria-label="Regrouper par">
@@ -562,6 +566,13 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <div class="field"><label for="sFumbbl">Mon pseudo FUMBBL</label><input id="sFumbbl" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
       <button class="btn small" type="button" id="bFumbbl">Importer mes matchs FUMBBL</button>
       <p class="hint" id="fumbblMsg">Récupère vos matchs joués sur fumbbl.com. Ils comptent dans vos stats, avec la compétition « FUMBBL ». Relancez l'import pour ajouter les nouveaux.</p>
+    </div>
+    <div class="panel">
+      <h2>Blood Bowl 3</h2>
+      <div class="field"><label for="sBb3">Mon pseudo Blood Bowl 3</label><input id="sBb3" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
+      <label class="tog"><span>Ligues entre joueurs seulement <small class="hint" style="display:block">Ignore le ladder « Official league »</small></span><span class="switch"><input type="checkbox" id="sBb3Humans"><i></i></span></label>
+      <button class="btn small" type="button" id="bBb3">Importer mes matchs Blood Bowl 3</button>
+      <p class="hint" id="bb3Msg">Récupère vos matchs Blood Bowl 3 via le site Spike (spike.bugeat.com). Relancez l'import pour ajouter les nouveaux.</p>
     </div>
     <div class="panel">
       <h2>Sauvegarde et installation</h2>
@@ -894,7 +905,10 @@ function renderCharts(list){const host=$("#charts");if(!host)return;host.replace
 const plur=(w,n)=>(n>1?w:w.replace(/s$/,"")).toLowerCase();
 
 let group="coach", openCoach=null;
-function renderStats(){const list=allMatches();const a=agg(list);renderCharts(list);
+let statSrc=LS.get("statSrc","all");
+const srcOf=m=>m.source==="fumbbl"?"fumbbl":m.source==="bb3"?"bb3":"table";
+function renderStats(){const all=allMatches();const seg=$("#srcSeg");const hasOnline=all.some(m=>srcOf(m)!=="table");if(seg){seg.hidden=!hasOnline;seg.querySelectorAll("[data-src]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.src===statSrc)))}
+  const list=hasOnline&&statSrc!=="all"?all.filter(m=>srcOf(m)===statSrc):all;const a=agg(list);renderCharts(list);
   const pct=a.j?Math.round((a.V+a.N/2)/a.j*100):0;
   $("#tiles").innerHTML=`<div class="tile"><span class="k">Matchs</span><span class="v num">${a.j}</span><span class="s">${pct}% de points</span></div>
   <div class="tile"><span class="k">V-N-D</span><span class="v num">${vnd(a)}</span><span class="s">victoires · nuls · défaites</span></div>
@@ -1152,7 +1166,7 @@ function renderBackups(){const ex=settings.lastExport?Math.floor((Date.now()-Dat
   box.querySelectorAll("[data-snap]").forEach(b=>b.onclick=()=>{const x=snaps[+b.dataset.snap];
     confirmBox("Restaurer cette sauvegarde ?",`Les ${x.matches.length} matchs du ${fdate(x.at)} reviennent tels qu'ils étaient ce jour-là (y compris ceux supprimés depuis). Les matchs ajoutés après sont conservés.`,"Restaurer",false,()=>{
       const now=Date.now();x.matches.forEach(m=>{matches[m.id]=fixRosters(Object.assign({},m,{deleted:false,updatedAt:now}));pending.add(m.id)});saveMatches();setSync();sync();renderAll();toast("Sauvegarde restaurée")})})}
-function renderSettings(){renderBackups();if($("#sFumbbl"))$("#sFumbbl").value=settings.fumbblName||"";$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
+function renderSettings(){renderBackups();if($("#sFumbbl"))$("#sFumbbl").value=settings.fumbblName||"";if($("#sBb3")){$("#sBb3").value=settings.bb3Name||"";$("#sBb3Humans").checked=!!settings.bb3HumansOnly}$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
 $("#sMinutes").addEventListener("change",e=>{const v=parseInt(e.target.value,10);if(v>0){settings.minutes=v;saveSettings();$("#fMinutes").value=v;toast(`Temps par défaut : ${v} min`)}});
 $("#sBeep").addEventListener("change",e=>{settings.beep=e.target.checked;saveSettings();if(e.target.checked){unlockAudio();beep()}});
 $("#sNaf").addEventListener("change",e=>{settings.myNaf=cleanNaf(e.target.value);e.target.value=settings.myNaf;saveSettings();$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";if(live&&live.broadcast)pushLive()});
@@ -1199,6 +1213,33 @@ async function importFumbbl(){const name=$("#sFumbbl").value.trim(),msg=$("#fumb
   catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";toast("Import FUMBBL impossible")}
   finally{btn.disabled=false}}
 $("#bFumbbl").onclick=importFumbbl;
+$("#srcSeg").addEventListener("click",e=>{const b=e.target.closest("[data-src]");if(!b)return;statSrc=b.dataset.src;LS.set("statSrc",statSrc);renderStats()});
+
+/* ---------- import Blood Bowl 3 (API de Spike, spike.bugeat.com) ---------- */
+const SPIKE_API="https://optiplex.apiplatform.bugeat.com/api/bb2020";
+const BB3_RACES={1:"Humains",2:"Nains",3:"Skavens",4:"Orques",5:"Hommes Lézard",6:"Gobelins",7:"Elfes sylvains",8:"Élus du Chaos",9:"Elfes noirs",10:"Morts ambulants",11:"Halflings",12:"Amazones",13:"Vampires",14:"Union elfique",15:"Nordiques",16:"Nains du chaos",17:"Horreurs nécromantiques",18:"Nurgle",22:"Bas-Fonds",23:"Khorne",24:"Noblesse Impériale",1000:"Orques Noirs",1001:"Renégats du Chaos",1002:"Alliance du Vieux Monde"};
+const BB3_HUMAN_ONLY=l=>!/official league/i.test(l||"");
+async function spikeGet(path){const r=await fetch(SPIKE_API+path,{headers:{Accept:"application/ld+json"}});if(!r.ok)throw new Error("Spike "+r.status);return r.json()}
+async function importBB3(opts){opts=opts||{};const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
+  settings.bb3Name=name;saveSettings();btn.disabled=true;msg.textContent="Recherche du compte…";
+  try{const f=await spikeGet("/coaches?name="+encodeURIComponent(name));const me=(f["hydra:member"]||[]).find(c=>String(c.name).toLowerCase()===name.toLowerCase());
+    if(!me)throw new Error("Aucun coach Blood Bowl 3 « "+name+" » sur Spike");
+    let page=1,added=0,seen=0,skipped=0,total=0;const humansOnly=opts.humansOnly!=null?opts.humansOnly:!!settings.bb3HumansOnly;
+    for(;;){msg.textContent=`Téléchargement des matchs… ${seen}${total?" / "+total:""}`;
+      const j=await spikeGet(`/data/games?page=${page}&itemsPerPage=200&coach_uuid=${me.uuid}`);total=j["hydra:totalItems"]||0;const L=j["hydra:member"]||[];
+      L.forEach(g=>{seen++;if(humansOnly&&!BB3_HUMAN_ONLY(g.league_name)){skipped++;return}
+        const i=g.coach_uuid_1===me.uuid?0:1,mine=g.teams[i],opp=g.teams[1-i],oc=(g.coaches||[]).find(c=>c.idcoach!==me.uuid);if(!mine||!opp)return;
+        const id="bb3-"+g.uuid;if(matches[id])return;
+        dirty({id,date:g.finished||g.started||new Date().toISOString(),competition:`BB3 · ${g.league_name||"?"}`,source:"bb3",bb3League:g.league_name||"",
+          myRoster:BB3_RACES[mine.idraces]||("Race "+mine.idraces),oppCoach:oc?oc.coachname:"?",oppNaf:"",oppRoster:BB3_RACES[opp.idraces]||("Race "+opp.idraces),
+          myTD:+mine.score||0,oppTD:+opp.score||0,myCas:+mine.inflictedcasualties||0,oppCas:+opp.inflictedcasualties||0,note:`BB3 · ${g.competition_name||""} · ${mine.teamname} contre ${opp.teamname}`});added++});
+      if(!L.length||seen>=total)break;page++}
+    setSync();sync();renderAll();
+    msg.textContent=(added?`${added} match${added>1?"s":""} importé${added>1?"s":""}`:"Aucun nouveau match")+` (${seen} sur Spike${skipped?`, ${skipped} du ladder ignorés`:""}).`;toast(added?`${added} match(s) BB3 importé(s)`:"Rien de nouveau sur BB3")}
+  catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";toast("Import BB3 impossible")}
+  finally{btn.disabled=false}}
+$("#bBb3").onclick=()=>importBB3();
+$("#sBb3Humans").onchange=e=>{settings.bb3HumansOnly=e.target.checked;saveSettings()};
 
 $("#bImport").onclick=()=>$("#fileImport").click();
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const arr=Array.isArray(j)?j:j.matches;if(!Array.isArray(arr))throw 0;let n=0;
@@ -1461,7 +1502,7 @@ const TABS={match:"#v-match",direct:"#v-direct",stats:"#v-stats",hist:"#v-hist",
 function showTab(t){Object.entries(TABS).forEach(([k,s])=>$(s).hidden=k!==t);$$(".tabs button").forEach(b=>b.dataset.tab===t?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));window.scrollTo(0,0);
   if(t==="direct"){openDirect();renderDirect()}else if(dOpen)closeDetail()}
 $$(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab==="direct"&&dOpen){closeDetail();return}showTab(b.dataset.tab);try{history.replaceState(null,"","#"+(b.dataset.tab==="set"?"options":b.dataset.tab))}catch(e){}});
-$$(".seg button").forEach(b=>b.onclick=()=>{group=b.dataset.g;openCoach=null;$$(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderStats()});
+$$(".seg button[data-g]").forEach(b=>b.onclick=()=>{group=b.dataset.g;openCoach=null;$$(".seg button[data-g]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderStats()});
 $("#statSearch").addEventListener("input",renderStats);
 $("#dSearch").addEventListener("input",renderDirect);
 $("#sBroadcast").addEventListener("change",e=>{settings.broadcast=e.target.checked;saveSettings();renderLiveSettings();if(e.target.checked)fb().catch(()=>{});toast(e.target.checked?"Vos prochains matchs seront diffusés en direct":"Diffusion désactivée pour les prochains matchs")});
