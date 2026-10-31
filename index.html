@@ -145,7 +145,6 @@ body.clock-on.undo-on .toast{bottom:calc(70px + env(safe-area-inset-bottom,0px))
 .chips button{height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--line);background:var(--surface2);font-family:var(--f-label);font-weight:700;font-size:16px;color:var(--fg)}
 .chips button[aria-pressed="true"]{border-color:var(--gold);box-shadow:inset 0 -2px 0 var(--gold)}
 .chips button small{display:block;font-weight:500;font-size:12px;color:var(--muted);line-height:1}
-.chips.rev button{height:auto;padding:6px 14px;text-align:left;border-radius:12px}
 .minrow{display:flex;gap:8px;align-items:center}
 .minrow input{width:96px;flex:none}
 #newMatch .launch{position:sticky;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;box-shadow:0 -10px 24px var(--surface),0 8px 20px #0008}
@@ -514,7 +513,6 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
     <div id="liveBox" hidden></div>
     <form class="panel" id="newMatch" autocomplete="off">
       <h2>Nouveau match</h2>
-      <div class="field" id="revBox" hidden><span class="flabel">Revanche</span><div class="chips rev" id="revChips"></div></div>
       <div class="field">
         <label for="fMyRoster"><span class="side-tag" style="background:var(--me)"></span>Mon roster</label>
         <input id="fMyRoster" placeholder="Choisissez votre roster" required>
@@ -1070,10 +1068,7 @@ function pastMatch(){const m={id:uid(),date:new Date().toISOString(),competition
     d.querySelector("[data-ok]").onclick=async()=>{const fin=readForm(d,m);
       if(!fin.oppCoach||!fin.myRoster||!fin.oppRoster){toast("Renseignez les deux rosters et le coach adverse");return}
       close();await applyPhoto(fin,ph);saveWithNaf(fin,`Match ajouté : ${result(fin)==="V"?"victoire":result(fin)==="D"?"défaite":"nul"} ${fin.myTD}–${fin.oppTD}`)}})}
-function renderNewMatchHelpers(){const v=+$("#fMinutes").value;$$("#minChips [data-min]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.min===v)));
-  const seen=new Set(),rev=[];allMatches().filter(m=>srcOf(m)==="table").forEach(m=>{const k=norm(m.oppCoach);if(!k||seen.has(k)||rev.length>=3)return;seen.add(k);rev.push(m)});
-  $("#revBox").hidden=!rev.length;$("#revChips").innerHTML=rev.map((m,i)=>`<button type="button" data-rev="${i}">${esc(m.oppCoach)}<small>${esc(m.oppRoster)} · ${esc(fdate(m.date))}</small></button>`).join("");
-  $$("#revChips [data-rev]").forEach(b=>b.onclick=()=>{const m=rev[+b.dataset.rev];$("#fCoach").value=m.oppCoach;$("#fNaf").value=m.oppNaf||nafOf(m.oppCoach)||"";$("#fOppRoster").value=m.oppRoster;$("#fCoach").dispatchEvent(new Event("change"));if(!$("#fMyRoster").value)$("#fMyRoster").value=m.myRoster;toast("Revanche contre "+m.oppCoach)})}
+function renderNewMatchHelpers(){const v=+$("#fMinutes").value;$$("#minChips [data-min]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.min===v)));}
 $("#minChips").addEventListener("click",e=>{const b=e.target.closest("[data-min]");if(!b)return;$("#fMinutes").value=b.dataset.min;renderNewMatchHelpers()});
 $("#fMinutes").addEventListener("input",renderNewMatchHelpers);
 $("#bPast").onclick=pastMatch;
