@@ -320,7 +320,9 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 #clock.placing .half{padding-top:calc(3vh + 46px);background:color-mix(in srgb,var(--gold) 7%,var(--surface))}
 #clock.placing .half.active{background:color-mix(in srgb,var(--gold) 20%,#0a0f0c)}
 #clock.placing .half.active::before{background:var(--gold)}
-#clock.placing .strip{padding-top:52px}
+#clock.placing .strip{padding-top:50px;gap:.6vh}
+#clock.placing .strip button{padding:.4vh 2px}
+#clock.placing .strip button svg{width:min(20px,4.4vh);height:min(20px,4.4vh)}
 .tpick{display:flex;align-items:center;justify-content:center;gap:22px}
 .tpick button{width:64px;height:64px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-family:var(--f-display);font-size:40px;color:var(--fg)}
 .tpick b{font-family:var(--f-display);font-size:64px;line-height:1;min-width:2ch;text-align:center}
@@ -339,6 +341,17 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 .strip button.go{background:var(--gold);color:#2a1f00;border-color:var(--gold)}
 .strip button.end{color:var(--gold)}
 
+/* écran Règles (provisoire) : panneau à 90 % de l'écran, ne touche jamais au chrono */
+.rules{position:absolute;inset:0;z-index:30;display:grid;place-items:center;cursor:pointer}
+.rules .pan{position:relative;width:90%;height:90%;border-radius:16px;border:2px solid color-mix(in srgb,var(--gold) 70%,transparent);background:rgba(5,8,6,.55);display:grid;place-items:center}
+.rules .wip{font-family:var(--f-display);font-weight:600;font-size:min(16vh,8vw);line-height:.9;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);text-align:center;text-shadow:0 2px 12px #000c}
+.rules .x{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:#050806cc;color:var(--fg);display:grid;place-items:center}
+.rules .x svg{width:22px;height:22px}
+.h-big{display:none}
+#clock.placing .h-ctrs{display:none}
+#clock.placing .h-foot .h-status{display:none}
+#clock.placing .h-big{display:grid;place-items:center;min-height:clamp(48px,15vh,84px);text-align:center;text-wrap:balance;font-family:var(--f-label);font-weight:700;font-size:clamp(20px,8.5vh,46px);letter-spacing:.04em;line-height:1.05;text-transform:uppercase;color:var(--muted)}
+#clock.placing .half.active .h-big{color:var(--fg)}
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;z-index:40;background:#000b;display:grid;place-items:center;padding:16px}
 .dlg{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(520px,100%);max-height:calc(100% - 8px);overflow-y:auto;overflow-x:hidden;padding:18px;display:flex;flex-direction:column;gap:14px}
@@ -514,10 +527,12 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <div class="ctr td"><button type="button" class="minus" data-k="td" data-d="-1" aria-label="Retirer un TD">−</button><button type="button" class="plus" data-k="td" data-d="1"><span class="lbl">TD</span><span class="val">0</span><span class="add">+</span></button></div>
       <div class="ctr cas"><button type="button" class="minus" data-k="cas" data-d="-1" aria-label="Retirer une sortie">−</button><button type="button" class="plus" data-k="cas" data-d="1"><span class="lbl">Sorties</span><span class="val">0</span><span class="add">+</span></button></div>
     </div>
+    <div class="h-big"></div>
     <div class="h-time">1:15:00</div>
     <div class="h-foot"><button type="button" class="turn" aria-label="Corriger le tour">Tour <b>0</b>/8</button><div class="h-status"></div></div>
   </section>
   <div class="strip">
+    <button type="button" id="cRules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg><span>Règles</span></button>
     <button type="button" id="cPause"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg><span>Pause</span></button>
     <button type="button" id="cReset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>Zéro</span></button>
     <button type="button" id="cSwap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></svg><span>Côtés</span></button>
@@ -531,9 +546,11 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <div class="ctr td"><button type="button" class="minus" data-k="td" data-d="-1" aria-label="Retirer un TD">−</button><button type="button" class="plus" data-k="td" data-d="1"><span class="lbl">TD</span><span class="val">0</span><span class="add">+</span></button></div>
       <div class="ctr cas"><button type="button" class="minus" data-k="cas" data-d="-1" aria-label="Retirer une sortie">−</button><button type="button" class="plus" data-k="cas" data-d="1"><span class="lbl">Sorties</span><span class="val">0</span><span class="add">+</span></button></div>
     </div>
+    <div class="h-big"></div>
     <div class="h-time">1:15:00</div>
     <div class="h-foot"><button type="button" class="turn" aria-label="Corriger le tour">Tour <b>0</b>/8</button><div class="h-status"></div></div>
   </section>
+  <div class="rules" id="cRulesBox" hidden><div class="pan"><div class="wip">Work in progress</div><button type="button" class="x" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
 </div>
 
 <div id="modal" class="modal" hidden></div>
@@ -867,7 +884,7 @@ function renderLiveCard(){const box=$("#liveBox");if(!live){box.hidden=true;$("#
   $("#lEnd").onclick=endMatch;
   $("#lQuit").onclick=()=>confirmBox("Abandonner ce match ?","Le chrono et le score en cours seront effacés sans être enregistrés.","Abandonner",true,()=>{if(live.broadcast)liveAbort(live.id);unwatchOwnChat();live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll()})}
 
-function endMatch(){if(!live)return;commit();if(live.running){live.running=false;live.paused=true}saveLive();
+function endMatch(){if(!live)return;$("#cRulesBox").hidden=true;commit();if(live.running){live.running=false;live.paused=true}saveLive();
   const m={id:live.id,date:live.date,competition:live.competition||"",oppNaf:live.oppNaf||"",myRoster:live.myRoster,oppCoach:live.oppCoach,oppRoster:live.oppRoster,myTD:live.td.me,oppTD:live.td.opp,myCas:live.cas.me,oppCas:live.cas.opp,minutes:live.minutes,usedMe:live.minutes*60000-live.remaining.me,usedOpp:live.minutes*60000-live.remaining.opp};
   modal(`<h3>Fin du match</h3><p>Vérifiez le score avant d'enregistrer.</p>${matchForm(m)}<div class="acts"><button class="btn small danger" data-ab>Abandonner</button><button class="btn small" data-x>Reprendre le match</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{
     d.querySelector("[data-x]").onclick=close;
@@ -879,7 +896,7 @@ function endMatch(){if(!live)return;commit();if(live.running){live.running=false
 let forceClock=false;
 const landscape=matchMedia("(orientation: landscape)"), coarse=matchMedia("(pointer: coarse)");
 function clockVisible(){return !!live&&(forceClock||(landscape.matches&&coarse.matches))}
-function renderClockVisibility(){const v=clockVisible();$("#clock").hidden=!v;if(v){renderClock();if(live.running)requestWake()}}
+function renderClockVisibility(){const v=clockVisible();$("#clock").hidden=!v;if(!v)$("#cRulesBox").hidden=true;if(v){renderClock();if(live.running)requestWake()}}
 landscape.addEventListener("change",()=>{if(!landscape.matches)forceClock=false;renderClockVisibility()});
 
 let lastSwitch=0;
@@ -900,9 +917,11 @@ $$(".half").forEach(h=>{const side=h.dataset.side;
 $("#cPause").onclick=()=>{if(!live)return;if(live.running){commit();live.running=false;live.paused=true}else if(live.paused){live.running=true;live.paused=false;live.since=Date.now()}else return;saveLive();renderClock();liveEvent(live.paused?"pause":"resume",live.active)};
 $("#cReset").onclick=()=>{if(!live)return;confirmBox("Remettre les chronos à zéro ?",`Les deux joueurs repartent à ${live.minutes} min et les tours à 0. Le score et les sorties sont conservés.`,"Remettre à zéro",true,()=>{live.remaining={me:live.minutes*60000,opp:live.minutes*60000};live.running=false;live.paused=false;live.active=null;live.alerted={me:false,opp:false};Object.assign(live,{phase:"setup",half:1,turn:{me:0,opp:0},kicker:null,firstKicker:null,started:false});saveLive();renderClock();liveEvent("reset")})};
 $("#cKick").onclick=kickDone;
+$("#cRules").onclick=e=>{e.stopPropagation();$("#cRulesBox").hidden=false};
+$("#cRulesBox").addEventListener("click",e=>{e.stopPropagation();$("#cRulesBox").hidden=true});
 $("#cSwap").onclick=()=>{settings.swap=!settings.swap;saveSettings();renderClock()};
 $("#cEnd").onclick=endMatch;
-$("#cClose").onclick=()=>{forceClock=false;$("#clock").hidden=true;exitFull();renderLiveCard();if(landscape.matches&&coarse.matches)toast("Tournez en portrait pour le menu")};
+$("#cClose").onclick=()=>{forceClock=false;$("#cRulesBox").hidden=true;$("#clock").hidden=true;exitFull();renderLiveCard();if(landscape.matches&&coarse.matches)toast("Tournez en portrait pour le menu")};
 
 /* compteur de tours : phases placement / jeu */
 function startRun(side,now){live.active=side;live.running=true;live.paused=false;live.since=now||Date.now();requestWake();unlockAudio()}
@@ -948,7 +967,7 @@ function renderClock(){if(!live)return;const c=$("#clock");c.classList.toggle("s
     h.querySelector(".h-name").textContent=sideName(side);
     h.querySelector(".h-roster").textContent=sideRoster(side);
     const te=h.querySelector(".h-time"),txt=fmt(r);if(te.textContent!==txt||!te.dataset.fit){te.textContent=txt;fitText(te)}
-    h.querySelector(".h-status").textContent=statusText(side,r);
+    h.querySelector(".h-status").textContent=statusText(side,r);h.querySelector(".h-big").textContent=h.querySelector(".h-status").textContent;
     h.querySelector(".td .val").textContent=live.td[side];
     h.querySelector(".cas .val").textContent=live.cas[side];
     h.querySelector(".turn").innerHTML=`Tour <b>${live.turn?live.turn[side]||0:0}</b>/8${live.half===2?" · 2e MT":""}`});
