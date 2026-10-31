@@ -61,6 +61,8 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .btn.small{padding:8px 12px;font-size:15px}
 .btn:disabled{opacity:.45;cursor:default}
 .hint{color:var(--muted);font-size:14px;margin:0}
+.snaps{display:flex;flex-direction:column;gap:6px}.snap{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}.snap span{font-size:15px}
+.hint.warn{color:var(--gold)}
 .ver{color:var(--faint);font-size:12px;text-align:center;margin:0;letter-spacing:.04em}
 
 /* intel card */
@@ -543,6 +545,8 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
         <button class="btn small" type="button" id="bImport">Importer</button>
         <button class="btn small primary" type="button" id="bInstall" hidden>Installer l'appli</button>
       </div>
+      <p class="hint" id="exportAge"></p>
+      <div class="field"><span class="flabel">Sauvegardes automatiques</span><div id="snapList" class="snaps"></div></div>
       <p class="hint">Installée sur l'écran d'accueil, l'appli s'ouvre en plein écran et fonctionne sans réseau.</p>
       <input type="file" id="fileImport" accept="application/json,.json" hidden>
       <div id="exportBox" hidden></div>
@@ -619,7 +623,13 @@ let pending=new Set(LS.get("pending",[]));
 let live=fixRosters(LS.get("live",null));
 if(live&&!live.phase)Object.assign(live,{phase:"play",half:1,turn:{me:0,opp:0},kicker:null,firstKicker:null});
 const saveSettings=()=>LS.set("settings",settings);
-const saveMatches=()=>{LS.set("matches",matches);LS.set("pending",[...pending])};
+const saveMatches=()=>{LS.set("matches",matches);LS.set("pending",[...pending]);snapshot()};
+// Sauvegarde automatique : une copie des matchs par jour, les 7 derniers jours gardés sur l'appareil.
+function snapshot(){try{const day=new Date().toISOString().slice(0,10);let snaps=LS.get("snapshots",[]);
+  const list=Object.values(matches).filter(m=>!m.deleted);if(!list.length)return;
+  if(snaps.some(x=>x.day===day))return; // une seule copie par jour : celle du début de journée
+  snaps.unshift({day,at:new Date().toISOString(),matches:list});snaps=snaps.slice(0,7);
+  try{localStorage.setItem("dugout.snapshots",JSON.stringify(snaps))}catch(e){snaps=snaps.slice(0,3);try{localStorage.setItem("dugout.snapshots",JSON.stringify(snaps))}catch(e2){}}}catch(e){}}
 const saveLive=()=>LS.set("live",live);
 const allMatches=()=>Object.values(matches).filter(m=>!m.deleted).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
 const result=m=>m.myTD>m.oppTD?"V":m.myTD<m.oppTD?"D":"N";
@@ -974,7 +984,7 @@ function rgShow(id){const home=$("#rgHome"),v=$("#rgView");home.hidden=!!id;v.hi
     `<div class="rg-sk">`+r.cats[rgCat].map(([n,en,e,el])=>`<details><summary><span class="n">${esc(n)}</span> <span class="en">${esc(en)}</span>${el?` <span class="el">Élite</span>`:""}</summary><p>${esc(e)}</p></details>`).join("")+`</div>`}
   else body=r.secs.map(([h,rows])=>(h?`<div class="rg-sec">${esc(h)}</div>`:"")+rows.map(([d,n,e,hl])=>`<div class="rg-row${hl?" hl":""}"><span class="d">${d}</span><div><span class="n">${esc(n)}</span>${e?`<span class="e">${esc(e)}</span>`:""}</div></div>`).join("")).join("");
   
-  v.innerHTML=`<div class="rg-hd"><button type="button" class="rg-back">‹ Retour</button><h3>${r.t}</h3>${r.dice?`<span class="dice">${r.dice}</span>`:""}</div><div class="rg-body">${body}<p class="rg-note">Blood Bowl Saison 3 (2025)</p></div>`}
+  v.innerHTML=`<div class="rg-hd"><button type="button" class="rg-back">‹ Retour</button><h3>${r.t}</h3>${r.dice?`<span class="dice">${r.dice}</span>`:""}</div><div class="rg-body">${body}<p class="rg-note">Blood Bowl Saison 3 (2025) · Textes repris de <a href="https://mordorbihan.fr/fr/bloodbowl/2025" target="_blank" rel="noopener" style="color:inherit">mordorbihan.fr</a></p></div>`}
 $("#cRulesBox").addEventListener("click",e=>{e.stopPropagation();const box=$("#cRulesBox");
   if(e.target===box||e.target.closest(".x")){box.hidden=true;rgShow(null);return}
   const t=e.target.closest("[data-rg]");if(t)return rgShow(t.dataset.rg);
@@ -1066,7 +1076,14 @@ function releaseWake(){try{wake&&wake.release()}catch(e){}wake=null}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&live&&live.running&&!$("#clock").hidden)requestWake()});
 
 /* ---------- settings ---------- */
-function renderSettings(){$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
+function renderBackups(){const ex=settings.lastExport?Math.floor((Date.now()-Date.parse(settings.lastExport))/864e5):null;
+  const ea=$("#exportAge");if(ea){ea.textContent=ex==null?"Aucun export pour l'instant : exportez régulièrement vos matchs vers un fichier gardé ailleurs (Drive, mail…).":ex>30?`Dernier export il y a ${ex} jours : pensez à en refaire un.`:`Dernier export : ${fdate(settings.lastExport)}.`;ea.classList.toggle("warn",ex==null||ex>30)}
+  const box=$("#snapList");if(!box)return;const snaps=LS.get("snapshots",[]);
+  box.innerHTML=snaps.length?snaps.map((x,i)=>`<div class="snap"><span>${esc(fdate(x.at))} · ${x.matches.length} match${x.matches.length>1?"s":""}</span><button type="button" class="btn small" data-snap="${i}">Restaurer</button></div>`).join(""):`<p class="hint">Une copie de vos matchs est gardée chaque jour sur ce téléphone (7 jours).</p>`;
+  box.querySelectorAll("[data-snap]").forEach(b=>b.onclick=()=>{const x=snaps[+b.dataset.snap];
+    confirmBox("Restaurer cette sauvegarde ?",`Les ${x.matches.length} matchs du ${fdate(x.at)} reviennent tels qu'ils étaient ce jour-là (y compris ceux supprimés depuis). Les matchs ajoutés après sont conservés.`,"Restaurer",false,()=>{
+      const now=Date.now();x.matches.forEach(m=>{matches[m.id]=fixRosters(Object.assign({},m,{deleted:false,updatedAt:now}));pending.add(m.id)});saveMatches();setSync();sync();renderAll();toast("Sauvegarde restaurée")})})}
+function renderSettings(){renderBackups();$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
 $("#sMinutes").addEventListener("change",e=>{const v=parseInt(e.target.value,10);if(v>0){settings.minutes=v;saveSettings();$("#fMinutes").value=v;toast(`Temps par défaut : ${v} min`)}});
 $("#sBeep").addEventListener("change",e=>{settings.beep=e.target.checked;saveSettings();if(e.target.checked){unlockAudio();beep()}});
 $("#sNaf").addEventListener("change",e=>{settings.myNaf=cleanNaf(e.target.value);e.target.value=settings.myNaf;saveSettings();$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";if(live&&live.broadcast)pushLive()});
@@ -1083,9 +1100,9 @@ window.addEventListener("appinstalled",()=>{$("#bInstall").hidden=true;toast("Ap
 
 $("#bExport").onclick=async()=>{const data=JSON.stringify({app:"dugout-bloodbowl",version:1,exportedAt:new Date().toISOString(),matches:allMatches()},null,2);
   const name=`dugout-bloodbowl-${new Date().toISOString().slice(0,10)}.json`;
-  try{const url=URL.createObjectURL(new Blob([data],{type:"application/json"}));const el=document.createElement("a");el.href=url;el.download=name;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);toast("Export téléchargé");return}catch(e){}
+  try{const url=URL.createObjectURL(new Blob([data],{type:"application/json"}));const el=document.createElement("a");el.href=url;el.download=name;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);settings.lastExport=new Date().toISOString();saveSettings();renderBackups();toast("Export téléchargé");return}catch(e){}
   const box=$("#exportBox");box.hidden=false;box.innerHTML=`<p class="hint">Copiez ce texte et gardez-le dans un fichier ${esc(name)}.</p><textarea id="exportTxt" readonly>${esc(data)}</textarea><button class="btn small" id="bCopy" type="button">Copier</button>`;
-  $("#bCopy").onclick=async()=>{try{await navigator.clipboard.writeText(data);toast("Copié")}catch(e){$("#exportTxt").select();toast("Texte sélectionné : copiez-le")}}};
+  $("#bCopy").onclick=async()=>{try{await navigator.clipboard.writeText(data);settings.lastExport=new Date().toISOString();saveSettings();renderBackups();toast("Copié")}catch(e){$("#exportTxt").select();toast("Texte sélectionné : copiez-le")}}};
 
 $("#bImport").onclick=()=>$("#fileImport").click();
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const arr=Array.isArray(j)?j:j.matches;if(!Array.isArray(arr))throw 0;let n=0;
@@ -1373,11 +1390,17 @@ renderSettings();setSync();renderAll();
 const h=(location.hash||"").slice(1);if(!routeHash()){if(h==="stats"||h==="hist")showTab(h);else if(h==="options")showTab("set")}
 $("#fEto").checked=!!settings.lastEto;renderLiveSettings();if(live&&live.broadcast){watchOwnChat();pushLive()}
 openDirect();flushDiscord();
+snapshot();renderBackups();
 sync();
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 })();
-// Version affichée sur l'accueil — à garder identique au numéro de VERSION dans sw.js (dugout-v22 → 0.22).
-document.getElementById("appVer").textContent="Version 0.22";
+// Version affichée sur l'accueil : lue dans sw.js (seul endroit à modifier). dugout-v22 → 0.22
+(function(){const el=document.getElementById("appVer");if(!el)return;
+  const show=v=>{const m=/dugout-v(\d+)/.exec(v||"");if(m)el.textContent="Version 0."+m[1]};
+  const fromFile=()=>fetch("./sw.js").then(r=>r.text()).then(t=>show((/VERSION\s*=\s*"([^"]+)"/.exec(t)||[])[1])).catch(()=>{});
+  const sw=navigator.serviceWorker;
+  if(sw&&sw.controller){let done=false;sw.addEventListener("message",e=>{if(e.data&&e.data.version){done=true;show(e.data.version)}});
+    sw.controller.postMessage("version");setTimeout(()=>{if(!done)fromFile()},1500)}else fromFile()})();
 </script>
 </body>
 </html>
