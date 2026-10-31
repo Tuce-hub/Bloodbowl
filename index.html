@@ -342,9 +342,33 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 .strip button.end{color:var(--gold)}
 
 /* écran Règles (provisoire) : panneau à 90 % de l'écran, ne touche jamais au chrono */
-.rules{position:absolute;inset:0;z-index:30;display:grid;place-items:center;cursor:pointer}
-.rules .pan{position:relative;width:90%;height:90%;border-radius:16px;border:2px solid color-mix(in srgb,var(--gold) 70%,transparent);background:rgba(5,8,6,.55);display:grid;place-items:center}
-.rules .wip{font-family:var(--f-display);font-weight:600;font-size:min(16vh,8vw);line-height:.9;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);text-align:center;text-shadow:0 2px 12px #000c}
+.rules{position:absolute;inset:0;z-index:30;display:grid;place-items:center;cursor:pointer;background:#0008}
+.rules .pan{position:relative;width:90%;height:90%;border-radius:16px;border:2px solid color-mix(in srgb,var(--gold) 70%,transparent);background:rgba(8,12,10,.96);display:flex;flex-direction:column;cursor:default;overflow:hidden;padding:12px 64px 12px 14px}
+.rg-home{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;min-height:0}
+.rg-tile{--k:var(--gold);display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;column-gap:14px;align-items:center;text-align:left;padding:2vh 2.2vw;border-radius:14px;border:2px solid color-mix(in srgb,var(--k) 55%,transparent);background:color-mix(in srgb,var(--k) 10%,var(--surface));min-width:0}
+.rg-tile:active{transform:scale(.98)}
+.rg-tile svg{grid-row:1/3;width:min(13vh,7vw);height:min(13vh,7vw);color:var(--k)}
+.rg-tile b{align-self:end;font-family:var(--f-display);font-weight:600;font-size:min(10.5vh,4.3vw);line-height:.9;letter-spacing:.02em;text-transform:uppercase;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rg-tile small{align-self:start;font-family:var(--f-label);font-weight:600;font-size:clamp(12px,3.6vh,18px);letter-spacing:.06em;text-transform:uppercase;color:var(--k)}
+.rg-tile[data-rg="meteo"]{--k:#6cc4ff} .rg-tile[data-rg="kick"]{--k:var(--gold)} .rg-tile[data-rg="inj"]{--k:var(--danger)} .rg-tile[data-rg="skills"]{--k:var(--me)}
+.rg-view{flex:1;display:flex;flex-direction:column;min-height:0;gap:8px}
+.rg-hd{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rg-back{height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);font-family:var(--f-label);font-weight:700;font-size:17px;letter-spacing:.05em;text-transform:uppercase}
+.rg-hd h3{margin:0;font-family:var(--f-display);font-weight:600;font-size:clamp(26px,9vh,44px);line-height:1;letter-spacing:.03em;text-transform:uppercase;color:var(--k,var(--gold))}
+.rg-hd .dice{font-family:var(--f-label);font-weight:700;font-size:16px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.rg-body{flex:1;overflow-y:auto;min-height:0;padding-right:4px;overscroll-behavior:contain}
+.rg-sec{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.rg-sec:first-child{margin-top:0}
+.rg-row{display:grid;grid-template-columns:3.4em 1fr;gap:12px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line)}
+.rg-row .d{font-family:var(--f-display);font-weight:600;font-size:26px;line-height:1;color:var(--k,var(--gold));text-align:center;font-variant-numeric:tabular-nums}
+.rg-row .n{font-family:var(--f-label);font-weight:700;font-size:19px;letter-spacing:.03em;color:var(--fg)}
+.rg-row .e{display:block;font-size:15px;line-height:1.35;color:var(--muted)}
+.rg-row.hl{background:color-mix(in srgb,var(--k,var(--gold)) 9%,transparent)}
+.rg-cats{display:flex;gap:6px;flex-wrap:wrap}
+.rg-cats button{height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line);background:var(--surface2);font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.rg-cats button[aria-pressed="true"]{background:var(--me);border-color:var(--me);color:var(--me-ink)}
+.rg-sk{grid-template-columns:1fr}
+.rg-note{font-size:13px;color:var(--faint);margin:10px 0 0}
 .rules .x{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:#050806cc;color:var(--fg);display:grid;place-items:center}
 .rules .x svg{width:22px;height:22px}
 .h-big{display:none}
@@ -550,7 +574,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
     <div class="h-time">1:15:00</div>
     <div class="h-foot"><button type="button" class="turn" aria-label="Corriger le tour">Tour <b>0</b>/8</button><div class="h-status"></div></div>
   </section>
-  <div class="rules" id="cRulesBox" hidden><div class="pan"><div class="wip">Work in progress</div><button type="button" class="x" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
+  <div class="rules" id="cRulesBox" hidden><div class="pan"><div class="rg-home" id="rgHome"><button type="button" class="rg-tile" data-rg="meteo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M2.5 8H1M3.8 3.8l1 1M12.2 3.8l-1 1"/><path d="M7 20h11a4 4 0 0 0 0-8 5 5 0 0 0-9.6 1.5A3.3 3.3 0 0 0 7 20z"/></svg><b>Météo</b><small>2D6</small></button><button type="button" class="rg-tile" data-rg="kick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="12" rx="9.5" ry="6" transform="rotate(-35 12 12)"/><path d="M9 15l6-6M10.5 10.5l3 3M8.8 12.2l1.4 1.4M12.2 8.8l1.4 1.4"/></svg><b>Coup d’envoi</b><small>2D6</small></button><button type="button" class="rg-tile" data-rg="inj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7.5-4.6-9.3-9.6C1.4 7.6 3.8 4 7.3 4c2 0 3.6 1.1 4.7 2.7C13.1 5.1 14.7 4 16.7 4c3.5 0 5.9 3.6 4.6 7.4C19.5 16.4 12 21 12 21z"/><path d="M7 12h3l1.5-3 2 6 1.5-3h2"/></svg><b>Blessures</b><small>Armure · 2D6 · D16</small></button><button type="button" class="rg-tile" data-rg="skills"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.5L12 16.8 6.1 20l1.3-6.5L2.5 8.9l6.6-.8z"/></svg><b>Compétences</b><small>Par catégorie</small></button></div><div class="rg-view" id="rgView" hidden></div><button type="button" class="x" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
 </div>
 
 <div id="modal" class="modal" hidden></div>
@@ -917,8 +941,52 @@ $$(".half").forEach(h=>{const side=h.dataset.side;
 $("#cPause").onclick=()=>{if(!live)return;if(live.running){commit();live.running=false;live.paused=true}else if(live.paused){live.running=true;live.paused=false;live.since=Date.now()}else return;saveLive();renderClock();liveEvent(live.paused?"pause":"resume",live.active)};
 $("#cReset").onclick=()=>{if(!live)return;confirmBox("Remettre les chronos à zéro ?",`Les deux joueurs repartent à ${live.minutes} min et les tours à 0. Le score et les sorties sont conservés.`,"Remettre à zéro",true,()=>{live.remaining={me:live.minutes*60000,opp:live.minutes*60000};live.running=false;live.paused=false;live.active=null;live.alerted={me:false,opp:false};Object.assign(live,{phase:"setup",half:1,turn:{me:0,opp:0},kicker:null,firstKicker:null,started:false});saveLive();renderClock();liveEvent("reset")})};
 $("#cKick").onclick=kickDone;
-$("#cRules").onclick=e=>{e.stopPropagation();$("#cRulesBox").hidden=false};
-$("#cRulesBox").addEventListener("click",e=>{e.stopPropagation();$("#cRulesBox").hidden=true});
+$("#cRules").onclick=e=>{e.stopPropagation();rgShow(null);$("#cRulesBox").hidden=false};
+// ---- Écran Règles : 4 aide-mémoire (APERÇU — textes à valider avec le livre de règles) ----
+const RG={
+ meteo:{t:"Météo",k:"#6cc4ff",dice:"2D6 · avant le match, et sur « Météo changeante »",secs:[["",[
+  ["2","Chaleur accablante","À la fin de chaque drive, D3 joueurs au hasard de chaque équipe s’effondrent : ils ratent le drive suivant."],
+  ["3","Très ensoleillé","−1 à tous les tests de passe."],
+  ["4–10","Conditions idéales","Aucun effet.",1],
+  ["11","Pluie battante","−1 pour réceptionner, intercepter ou ramasser le ballon."],
+  ["12","Blizzard","−1 pour Foncer. Seules les passes Rapides et Courtes sont autorisées."]]]]},
+ kick:{t:"Coup d’envoi",k:"#f3c34f",dice:"2D6 · après le placement des deux équipes",secs:[["",[
+  ["2","Appel de l’arbitre","Chaque équipe reçoit un Pot-de-vin gratuit."],
+  ["3","Temps mort","Équipe qui frappe au tour 6, 7 ou 8 : les deux compteurs reculent d’un tour. Sinon : ils avancent d’un tour."],
+  ["4","Défense solide","D3+3 joueurs de l’équipe qui frappe peuvent être replacés."],
+  ["5","Chandelle","Un joueur libre de l’équipe en réception peut se placer sous le ballon."],
+  ["6","Supporters en folie","D6 + pom-pom girls pour chaque coach : le plus haut fait une Prière à Nuffle."],
+  ["7","Coaching brillant","D6 + assistants pour chaque coach : le plus haut gagne une relance d’équipe pour ce drive.",1],
+  ["8","Météo changeante","Relancez la météo. Si Conditions idéales : le ballon dévie avant d’atterrir."],
+  ["9","Réaction rapide","D3+3 joueurs libres de l’équipe en réception se déplacent d’une case."],
+  ["10","Blitz !","D3+3 joueurs libres de l’équipe qui frappe jouent un tour gratuit."],
+  ["11","Arbitre zélé","D6 + popularité pour chaque coach : le perdant voit un joueur au hasard Sonné (expulsé sur 1)."],
+  ["12","Invasion du terrain","D6 + popularité pour chaque coach : le perdant voit D3 joueurs au hasard Sonnés."]]]]},
+ inj:{t:"Blessures",k:"#ff4f4f",dice:"Armure percée → blessure → sortie",secs:[
+  ["Jet de blessure · 2D6",[["2–7","Sonné","Le joueur reste à terre, face contre terre."],["8–9","KO","Hors du terrain. Revient sur 4+ au début de chaque drive."],["10–12","Sortie","Jet sur la table des sorties (D16).",1]]],
+  ["Jet de blessure Minus (Stunty) · 2D6",[["2–6","Sonné",""],["7–8","KO",""],["9","Gravement touché","Pas de jet sur la table des sorties."],["10–12","Sortie","Table des sorties (D16)."]]],
+  ["Table des sorties · D16",[["1–6","Gravement touché","Rate le reste du match."],["7–9","Sérieusement blessé","Rate le prochain match."],["10–12","Blessure grave","Blessure tenace (+1 aux jets de sortie) et rate le prochain match."],["13–14","Blessure persistante","−1 à une caractéristique (D6 ci-dessous) et rate le prochain match."],["15–16","Mort","Retiré de l’effectif."]]],
+  ["Blessure persistante · D6",[["1–2","Tête","−1 AV"],["3","Genou","−1 MA"],["4","Bras","−1 PA"],["5","Cou","−1 AG"],["6","Épaule","−1 ST"]]]]},
+ skills:{t:"Compétences",k:"#3fd18f",dice:"",cats:{
+  "Générales":[["Blocage","Ignore « Les deux plaqués » pour ce joueur."],["Frénésie","Doit suivre et refaire un blocage si l’adversaire est toujours debout."],["Lutte","Sur « Les deux plaqués », les deux joueurs sont mis à terre sans turnover."],["Tacle","L’adversaire ne peut pas utiliser Esquive contre ce joueur."],["Prise sûre","Relance un ramassage raté. Immunisé contre Arracher le ballon."]],
+  "Agilité":[["Esquive","Relance une esquive ratée par tour. En défense, « Défenseur trébuche » devient « Repoussé »."],["Réception","Relance une réception ratée."],["Sprint","Peut Foncer trois fois au lieu de deux."],["Pied sûr","Relance un Foncer raté par tour."],["Glissade","Choisit la case où il est repoussé."]],
+  "Force":[["Châtaigne","+1 au jet d’armure ou de blessure."],["Garde","Fournit des soutiens même s’il est marqué."],["Stabilité","Peut refuser d’être repoussé."],["Crâne épais","Sur un KO à 8, reste Sonné."]],
+  "Passe":[["Passe","Relance une passe ratée."],["Précision","+1 aux passes Rapides et Courtes."],["Chef","Relance d’équipe supplémentaire, une par mi-temps."],["Nerfs d’acier","Ignore les marquages pour passer et réceptionner."]],
+  "Mutations":[["…","À compléter."]],"Traits":[["…","À compléter."]]}}};
+let rgCat="Générales";
+function rgShow(id){const home=$("#rgHome"),v=$("#rgView");home.hidden=!!id;v.hidden=!id;if(!id){v.innerHTML="";return}
+  const r=RG[id],esc=x=>String(x).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  let body="";
+  if(r.cats){body=`<div class="rg-cats">${Object.keys(r.cats).map(c=>`<button type="button" data-cat="${c}" aria-pressed="${c===rgCat}">${c}</button>`).join("")}</div>`+
+    r.cats[rgCat].map(([n,e])=>`<div class="rg-row rg-sk"><div><span class="n">${esc(n)}</span><span class="e">${esc(e)}</span></div></div>`).join("")}
+  else body=r.secs.map(([h,rows])=>(h?`<div class="rg-sec">${esc(h)}</div>`:"")+rows.map(([d,n,e,hl])=>`<div class="rg-row${hl?" hl":""}"><span class="d">${d}</span><div><span class="n">${esc(n)}</span>${e?`<span class="e">${esc(e)}</span>`:""}</div></div>`).join("")).join("");
+  v.style.setProperty("--k",r.k);
+  v.innerHTML=`<div class="rg-hd"><button type="button" class="rg-back">‹ Retour</button><h3>${r.t}</h3>${r.dice?`<span class="dice">${r.dice}</span>`:""}</div><div class="rg-body">${body}<p class="rg-note">Aperçu · textes à valider avec le livre de règles.</p></div>`}
+$("#cRulesBox").addEventListener("click",e=>{e.stopPropagation();const box=$("#cRulesBox");
+  if(e.target===box||e.target.closest(".x")){box.hidden=true;rgShow(null);return}
+  const t=e.target.closest("[data-rg]");if(t)return rgShow(t.dataset.rg);
+  if(e.target.closest(".rg-back"))return rgShow(null);
+  const c=e.target.closest("[data-cat]");if(c){rgCat=c.dataset.cat;rgShow("skills")}});
 $("#cSwap").onclick=()=>{settings.swap=!settings.swap;saveSettings();renderClock()};
 $("#cEnd").onclick=endMatch;
 $("#cClose").onclick=()=>{forceClock=false;$("#cRulesBox").hidden=true;$("#clock").hidden=true;exitFull();renderLiveCard();if(landscape.matches&&coarse.matches)toast("Tournez en portrait pour le menu")};
