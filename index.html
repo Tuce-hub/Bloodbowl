@@ -101,6 +101,9 @@ h2{font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.12e
 .ctip{position:absolute;pointer-events:none;background:#050806f2;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;color:var(--muted);white-space:nowrap;z-index:2;transform:translate(-50%,calc(-100% - 10px))}
 .ctip b{color:var(--fg);font-family:var(--f-label);font-size:15px}
 .ctip .k{display:inline-block;width:10px;height:2px;margin-right:6px;vertical-align:4px}
+.sortrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:var(--f-label);font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.sortrow button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-label);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.sortrow button[aria-pressed="true"]{background:var(--surface2);color:var(--fg);border-color:var(--gold)}
 .seg.src{grid-template-columns:repeat(4,1fr)}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -509,6 +512,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button type="button" data-g="comp" aria-pressed="false">Compét.</button>
     </div>
     <input class="search" id="statSearch" type="search" placeholder="Filtrer : nom, roster, NAF…">
+    <div class="sortrow" role="group" aria-label="Trier"><span>Trier par</span><button type="button" data-sort="n">Nombre de matchs</button><button type="button" data-sort="az">Ordre alphabétique</button></div>
     <div id="statTable"></div>
     <p class="hint">TD et sorties : pour – contre. Touchez une ligne pour voir ses matchs, puis un match pour sa fiche.</p>
   </section>
@@ -570,7 +574,6 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
     <div class="panel">
       <h2>Blood Bowl 3</h2>
       <div class="field"><label for="sBb3">Mon pseudo Blood Bowl 3</label><input id="sBb3" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
-      <label class="tog"><span>Ligues entre joueurs seulement <small class="hint" style="display:block">Ignore le ladder « Official league »</small></span><span class="switch"><input type="checkbox" id="sBb3Humans"><i></i></span></label>
       <button class="btn small" type="button" id="bBb3">Importer mes matchs Blood Bowl 3</button>
       <p class="hint" id="bb3Msg">Récupère vos matchs Blood Bowl 3 via le site Spike (spike.bugeat.com). Relancez l'import pour ajouter les nouveaux.</p>
     </div>
@@ -898,14 +901,14 @@ function renderCharts(list){const host=$("#charts");if(!host)return;host.replace
    [0,mx].forEach(v=>{svgEl("line",{x1:L,x2:W-R,y1:T+ih-y(v),y2:T+ih-y(v),class:"grid"},g);const t=svgEl("text",{x:L-6,y:T+ih-y(v)+4,"text-anchor":"end",class:"ax"},g);t.textContent=v});
    keys.forEach((k,i)=>{const e=by.get(k),cx=L+step*i+step/2;let acc=0;const tot=e.V+e.N+e.D;
      RES.forEach(([r,,c],j)=>{if(!e[r])return;const h=y(e[r]),top=T+ih-acc-h;const rr=svgEl("rect",{x:cx-bw/2,y:top+(acc?0:0),width:bw,height:Math.max(1,h-2),rx:(acc+h>=y(tot)-0.1)?3:0,fill:c,class:"mk"},g);acc+=h});
-     const lb=svgEl("text",{x:cx,y:H-4,"text-anchor":"middle",class:"ax"},g);const d=new Date(k+"-01T12:00:00");lb.textContent=d.toLocaleDateString("fr-FR",{month:"short"}).replace(".","");
+     const lb=svgEl("text",{x:cx,y:H-4,"text-anchor":"middle",class:"ax"},g);const d=new Date(k+"-01T12:00:00");lb.textContent=d.toLocaleDateString("fr-FR",{month:"short"}).replace(".","")+(keys[0].slice(0,4)!==keys[keys.length-1].slice(0,4)&&(i===0||k.slice(5)==="01")?" "+k.slice(2,4):"");
      const hit=svgEl("rect",{x:cx-step/2,y:T,width:step,height:ih,class:"hit"},g);
      const sh=()=>{const r=g.getBoundingClientRect();tip.show(cx*r.width/W+12,(T+ih-y(tot))*r.height/H+56,[{v:d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}),l:`· ${tot} match${tot>1?"s":""}`},...RES.filter(x=>e[x[0]]).map(x=>({v:String(e[x[0]]),l:plur(x[1],e[x[0]]),c:x[2]}))])};
      hit.addEventListener("pointerenter",sh);hit.addEventListener("pointerdown",sh);hit.addEventListener("pointerleave",()=>tip.hide())})}}}
 const plur=(w,n)=>(n>1?w:w.replace(/s$/,"")).toLowerCase();
 
 let group="coach", openCoach=null;
-let statSrc=LS.get("statSrc","all");
+let statSrc=LS.get("statSrc","all"),statSort=LS.get("statSort","n");
 const srcOf=m=>m.source==="fumbbl"?"fumbbl":m.source==="bb3"?"bb3":"table";
 function renderStats(){const all=allMatches();const seg=$("#srcSeg");const hasOnline=all.some(m=>srcOf(m)!=="table");if(seg){seg.hidden=!hasOnline;seg.querySelectorAll("[data-src]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.src===statSrc)))}
   const list=hasOnline&&statSrc!=="all"?all.filter(m=>srcOf(m)===statSrc):all;const a=agg(list);renderCharts(list);
@@ -917,7 +920,8 @@ function renderStats(){const all=allMatches();const seg=$("#srcSeg");const hasOn
   const keyFn={coach:m=>m.oppCoach,opp:m=>m.oppRoster,mine:m=>m.myRoster,comp:m=>m.competition||"Sans compétition"}[group];
   const q=norm($("#statSearch").value);
   const groups=new Map();list.forEach(m=>{const label=keyFn(m)||"—";const k=norm(label);if(!groups.has(k))groups.set(k,{label,ms:[]});groups.get(k).ms.push(m)});
-  let rows=[...groups.values()].filter(g=>!q||norm(g.label).includes(q)||(group==="coach"&&nafOf(g.label).includes(q))).map(g=>({...g,a:agg(g.ms)})).sort((x,y)=>y.a.j-x.a.j||x.label.localeCompare(y.label,"fr"));
+  let rows=[...groups.values()].filter(g=>!q||norm(g.label).includes(q)||(group==="coach"&&nafOf(g.label).includes(q))).map(g=>({...g,a:agg(g.ms)})).sort(statSort==="az"?(x,y)=>x.label.localeCompare(y.label,"fr",{sensitivity:"base"}):(x,y)=>y.a.j-x.a.j||x.label.localeCompare(y.label,"fr"));
+  $$(".sortrow [data-sort]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.sort===statSort)));
   if(!list.length){$("#statTable").innerHTML='<div class="empty">Aucun match enregistré. Lancez un match depuis l\'onglet Match : les stats apparaîtront ici.</div>';return}
   if(!rows.length){$("#statTable").innerHTML='<div class="empty">Aucun résultat pour ce filtre.</div>';return}
   const head={coach:"Coach",opp:"Roster adverse",mine:"Mon roster",comp:"Compétition"}[group];
@@ -1166,7 +1170,7 @@ function renderBackups(){const ex=settings.lastExport?Math.floor((Date.now()-Dat
   box.querySelectorAll("[data-snap]").forEach(b=>b.onclick=()=>{const x=snaps[+b.dataset.snap];
     confirmBox("Restaurer cette sauvegarde ?",`Les ${x.matches.length} matchs du ${fdate(x.at)} reviennent tels qu'ils étaient ce jour-là (y compris ceux supprimés depuis). Les matchs ajoutés après sont conservés.`,"Restaurer",false,()=>{
       const now=Date.now();x.matches.forEach(m=>{matches[m.id]=fixRosters(Object.assign({},m,{deleted:false,updatedAt:now}));pending.add(m.id)});saveMatches();setSync();sync();renderAll();toast("Sauvegarde restaurée")})})}
-function renderSettings(){renderBackups();if($("#sFumbbl"))$("#sFumbbl").value=settings.fumbblName||"";if($("#sBb3")){$("#sBb3").value=settings.bb3Name||"";$("#sBb3Humans").checked=!!settings.bb3HumansOnly}$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
+function renderSettings(){renderBackups();if($("#sFumbbl"))$("#sFumbbl").value=settings.fumbblName||"";if($("#sBb3"))$("#sBb3").value=settings.bb3Name||"";$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
 $("#sMinutes").addEventListener("change",e=>{const v=parseInt(e.target.value,10);if(v>0){settings.minutes=v;saveSettings();$("#fMinutes").value=v;toast(`Temps par défaut : ${v} min`)}});
 $("#sBeep").addEventListener("change",e=>{settings.beep=e.target.checked;saveSettings();if(e.target.checked){unlockAudio();beep()}});
 $("#sNaf").addEventListener("change",e=>{settings.myNaf=cleanNaf(e.target.value);e.target.value=settings.myNaf;saveSettings();$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";if(live&&live.broadcast)pushLive()});
@@ -1192,59 +1196,64 @@ $("#bExport").onclick=async()=>{const data=JSON.stringify({app:"dugout-bloodbowl
 const FUMBBL_RACES={"Amazon":"Amazones","Black Orc":"Orques Noirs","Bretonnian":"Bretonniens","Chaos Chosen":"Élus du Chaos","Chaos Dwarf":"Nains du chaos","Chaos Renegade":"Renégats du Chaos","Chaos Renegades":"Renégats du Chaos","Dark Elf":"Elfes noirs","Dwarf":"Nains","Elven Union":"Union elfique","Gnome":"Gnomes","Goblin":"Gobelins","Halfling":"Halflings","High Elf":"Hauts elfes","Human":"Humains","Imperial Nobility":"Noblesse Impériale","Khorne":"Khorne","Lizardmen":"Hommes Lézard","Necromantic Horror":"Horreurs nécromantiques","Norse":"Nordiques","Nurgle":"Nurgle","Ogre":"Ogres","Old World Alliance":"Alliance du Vieux Monde","Orc":"Orques","Shambling Undead":"Morts ambulants","Skaven":"Skavens","Slann":"Slanns","Snotling":"Snotlings","Tomb Kings":"Rois des tombes","Underworld Denizens":"Bas-Fonds","Vampire":"Vampires","Wood Elf":"Elfes sylvains"};
 const frRace=r=>{const n=typeof r==="string"?r:(r&&r.name)||"";return FUMBBL_RACES[n]||n};
 async function fumbblGet(path){const r=await fetch("https://fumbbl.com/api/"+path);if(!r.ok)throw new Error("FUMBBL "+r.status);return r.json()}
+/* Confirmation avant tout import : résumé de ce qui va être ajouté. */
+function confirmImport(label,list,done){if(!list.length){toast("Rien de nouveau à importer");if(done)done(0);return}
+  const a=agg(list),ds=list.map(m=>m.date).filter(Boolean).sort();
+  confirmBox(`Importer ${list.length} match${list.length>1?"s":""} ${label} ?`,
+    `Du ${fdate(ds[0])} au ${fdate(ds[ds.length-1])} · bilan ${a.V}-${a.N}-${a.D} · TD ${a.tdF}–${a.tdC}. Ils seront ajoutés à vos stats ; vous pourrez les isoler avec le filtre en haut de l'onglet Stats.`,
+    "Importer",false,()=>{list.forEach(m=>dirty(m));setSync();sync();renderAll();toast(`${list.length} match(s) ${label} importé(s)`);if(done)done(list.length)})}
 async function importFumbbl(){const name=$("#sFumbbl").value.trim(),msg=$("#fumbblMsg"),btn=$("#bFumbbl");if(!name){toast("Indiquez votre pseudo FUMBBL");return}
   settings.fumbblName=name;saveSettings();btn.disabled=true;msg.textContent="Recherche du compte…";
   try{const found=await fumbblGet("coach/search/"+encodeURIComponent(name));const me=(Array.isArray(found)?found:[]).find(c=>c.name.toLowerCase()===name.toLowerCase());
     if(!me)throw new Error("Aucun compte FUMBBL « "+name+" »");
     const t=await fumbblGet("coach/teams/"+me.id);const teams=(t.teams||[]).filter(x=>+x.games>0);
-    let added=0,seen=0;
+    const fresh=[],ids=new Set();let seen=0;
     for(let i=0;i<teams.length;i++){msg.textContent=`Équipe ${i+1}/${teams.length} : ${teams[i].name}…`;
       const list=await fumbblGet("team/matches/"+teams[i].id);
       (Array.isArray(list)?list:[]).forEach(fm=>{const mine=fm.team1&&fm.team1.coach&&fm.team1.coach.id===me.id?fm.team1:fm.team2,opp=mine===fm.team1?fm.team2:fm.team1;
         if(!mine||!opp||!mine.coach||mine.coach.id!==me.id)return;seen++;
-        const id="fumbbl-"+fm.id;if(matches[id])return; // déjà importé (ou supprimé volontairement)
+        const id="fumbbl-"+fm.id;if(matches[id]||ids.has(id))return;ids.add(id); // déjà importé (ou supprimé volontairement)
         const cas=x=>x&&x.casualties?(+x.casualties.bh||0)+(+x.casualties.si||0)+(+x.casualties.rip||0):0;
         const d=new Date(`${fm.date}T${fm.time||"12:00:00"}`);
-        dirty({id,date:isNaN(d)?new Date().toISOString():d.toISOString(),competition:"FUMBBL",source:"fumbbl",fumbblId:fm.id,
+        fresh.push({id,date:isNaN(d)?new Date().toISOString():d.toISOString(),competition:"FUMBBL",source:"fumbbl",fumbblId:fm.id,
           myRoster:frRace(mine.roster),oppCoach:opp.coach.name,oppNaf:"",oppRoster:frRace(opp.roster),myTD:+mine.score||0,oppTD:+opp.score||0,myCas:cas(mine),oppCas:cas(opp),
-          note:`FUMBBL · ${mine.name} contre ${opp.name}`});added++})}
-    setSync();sync();renderAll();
-    msg.textContent=added?`${added} match${added>1?"s":""} importé${added>1?"s":""} (${seen} trouvés sur FUMBBL).`:`Aucun nouveau match (${seen} déjà dans Dugout).`;toast(added?`${added} match(s) FUMBBL importé(s)`:"Rien de nouveau sur FUMBBL")}
+          note:`FUMBBL · ${mine.name} contre ${opp.name}`})})}
+    msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""} trouvé${fresh.length>1?"s":""}`:"Aucun nouveau match")+` (${seen} sur FUMBBL).`;
+    confirmImport("FUMBBL",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""} (${seen} sur FUMBBL).`})}
   catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";toast("Import FUMBBL impossible")}
   finally{btn.disabled=false}}
 $("#bFumbbl").onclick=importFumbbl;
+$$(".sortrow [data-sort]").forEach(b=>b.onclick=()=>{statSort=b.dataset.sort;LS.set("statSort",statSort);renderStats()});
 $("#srcSeg").addEventListener("click",e=>{const b=e.target.closest("[data-src]");if(!b)return;statSrc=b.dataset.src;LS.set("statSrc",statSrc);renderStats()});
 
 /* ---------- import Blood Bowl 3 (API de Spike, spike.bugeat.com) ---------- */
 const SPIKE_API="https://optiplex.apiplatform.bugeat.com/api/bb2020";
 const BB3_RACES={1:"Humains",2:"Nains",3:"Skavens",4:"Orques",5:"Hommes Lézard",6:"Gobelins",7:"Elfes sylvains",8:"Élus du Chaos",9:"Elfes noirs",10:"Morts ambulants",11:"Halflings",12:"Amazones",13:"Vampires",14:"Union elfique",15:"Nordiques",16:"Nains du chaos",17:"Horreurs nécromantiques",18:"Nurgle",22:"Bas-Fonds",23:"Khorne",24:"Noblesse Impériale",1000:"Orques Noirs",1001:"Renégats du Chaos",1002:"Alliance du Vieux Monde"};
-const BB3_HUMAN_ONLY=l=>!/official league/i.test(l||"");
 async function spikeGet(path){const r=await fetch(SPIKE_API+path,{headers:{Accept:"application/ld+json"}});if(!r.ok)throw new Error("Spike "+r.status);return r.json()}
-async function importBB3(opts){opts=opts||{};const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
+async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
   settings.bb3Name=name;saveSettings();btn.disabled=true;msg.textContent="Recherche du compte…";
   try{const f=await spikeGet("/coaches?name="+encodeURIComponent(name));const me=(f["hydra:member"]||[]).find(c=>String(c.name).toLowerCase()===name.toLowerCase());
     if(!me)throw new Error("Aucun coach Blood Bowl 3 « "+name+" » sur Spike");
-    let page=1,added=0,seen=0,skipped=0,total=0;const humansOnly=opts.humansOnly!=null?opts.humansOnly:!!settings.bb3HumansOnly;
+    let page=1,seen=0,total=0;const fresh=[],ids=new Set();
     for(;;){msg.textContent=`Téléchargement des matchs… ${seen}${total?" / "+total:""}`;
       const j=await spikeGet(`/data/games?page=${page}&itemsPerPage=200&coach_uuid=${me.uuid}`);total=j["hydra:totalItems"]||0;const L=j["hydra:member"]||[];
-      L.forEach(g=>{seen++;if(humansOnly&&!BB3_HUMAN_ONLY(g.league_name)){skipped++;return}
+      L.forEach(g=>{seen++;
         const i=g.coach_uuid_1===me.uuid?0:1,mine=g.teams[i],opp=g.teams[1-i],oc=(g.coaches||[]).find(c=>c.idcoach!==me.uuid);if(!mine||!opp)return;
-        const id="bb3-"+g.uuid;if(matches[id])return;
-        dirty({id,date:g.finished||g.started||new Date().toISOString(),competition:`BB3 · ${g.league_name||"?"}`,source:"bb3",bb3League:g.league_name||"",
+        const id="bb3-"+g.uuid;if(matches[id]||ids.has(id))return;ids.add(id);
+        fresh.push({id,date:g.finished||g.started||new Date().toISOString(),competition:`BB3 · ${g.league_name||"?"}`,source:"bb3",bb3League:g.league_name||"",
           myRoster:BB3_RACES[mine.idraces]||("Race "+mine.idraces),oppCoach:oc?oc.coachname:"?",oppNaf:"",oppRoster:BB3_RACES[opp.idraces]||("Race "+opp.idraces),
-          myTD:+mine.score||0,oppTD:+opp.score||0,myCas:+mine.inflictedcasualties||0,oppCas:+opp.inflictedcasualties||0,note:`BB3 · ${g.competition_name||""} · ${mine.teamname} contre ${opp.teamname}`});added++});
+          myTD:+mine.score||0,oppTD:+opp.score||0,myCas:+mine.inflictedcasualties||0,oppCas:+opp.inflictedcasualties||0,note:`BB3 · ${g.competition_name||""} · ${mine.teamname} contre ${opp.teamname}`})});
       if(!L.length||seen>=total)break;page++}
-    setSync();sync();renderAll();
-    msg.textContent=(added?`${added} match${added>1?"s":""} importé${added>1?"s":""}`:"Aucun nouveau match")+` (${seen} sur Spike${skipped?`, ${skipped} du ladder ignorés`:""}).`;toast(added?`${added} match(s) BB3 importé(s)`:"Rien de nouveau sur BB3")}
+    msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""} trouvé${fresh.length>1?"s":""}`:"Aucun nouveau match")+` (${seen} sur Spike).`;
+    confirmImport("Blood Bowl 3",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""} (${seen} sur Spike).`})}
   catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";toast("Import BB3 impossible")}
   finally{btn.disabled=false}}
-$("#bBb3").onclick=()=>importBB3();
-$("#sBb3Humans").onchange=e=>{settings.bb3HumansOnly=e.target.checked;saveSettings()};
+$("#bBb3").onclick=importBB3;
 
 $("#bImport").onclick=()=>$("#fileImport").click();
-$("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const arr=Array.isArray(j)?j:j.matches;if(!Array.isArray(arr))throw 0;let n=0;
-  arr.forEach(m=>{if(!m||!m.id)return;const l=matches[m.id];if(!l||(m.updatedAt||0)>(l.updatedAt||0)){matches[m.id]=fixRosters(Object.assign({},m,{updatedAt:Math.max(Date.now(),m.updatedAt||0)}));pending.add(m.id);n++}});
-  saveMatches();setSync();sync();renderAll();toast(`${n} match(s) importé(s)`)}catch(err){toast("Fichier invalide : choisissez un export Dugout (.json)")}e.target.value=""};rd.readAsText(f)});
+$("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const arr=Array.isArray(j)?j:j.matches;if(!Array.isArray(arr))throw 0;
+  const fresh=arr.filter(m=>{if(!m||!m.id)return false;const l=matches[m.id];return !l||(m.updatedAt||0)>(l.updatedAt||0)}).map(m=>fixRosters(Object.assign({},m,{updatedAt:Math.max(Date.now(),m.updatedAt||0)})));
+  confirmImport("du fichier",fresh)}catch(err){toast("Fichier invalide : choisissez un export Dugout (.json)")}e.target.value=""};rd.readAsText(f)});
 
 /* ================= DIRECT + TCHAT (Firebase) ================= */
 const FB_CONFIG={apiKey:["AIzaSyD8QIoRCu","IXFjVNoDJuGTf_EKOTtbX3fs8"].join(""),authDomain:"horloge-bloodbowl.firebaseapp.com",databaseURL:"https://horloge-bloodbowl-default-rtdb.europe-west1.firebasedatabase.app",projectId:"horloge-bloodbowl",appId:"1:537254942429:web:c97387f391bf5338c12d34"};
