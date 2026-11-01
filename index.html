@@ -776,7 +776,14 @@ const fdate=iso=>{try{return new Date(iso).toLocaleDateString("fr-FR",{day:"nume
 
 /* ---------- toast & modal ---------- */
 let toastT;function toast(t){const el=$("#toast");el.textContent=String(t).replace(/(\d)–(\d)/g,"$1\u2060–\u2060$2");el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2400)}
-function modal(html,bind){const m=$("#modal");m.innerHTML='<div class="dlg" role="dialog" aria-modal="true">'+html+'</div>';m.hidden=false;const close=()=>{m.hidden=true;m.innerHTML=""};m.onclick=e=>{if(e.target===m)close()};bind&&bind(m.firstChild,close);const f=m.querySelector("input,button");f&&f.focus({preventScroll:true});return close}
+// Fenêtres empilées : une fenêtre ouverte par-dessus une autre (ex. un match depuis la fiche d'un coach) ramène à la précédente en se fermant.
+const modalStack=[];
+function modal(html,bind){const m=$("#modal");
+  if(!m.hidden&&m.firstChild)modalStack.push({node:m.firstChild,onclick:m.onclick});else modalStack.length=0;
+  const dlg=document.createElement("div");dlg.className="dlg";dlg.setAttribute("role","dialog");dlg.setAttribute("aria-modal","true");dlg.innerHTML=html;m.replaceChildren(dlg);m.hidden=false;
+  let done=false;const close=()=>{if(done)return;done=true;if(m.firstChild!==dlg)return;const prev=modalStack.pop();
+    if(prev){m.replaceChildren(prev.node);m.onclick=prev.onclick;if(prev.node._refresh)prev.node._refresh()}else{m.hidden=true;m.innerHTML=""}};
+  m.onclick=e=>{if(e.target===m)close()};bind&&bind(dlg,close);const f=m.querySelector("input,button");f&&f.focus({preventScroll:true});return close}
 function confirmBox(title,text,ok,danger,fn){modal(`<h3>${esc(title)}</h3><p>${esc(text)}</p><div class="acts"><button class="btn small" data-x>Annuler</button><button class="btn small ${danger?"danger":"primary"}" data-ok>${esc(ok)}</button></div>`,(d,close)=>{d.querySelector("[data-x]").onclick=close;d.querySelector("[data-ok]").onclick=()=>{close();fn()}})}
 
 /* ---------- synchro Google Sheets (local d'abord) ---------- */
@@ -901,6 +908,7 @@ function acItems(kind){const ms=allMatches();
   if(kind==="mine"||kind==="opp"){const played=countBy(ms.map(m=>kind==="mine"?m.myRoster:m.oppRoster));const seen=new Set(played.map(e=>norm(e.v)));
     return [...played.map(e=>({v:e.v,sub:plural(e.n)})),...ROSTERS.filter(r=>!seen.has(norm(r))).map(v=>({v}))]}
   if(kind==="coach")return countBy(ms.map(m=>m.oppCoach)).map(e=>{const n=nafOf(e.v);return {v:e.v,sub:(n?"NAF "+n+" · ":"")+plural(e.n)}});
+  if(kind==="coachfav")return acItems("coach").filter(e=>!isFav(e.v));
   if(kind==="comp")return countBy(ms.map(m=>m.competition)).map(e=>({v:e.v,sub:plural(e.n)}));
   return []}
 function hl(v,q){if(!q)return esc(v);const i=fold(v).indexOf(q);if(i<0)return esc(v);return esc(v.slice(0,i))+"<b>"+esc(v.slice(i,i+q.length))+"</b>"+esc(v.slice(i+q.length))}
@@ -1453,7 +1461,7 @@ $("#sPushAll").onchange=e=>{settings.pushAll=e.target.checked;saveSettings();pus
 $("#sPushChat").onchange=e=>{settings.pushChat=e.target.checked;saveSettings();pushSave()};
 $("#favAdd").onclick=()=>{const v=$("#favInput").value.trim();if(!v)return;$("#favInput").value="";toggleFav(v,true)};
 $("#favInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#favAdd").click()}});
-attachAC($("#favInput"),"coach");
+attachAC($("#favInput"),"coachfav");
 function renderFollow(){const box=$("#dFollow");const m=dOpen&&livesData[dOpen];if(!box||!m)return;
   box.innerHTML=["A","B"].map(ab=>{const n=m["coach"+ab];if(!n)return"";const on=isFav(n);return `<button type="button" data-follow="${esc(n)}" aria-pressed="${on}">${on?"★":"☆"} ${esc(n)}</button>`}).join("");
   box.querySelectorAll("[data-follow]").forEach(b=>b.onclick=()=>toggleFav(b.dataset.follow,b.getAttribute("aria-pressed")!=="true"))}
@@ -1676,11 +1684,13 @@ function findLocalCoach(q){q=String(q||"").trim();if(!q)return "";const byNaf=/^
 function openCoachSheet(q){q=String(q||"").trim();if(!q)return;
   const local=findLocalCoach(q);const naf=local?nafOf(local):(/^\d+$/.test(q)?q:"");const nafQ=naf||(!local?q:"");
   const title=local||q;
-  modal(`<div class="sheet-h"><h3>${esc(title)}</h3></div>${naf?`<p class="hint">${nafLink(naf,"NAF "+esc(naf))}</p>`:""}
+  modal(`<div class="sheet-h"><h3 style="flex:1">${esc(title)}</h3><button type="button" class="btn small" data-fav></button></div>${naf?`<p class="hint">${nafLink(naf,"NAF "+esc(naf))}</p>`:""}
    ${local?coachLocalHTML(local):`<p class="hint">Vous n'avez jamais affronté ce coach.</p>`}
    <h2 class="csec">Sur la NAF</h2><div id="cNaf"></div>
    <div class="acts"><button class="btn small primary" data-x>Fermer</button></div>`,(d,close)=>{
     d.querySelector("[data-x]").onclick=close;
+    const fb=d.querySelector("[data-fav]");const paint=()=>{const on=isFav(title);fb.textContent=on?"★ Favori":"☆ Ajouter aux favoris";fb.setAttribute("aria-pressed",String(on));fb.style.color=on?"var(--gold)":""};
+    fb.onclick=()=>{toggleFav(title,!isFav(title));paint()};paint();d._refresh=paint;
     d.querySelectorAll("[data-cm]").forEach(b=>b.onclick=()=>{const m=matches[b.dataset.cm];if(m)showMatch(m)});
     renderNafBlock(d,local,nafQ,false)})}
 function coachLocalHTML(name){const k=norm(name);const list=allMatches().filter(m=>norm(m.oppCoach)===k);const a=agg(list);
