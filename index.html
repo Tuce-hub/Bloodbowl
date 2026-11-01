@@ -156,6 +156,7 @@ body.clock-on.undo-on .toast{bottom:calc(70px + env(safe-area-inset-bottom,0px))
 #v-set>.panel.closed>:not(h2){display:none!important}
 .wip-box>h2{pointer-events:auto!important;position:relative;z-index:3}
 #v-set>.panel.wip-box.closed>h2::before{content:"En chantier";order:2;margin-left:auto;margin-right:12px;font-size:12px;color:var(--gold);letter-spacing:.08em}
+#v-set>.panel>h2::after{order:3}
 /* ---- ergonomie : stats ---- */
 details.chartsBox>summary{cursor:pointer;list-style:none;font-family:var(--f-label);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;padding:4px 2px}
 details.chartsBox>summary::-webkit-details-marker{display:none}
@@ -648,9 +649,10 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
         <div class="minrow"><input id="favInput" placeholder="Ajouter un coach" autocomplete="off" style="flex:1;width:auto"><button type="button" class="btn small" id="favAdd">Ajouter</button></div>
         <p class="hint">Astuce : dans l'onglet Direct, touchez ☆ à côté d'un coach pour l'ajouter. Sur iPhone, l'appli doit être ajoutée à l'écran d'accueil.</p></div>
     </div>
-    <div class="panel">
+    <div class="panel wip-box">
+      <div class="wip-cover" aria-hidden="true"><span>Work in progress</span></div>
       <h2>NAF (tournois sur table)</h2>
-      <button class="btn small" type="button" id="bNaf">Importer mes matchs NAF</button>
+      <button class="btn small" type="button" id="bNaf" tabindex="-1" disabled>Importer mes matchs NAF</button>
       <p class="hint" id="nafMsg">Récupère vos matchs de tournois NAF avec le n° NAF de « Profil et chrono ». Ils comptent comme des matchs sur table ; les matchs déjà saisis à la main sont repérés et ignorés. Les sorties ne sont pas connues de la NAF (0).</p>
     </div>
     <div class="panel">

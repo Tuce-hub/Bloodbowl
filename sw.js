@@ -1,6 +1,6 @@
 // Dugout Blood Bowl — fonctionnement hors ligne.
 // Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement.
-const VERSION = "dugout-v29.3"; // seul endroit où changer la version : l'appli l'affiche automatiquement (v29.3 → 0.29.3)
+const VERSION = "dugout-v29.4"; // seul endroit où changer la version : l'appli l'affiche automatiquement (v29.4 → 0.29.4)
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", e => {
