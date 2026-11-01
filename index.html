@@ -580,7 +580,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button type="button" data-g="comp" aria-pressed="false">Compét.</button>
     </div>
     <input class="search" id="statSearch" type="search" placeholder="Filtrer : nom, roster, NAF…">
-    <div class="sortrow" role="group" aria-label="Trier"><span>Trier par</span><button type="button" data-sort="date">Date</button><button type="button" data-sort="n">Nb de matchs</button><button type="button" data-sort="az" aria-label="Ordre alphabétique">A → Z</button></div>
+    <div class="sortrow" role="group" aria-label="Trier"><span>Trier par</span><button type="button" data-sort="date">Date</button><button type="button" data-sort="az" aria-label="Ordre alphabétique">A → Z</button></div>
     <div id="statTable"></div>
     <p class="hint">TD et sorties : pour – contre. Touchez une ligne pour voir ses matchs, puis un match pour sa fiche.</p>
   </section>
@@ -1004,7 +1004,7 @@ const plur=(w,n)=>(n>1?w:w.replace(/s$/,"")).toLowerCase();
 
 let group="coach", openCoach=null;
 const lastDate=ms=>ms.reduce((d,m)=>String(m.date||"")>d?String(m.date||""):d,"");
-let statSrc=LS.get("statSrc","all"),statSort=LS.get("statSort2","date"),statPer=LS.get("statPer","all");
+let statSrc=LS.get("statSrc","all"),statSort=(v=>v==="az"?"az":"date")(LS.get("statSort2","date")),statPer=LS.get("statPer","all");
 const srcOf=m=>m.source==="fumbbl"?"fumbbl":m.source==="bb3"?"bb3":"table";
 function renderStats(){const all=allMatches();const seg=$("#srcSeg");const hasOnline=all.some(m=>srcOf(m)!=="table");if(seg){seg.hidden=!hasOnline;seg.querySelectorAll("[data-src]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.src===statSrc)))}
   const cut=statPer==="12m"?new Date(Date.now()-365*864e5).toISOString():statPer==="year"?new Date().getFullYear()+"-01-01":"";
