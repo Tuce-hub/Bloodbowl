@@ -1685,13 +1685,16 @@ function openCoachSheet(q){q=String(q||"").trim();if(!q)return;
   const local=findLocalCoach(q);const naf=local?nafOf(local):(/^\d+$/.test(q)?q:"");const nafQ=naf||(!local?q:"");
   const title=local||q;
   modal(`<div class="sheet-h"><h3 style="flex:1">${esc(title)}</h3><button type="button" class="btn small" data-fav></button></div>${naf?`<p class="hint">${nafLink(naf,"NAF "+esc(naf))}</p>`:""}
-   ${local?coachLocalHTML(local):`<p class="hint">Vous n'avez jamais affronté ce coach.</p>`}
+   <div class="clocal">${local?coachLocalHTML(local):`<p class="hint">Vous n'avez jamais affronté ce coach.</p>`}</div>
    <h2 class="csec">Sur la NAF</h2><div id="cNaf"></div>
    <div class="acts"><button class="btn small primary" data-x>Fermer</button></div>`,(d,close)=>{
     d.querySelector("[data-x]").onclick=close;
     const fb=d.querySelector("[data-fav]");const paint=()=>{const on=isFav(title);fb.textContent=on?"★ Favori":"☆ Ajouter aux favoris";fb.setAttribute("aria-pressed",String(on));fb.style.color=on?"var(--gold)":""};
-    fb.onclick=()=>{toggleFav(title,!isFav(title));paint()};paint();d._refresh=paint;
-    d.querySelectorAll("[data-cm]").forEach(b=>b.onclick=()=>{const m=matches[b.dataset.cm];if(m)showMatch(m)});
+    fb.onclick=()=>{toggleFav(title,!isFav(title));paint()};paint();
+    const bindCm=()=>d.querySelectorAll("[data-cm]").forEach(b=>b.onclick=()=>{const m=matches[b.dataset.cm];if(m)showMatch(m)});bindCm();
+    // Mise à jour automatique quand un match est modifié ou supprimé pendant que la fiche est ouverte.
+    d._refresh=()=>{paint();const cur=findLocalCoach(title)||(local&&findLocalCoach(local));const box=d.querySelector(".clocal");if(!box)return;
+      box.innerHTML=cur?coachLocalHTML(cur):`<p class="hint">Vous n'avez plus de match contre ce coach.</p>`;bindCm()};
     renderNafBlock(d,local,nafQ,false)})}
 function coachLocalHTML(name){const k=norm(name);const list=allMatches().filter(m=>norm(m.oppCoach)===k);const a=agg(list);
   const rc={};list.forEach(m=>{rc[m.oppRoster]=(rc[m.oppRoster]||0)+1});
@@ -1752,7 +1755,8 @@ $("#bDiscordTest").onclick=()=>{if(!discordHook){toast("Enregistrez d'abord le w
 function routeHash(){const h=(location.hash||"").slice(1);if(h.startsWith("d-")){openDetail(h.slice(2));return true}if(h==="direct"){showTab("direct");return true}return false}
 addEventListener("hashchange",()=>{const h=(location.hash||"").slice(1);if(h.startsWith("d-")&&h.slice(2)!==dOpen)openDetail(h.slice(2))});
 
-function renderAll(){renderNewMatchHelpers();renderLiveCard();renderStats();renderHist();renderClockVisibility();tick()}
+function refreshModals(){const m=$("#modal");if(m.hidden)return;[m.firstChild,...modalStack.map(x=>x.node)].forEach(n=>{if(n&&n._refresh)try{n._refresh()}catch(e){}})}
+function renderAll(){refreshModals();renderNewMatchHelpers();renderLiveCard();renderStats();renderHist();renderClockVisibility();tick()}
 
 /* ---------- boot ---------- */
 $("#fMinutes").value=settings.minutes;attachAC($("#fMyRoster"),"mine");attachAC($("#fOppRoster"),"opp");attachAC($("#fCoach"),"coach");attachAC($("#fComp"),"comp");$("#fComp").value=settings.lastComp||"";
