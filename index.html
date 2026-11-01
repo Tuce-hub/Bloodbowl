@@ -162,6 +162,12 @@ details.chartsBox>summary::-webkit-details-marker{display:none}
 details.chartsBox>summary::after{content:"";width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-3px)}
 details.chartsBox:not([open])>summary::after{transform:rotate(-45deg)}
 details.chartsBox[open]>summary{margin-bottom:10px}
+.favs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.favs .fav{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 6px 0 12px;border-radius:18px;border:1px solid var(--line);background:var(--surface2);font-family:var(--f-label);font-weight:700;font-size:15px}
+.favs .fav button{width:26px;height:26px;border-radius:13px;border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1}
+.follow{display:flex;gap:8px;flex-wrap:wrap}
+.follow button{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-label);font-weight:700;font-size:14px;color:var(--muted)}
+.follow button[aria-pressed="true"]{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 60%,transparent)}
 .sortrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:var(--f-label);font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .sortrow button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-label);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .sortrow button[aria-pressed="true"]{background:var(--surface2);color:var(--fg);border-color:var(--gold)}
@@ -634,6 +640,15 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button class="btn small" type="button" id="bSyncNow">Tester et synchroniser</button>
     </div>
     <div class="panel">
+      <h2>Notifications</h2>
+      <label class="tog"><span>Recevoir les notifications <small class="hint" style="display:block" id="pushState">Début et résultat des matchs en direct de vos coachs favoris, et messages du tchat.</small></span><span class="switch"><input type="checkbox" id="sPush"><i></i></span></label>
+      <label class="tog"><span>Tous les matchs du club <small class="hint" style="display:block">Sinon : seulement ceux de vos favoris</small></span><span class="switch"><input type="checkbox" id="sPushAll"><i></i></span></label>
+      <label class="tog"><span>Messages du tchat <small class="hint" style="display:block">Des matchs de vos favoris et de vos propres matchs</small></span><span class="switch"><input type="checkbox" id="sPushChat"><i></i></span></label>
+      <div class="field"><span class="flabel">Coachs favoris</span><div class="favs" id="favList"></div>
+        <div class="minrow"><input id="favInput" placeholder="Ajouter un coach" autocomplete="off" style="flex:1;width:auto"><button type="button" class="btn small" id="favAdd">Ajouter</button></div>
+        <p class="hint">Astuce : dans l'onglet Direct, touchez ☆ à côté d'un coach pour l'ajouter. Sur iPhone, l'appli doit être ajoutée à l'écran d'accueil.</p></div>
+    </div>
+    <div class="panel">
       <h2>NAF (tournois sur table)</h2>
       <button class="btn small" type="button" id="bNaf">Importer mes matchs NAF</button>
       <p class="hint" id="nafMsg">Récupère vos matchs de tournois NAF avec le n° NAF de « Profil et chrono ». Ils comptent comme des matchs sur table ; les matchs déjà saisis à la main sont repérés et ignorés. Les sorties ne sont pas connues de la NAF (0).</p>
@@ -723,6 +738,8 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 <script>
 (function(){
 "use strict";
+// Clé publique « Web Push » (Console Firebase › Paramètres du projet › Cloud Messaging › Certificats Web Push). Vide = notifications pas encore activées.
+const VAPID_KEY="";
 const ROSTERS=["Alliance du Vieux Monde", "Amazones", "Bas-Fonds", "Bretonniens", "Elfes noirs", "Elfes sylvains", "Élus du Chaos", "Gnomes", "Gobelins", "Halflings", "Hauts elfes", "Hommes Lézard", "Horreurs nécromantiques", "Humains", "Khorne", "Morts ambulants", "Nains", "Nains du chaos", "Noblesse Impériale", "Nordiques", "Nurgle", "Ogres", "Orques", "Orques Noirs", "Renégats du Chaos", "Rois des tombes", "Skavens", "Slanns", "Snotlings", "Union elfique", "Vampires"],
   ROSTER_ALIAS={"hommes-lézards":"Hommes Lézard","morts-vivants":"Morts ambulants"},
   canonRoster=r=>{const k=String(r||"").trim().toLowerCase();return ROSTER_ALIAS[k]||ROSTERS.find(x=>x.toLowerCase()===k)||r},
@@ -1407,6 +1424,38 @@ async function importNaf(){const naf=cleanNaf(settings.myNaf||""),msg=$("#nafMsg
   catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";msg.classList.add("warn");toast("Import NAF impossible : voir le message sous le bouton")}
   finally{btn.disabled=false}}
 $("#bNaf").onclick=importNaf;
+/* ---------- notifications (Firebase Cloud Messaging) et coachs favoris ---------- */
+const favKey=n=>norm(n).replace(/[.#$\[\]\/]/g,"_").slice(0,60);
+const favs=()=>Array.isArray(settings.favs)?settings.favs:[];
+const isFav=n=>favs().some(f=>favKey(f)===favKey(n));
+function toggleFav(n,on){n=String(n||"").trim();if(!n)return;let f=favs().filter(x=>favKey(x)!==favKey(n));if(on)f.push(n);settings.favs=f;saveSettings();renderFavs();pushSave();if(dOpen)renderFollow();toast(on?`${n} ajouté aux favoris`:`${n} retiré des favoris`)}
+function renderFavs(){const b=$("#favList");if(!b)return;const f=favs();
+  b.innerHTML=f.length?f.map((n,i)=>`<span class="fav">★ ${esc(n)}<button type="button" data-unfav="${i}" aria-label="Retirer ${esc(n)}">×</button></span>`).join(""):'<span class="hint">Aucun favori pour l\'instant.</span>';
+  b.querySelectorAll("[data-unfav]").forEach(x=>x.onclick=()=>toggleFav(f[+x.dataset.unfav],false));
+  $("#sPush").checked=!!settings.pushOn;$("#sPushAll").checked=!!settings.pushAll;$("#sPushChat").checked=settings.pushChat!==false;
+  const st=$("#pushState");if(st)st.textContent=!("Notification" in window)?"Ce navigateur ne permet pas les notifications (sur iPhone : ajoutez l'appli à l'écran d'accueil).":!VAPID_KEY?"Pas encore activées sur le serveur du club : voir l'étape d'installation.":Notification.permission==="denied"?"Bloquées dans les réglages du téléphone pour ce site.":settings.pushOn?"Activées sur ce téléphone.":"Début et résultat des matchs en direct de vos coachs favoris, et messages du tchat."}
+async function pushToken(){if(!VAPID_KEY)throw new Error("notifications pas encore activées sur le serveur du club");
+  if(!("Notification" in window)||!("serviceWorker" in navigator))throw new Error("navigateur non compatible");
+  const perm=await Notification.requestPermission();if(perm!=="granted")throw new Error("autorisation refusée");
+  await fb();if(!firebase.messaging)await loadScript(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-messaging-compat.js`);
+  const reg=await navigator.serviceWorker.ready;return firebase.messaging().getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg})}
+async function pushSave(){if(!settings.pushOn||!settings.pushToken)return;try{const db=await fb();const fv={};favs().forEach(n=>fv[favKey(n)]=true);
+  await db.ref("push/"+fuid).set({token:settings.pushToken,all:!!settings.pushAll,chat:settings.pushChat!==false,favs:fv,updatedAt:TS()})}catch(e){}}
+async function pushEnable(on){if(on){try{settings.pushToken=await pushToken();settings.pushOn=true;saveSettings();await pushSave();toast("Notifications activées")}
+    catch(e){settings.pushOn=false;saveSettings();toast("Notifications impossibles : "+(e.message||e))}}
+  else{settings.pushOn=false;saveSettings();try{const db=await fb();await db.ref("push/"+fuid).remove();if(firebase.messaging)await firebase.messaging().deleteToken()}catch(e){}toast("Notifications désactivées")}
+  renderFavs()}
+$("#sPush").onchange=e=>pushEnable(e.target.checked);
+$("#sPushAll").onchange=e=>{settings.pushAll=e.target.checked;saveSettings();pushSave()};
+$("#sPushChat").onchange=e=>{settings.pushChat=e.target.checked;saveSettings();pushSave()};
+$("#favAdd").onclick=()=>{const v=$("#favInput").value.trim();if(!v)return;$("#favInput").value="";toggleFav(v,true)};
+$("#favInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#favAdd").click()}});
+attachAC($("#favInput"),"coach");
+function renderFollow(){const box=$("#dFollow");const m=dOpen&&livesData[dOpen];if(!box||!m)return;
+  box.innerHTML=["A","B"].map(ab=>{const n=m["coach"+ab];if(!n)return"";const on=isFav(n);return `<button type="button" data-follow="${esc(n)}" aria-pressed="${on}">${on?"★":"☆"} ${esc(n)}</button>`}).join("");
+  box.querySelectorAll("[data-follow]").forEach(b=>b.onclick=()=>toggleFav(b.dataset.follow,b.getAttribute("aria-pressed")!=="true"))}
+renderFavs();if(settings.pushOn)setTimeout(()=>pushToken().then(t=>{if(t&&t!==settings.pushToken){settings.pushToken=t;saveSettings()}pushSave()}).catch(()=>{}),4000);
+
 
 
 $("#bImport").onclick=()=>$("#fileImport").click();
@@ -1416,7 +1465,7 @@ $("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)r
   confirmImport("du fichier",fresh)}catch(err){toast("Fichier invalide : choisissez un export Dugout (.json)")}e.target.value=""};rd.readAsText(f)});
 
 /* ================= DIRECT + TCHAT (Firebase) ================= */
-const FB_CONFIG={apiKey:["AIzaSyD8QIoRCu","IXFjVNoDJuGTf_EKOTtbX3fs8"].join(""),authDomain:"horloge-bloodbowl.firebaseapp.com",databaseURL:"https://horloge-bloodbowl-default-rtdb.europe-west1.firebasedatabase.app",projectId:"horloge-bloodbowl",appId:"1:537254942429:web:c97387f391bf5338c12d34"};
+const FB_CONFIG={apiKey:["AIzaSyD8QIoRCu","IXFjVNoDJuGTf_EKOTtbX3fs8"].join(""),authDomain:"horloge-bloodbowl.firebaseapp.com",databaseURL:"https://horloge-bloodbowl-default-rtdb.europe-west1.firebasedatabase.app",projectId:"horloge-bloodbowl",appId:"1:537254942429:web:c97387f391bf5338c12d34",messagingSenderId:"537254942429"};
 const FB_V="10.12.2", H3=3*3600e3, H6=6*3600e3, RATE=5000;
 let fbP=null,fdb=null,fuid=null,srvOff=0,fbOnline=false,isAdmin=false,fbErr="";
 const srvNow=()=>Date.now()+srvOff;
@@ -1546,10 +1595,12 @@ async function openDetail(id,tab){dOpen=id;dTab=tab||"feed";dChatSeen=srvNow();t
     renderDetail()}catch(e){$("#dDetail").innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button></div><div class="empty">${esc(fbErr||"Direct indisponible.")}</div>`;$("#dBack").onclick=closeDetail}}
 function closeDetail(){dOpen=null;$("#dDetail").dataset.mid="";if(evRef){evRef.off();evRef=null}if(chRef){chRef.off();chRef=null}$("#dDetail").hidden=true;$("#dDetail").innerHTML="";$("#dList").hidden=false;try{history.replaceState(null,"","#direct")}catch(e){}renderDirect()}
 const hhmm=t=>{try{return new Date(Number(t)-srvOff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
-function renderDetail(){const id=dOpen;if(!id)return;const m=livesData[id]?Object.assign({id},livesData[id]):null;const box=$("#dDetail");
+function renderDetail(){renderDetail0();renderFollow()}
+function renderDetail0(){const id=dOpen;if(!id)return;const m=livesData[id]?Object.assign({id},livesData[id]):null;const box=$("#dDetail");
   if(!m||expired(m)){box.dataset.mid="";box.innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button></div><div class="empty">Ce direct est terminé ou n'existe plus.</div>`;$("#dBack").onclick=closeDetail;return}
   if(box.dataset.mid!==id){box.dataset.mid=id;
     box.innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button><button class="btn small" type="button" id="dShare">Partager</button></div>
+     <div class="follow" id="dFollow" aria-label="Coachs favoris"></div>
      <div class="hero" id="dBoard"></div>
      <div class="tabs2" role="tablist"><button type="button" role="tab" id="dTabF" data-t="feed">Déroulé</button><button type="button" role="tab" id="dTabC" data-t="chat">Tchat</button></div>
      <div class="dpanel" id="dPFeed"><ul class="feed2" id="dFeed"></ul></div>

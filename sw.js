@@ -1,6 +1,6 @@
 // Dugout Blood Bowl — fonctionnement hors ligne.
 // Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement.
-const VERSION = "dugout-v28"; // seul endroit où changer la version : l'appli l'affiche automatiquement (v28 → 0.28)
+const VERSION = "dugout-v29"; // seul endroit où changer la version : l'appli l'affiche automatiquement (v29 → 0.29)
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", e => {
@@ -38,5 +38,22 @@ self.addEventListener("fetch", e => {
     if (res) return res;
     if (req.mode === "navigate") return cache.match("./index.html");
     return new Response("", { status: 504 });
+  }));
+});
+
+// Notifications (messages « data » envoyés par les fonctions Firebase).
+self.addEventListener("push", e => {
+  let p = {}; try { p = e.data ? e.data.json() : {}; } catch (err) { p = { data: { title: "Dugout", body: e.data ? e.data.text() : "" } }; }
+  const d = p.data || p;
+  e.waitUntil(self.registration.showNotification(d.title || "Dugout", {
+    body: d.body || "", icon: "./icon-192.png", badge: "./icon-192.png", tag: d.tag || undefined, renotify: !!d.tag, data: { url: d.url || "./" }
+  }));
+});
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || "./", self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+    for (const c of list) { if ("focus" in c) { c.navigate(url).catch(() => {}); return c.focus(); } }
+    return self.clients.openWindow(url);
   }));
 });
