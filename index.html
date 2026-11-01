@@ -580,7 +580,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button type="button" data-g="comp" aria-pressed="false">Compét.</button>
     </div>
     <input class="search" id="statSearch" type="search" placeholder="Filtrer : nom, roster, NAF…">
-    <div class="sortrow" role="group" aria-label="Trier"><span>Trier par</span><button type="button" data-sort="n">Nombre de matchs</button><button type="button" data-sort="az">Ordre alphabétique</button></div>
+    <div class="sortrow" role="group" aria-label="Trier"><span>Trier par</span><button type="button" data-sort="date">Date</button><button type="button" data-sort="n">Nb de matchs</button><button type="button" data-sort="az" aria-label="Ordre alphabétique">A → Z</button></div>
     <div id="statTable"></div>
     <p class="hint">TD et sorties : pour – contre. Touchez une ligne pour voir ses matchs, puis un match pour sa fiche.</p>
   </section>
@@ -1003,7 +1003,8 @@ function renderCharts(list){const host=$("#charts");if(!host)return;host.replace
 const plur=(w,n)=>(n>1?w:w.replace(/s$/,"")).toLowerCase();
 
 let group="coach", openCoach=null;
-let statSrc=LS.get("statSrc","all"),statSort=LS.get("statSort","n"),statPer=LS.get("statPer","all");
+const lastDate=ms=>ms.reduce((d,m)=>String(m.date||"")>d?String(m.date||""):d,"");
+let statSrc=LS.get("statSrc","all"),statSort=LS.get("statSort2","date"),statPer=LS.get("statPer","all");
 const srcOf=m=>m.source==="fumbbl"?"fumbbl":m.source==="bb3"?"bb3":"table";
 function renderStats(){const all=allMatches();const seg=$("#srcSeg");const hasOnline=all.some(m=>srcOf(m)!=="table");if(seg){seg.hidden=!hasOnline;seg.querySelectorAll("[data-src]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.src===statSrc)))}
   const cut=statPer==="12m"?new Date(Date.now()-365*864e5).toISOString():statPer==="year"?new Date().getFullYear()+"-01-01":"";
@@ -1017,7 +1018,7 @@ function renderStats(){const all=allMatches();const seg=$("#srcSeg");const hasOn
   const keyFn={coach:m=>m.oppCoach,opp:m=>m.oppRoster,mine:m=>m.myRoster,comp:m=>m.competition||"Sans compétition"}[group];
   const q=norm($("#statSearch").value);
   const groups=new Map();list.forEach(m=>{const label=keyFn(m)||"—";const k=norm(label);if(!groups.has(k))groups.set(k,{label,ms:[]});groups.get(k).ms.push(m)});
-  let rows=[...groups.values()].filter(g=>!q||norm(g.label).includes(q)||(group==="coach"&&nafOf(g.label).includes(q))).map(g=>({...g,a:agg(g.ms)})).sort(statSort==="az"?(x,y)=>x.label.localeCompare(y.label,"fr",{sensitivity:"base"}):(x,y)=>y.a.j-x.a.j||x.label.localeCompare(y.label,"fr"));
+  let rows=[...groups.values()].filter(g=>!q||norm(g.label).includes(q)||(group==="coach"&&nafOf(g.label).includes(q))).map(g=>({...g,a:agg(g.ms)})).sort(statSort==="az"?(x,y)=>x.label.localeCompare(y.label,"fr",{sensitivity:"base"}):statSort==="date"?(x,y)=>lastDate(y.ms).localeCompare(lastDate(x.ms))||y.a.j-x.a.j:(x,y)=>y.a.j-x.a.j||x.label.localeCompare(y.label,"fr"));
   $$(".sortrow [data-sort]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.sort===statSort)));
   if(!list.length){$("#statTable").innerHTML='<div class="empty">Aucun match enregistré. Lancez un match depuis l\'onglet Match : les stats apparaîtront ici.</div>';return}
   if(!rows.length){$("#statTable").innerHTML='<div class="empty">Aucun résultat pour ce filtre.</div>';return}
@@ -1357,7 +1358,7 @@ $("#bFumbbl").onclick=importFumbbl;
   ps.forEach((p,i)=>{const h=p.querySelector(":scope > h2");if(!h)return;h.setAttribute("role","button");h.tabIndex=0;h.onclick=()=>{open=open===i?-1:i;LS.set("setOpen",open);apply();if(open===i)p.scrollIntoView({block:"start",behavior:"smooth"})}});apply()})();
 $$("#perRow [data-per]").forEach(b=>b.onclick=()=>{statPer=b.dataset.per;LS.set("statPer",statPer);renderStats()});
 (function(){const box=$("#chartsBox");if(LS.get("chartsOpen",true)===false)box.open=false;box.addEventListener("toggle",()=>{LS.set("chartsOpen",box.open);if(box.open)renderStats()})})();
-$$(".sortrow [data-sort]").forEach(b=>b.onclick=()=>{statSort=b.dataset.sort;LS.set("statSort",statSort);renderStats()});
+$$(".sortrow [data-sort]").forEach(b=>b.onclick=()=>{statSort=b.dataset.sort;LS.set("statSort2",statSort);renderStats()});
 $$(".seg.src").forEach(sg=>sg.addEventListener("click",e=>{const b=e.target.closest("[data-src]");if(!b)return;statSrc=b.dataset.src;LS.set("statSrc",statSrc);renderStats();renderHist()}));
 $("#histSearch").addEventListener("input",renderHist);
 
