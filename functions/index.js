@@ -3,7 +3,8 @@
  * 1. Début d'un direct (création de /lives/{mid})
  * 2. Résultat (apparition de endedAt sur /lives/{mid})
  * 3. Message du tchat (/chats/{mid}/{msg})
- * Destinataires : /push/{uid} = { token, all, chat, favs: { <coach normalisé>: true } }
+ * Destinataires : /push/{uid} = { token, all, chat, me, naf, favs: { <coach normalisé>: true } }
+ * Jamais de notification pour son propre match.
  */
 const { onValueCreated, onValueUpdated } = require("firebase-functions/v2/database");
 const { initializeApp } = require("firebase-admin/app");
@@ -20,11 +21,15 @@ const favKey = n => String(n || "").trim().toLowerCase().replace(/[.#$\[\]\/]/g,
 function pickTargets(pushes, live, exceptUid, kind) {
   const out = [];
   for (const [uid, p] of Object.entries(pushes || {})) {
-    if (!p || !p.token || uid === exceptUid) continue;
+    if (!p || !p.token || uid === exceptUid || uid === live.owner) continue;
+    // Jamais de notification pour son propre match (diffuseur, ou coach reconnu par son nom ou son n° NAF).
+    const a = favKey(live.coachA), b = favKey(live.coachB);
+    if (p.me && (p.me === a || p.me === b)) continue;
+    if (p.naf && (p.naf === String(live.nafA || "") || p.naf === String(live.nafB || ""))) continue;
     const favs = p.favs || {};
-    const followed = !!p.all || !!favs[favKey(live.coachA)] || !!favs[favKey(live.coachB)];
-    if (kind === "chat") { if (p.chat === false) continue; if (followed || uid === live.owner) out.push({ uid, token: p.token }); }
-    else if (followed) out.push({ uid, token: p.token });
+    const followed = !!p.all || !!favs[a] || !!favs[b];
+    if (kind === "chat" && p.chat === false) continue;
+    if (followed) out.push({ uid, token: p.token });
   }
   return out;
 }

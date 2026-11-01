@@ -641,9 +641,9 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
     </div>
     <div class="panel">
       <h2>Notifications</h2>
-      <label class="tog"><span>Recevoir les notifications <small class="hint" style="display:block" id="pushState">Début et résultat des matchs en direct de vos coachs favoris, et messages du tchat.</small></span><span class="switch"><input type="checkbox" id="sPush"><i></i></span></label>
+      <label class="tog"><span>Recevoir les notifications <small class="hint" style="display:block" id="pushState">Début et résultat des matchs en direct de vos coachs favoris, et messages du tchat. Jamais pour vos propres matchs.</small></span><span class="switch"><input type="checkbox" id="sPush"><i></i></span></label>
       <label class="tog"><span>Tous les matchs du club <small class="hint" style="display:block">Sinon : seulement ceux de vos favoris</small></span><span class="switch"><input type="checkbox" id="sPushAll"><i></i></span></label>
-      <label class="tog"><span>Messages du tchat <small class="hint" style="display:block">Des matchs de vos favoris et de vos propres matchs</small></span><span class="switch"><input type="checkbox" id="sPushChat"><i></i></span></label>
+      <label class="tog"><span>Messages du tchat <small class="hint" style="display:block">Des matchs de vos favoris (jamais pour vos propres matchs)</small></span><span class="switch"><input type="checkbox" id="sPushChat"><i></i></span></label>
       <div class="field"><span class="flabel">Coachs favoris</span><div class="favs" id="favList"></div>
         <div class="minrow"><input id="favInput" placeholder="Ajouter un coach" autocomplete="off" style="flex:1;width:auto"><button type="button" class="btn small" id="favAdd">Ajouter</button></div>
         <p class="hint">Astuce : dans l'onglet Direct, touchez ☆ à côté d'un coach pour l'ajouter. Sur iPhone, l'appli doit être ajoutée à l'écran d'accueil.</p></div>
@@ -1287,8 +1287,8 @@ function renderBackups(){const ex=settings.lastExport?Math.floor((Date.now()-Dat
 function renderSettings(){renderBackups();if($("#sFumbbl"))$("#sFumbbl").value=settings.fumbblName||"";if($("#sBb3"))$("#sBb3").value=settings.bb3Name||"";$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
 $("#sMinutes").addEventListener("change",e=>{const v=parseInt(e.target.value,10);if(v>0){settings.minutes=v;saveSettings();$("#fMinutes").value=v;toast(`Temps par défaut : ${v} min`)}});
 $("#sBeep").addEventListener("change",e=>{settings.beep=e.target.checked;saveSettings();if(e.target.checked){unlockAudio();beep()}});
-$("#sNaf").addEventListener("change",e=>{settings.myNaf=cleanNaf(e.target.value);e.target.value=settings.myNaf;saveSettings();$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";if(live&&live.broadcast)pushLive()});
-$("#sName").addEventListener("change",e=>{settings.coachName=e.target.value.trim();saveSettings();renderAll();if(live&&live.broadcast)pushLive();if(dOpen)renderForm(dOpen)});
+$("#sNaf").addEventListener("change",e=>{settings.myNaf=cleanNaf(e.target.value);setTimeout(pushSave,0);e.target.value=settings.myNaf;saveSettings();$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";if(live&&live.broadcast)pushLive()});
+$("#sName").addEventListener("change",e=>{settings.coachName=e.target.value.trim();setTimeout(pushSave,0);saveSettings();renderAll();if(live&&live.broadcast)pushLive();if(dOpen)renderForm(dOpen)});
 $("#sWake").addEventListener("change",e=>{settings.wake=e.target.checked;saveSettings();if(!e.target.checked)releaseWake()});
 $("#bSyncNow").onclick=()=>sync(true);
 $("#sUrl").addEventListener("change",e=>{settings.syncUrl=e.target.value.trim();saveSettings();allToPending();sync(true)});
@@ -1440,7 +1440,7 @@ async function pushToken(){if(!VAPID_KEY)throw new Error("notifications pas enco
   await fb();if(!firebase.messaging)await loadScript(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-messaging-compat.js`);
   const reg=await navigator.serviceWorker.ready;return firebase.messaging().getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg})}
 async function pushSave(){if(!settings.pushOn||!settings.pushToken)return;try{const db=await fb();const fv={};favs().forEach(n=>fv[favKey(n)]=true);
-  await db.ref("push/"+fuid).set({token:settings.pushToken,all:!!settings.pushAll,chat:settings.pushChat!==false,favs:fv,updatedAt:TS()})}catch(e){}}
+  await db.ref("push/"+fuid).set({token:settings.pushToken,all:!!settings.pushAll,chat:settings.pushChat!==false,favs:fv,me:favKey(settings.coachName||""),naf:cleanNaf(settings.myNaf||"").slice(0,12),updatedAt:TS()})}catch(e){}}
 async function pushEnable(on){if(on){try{settings.pushToken=await pushToken();settings.pushOn=true;saveSettings();await pushSave();toast("Notifications activées")}
     catch(e){settings.pushOn=false;saveSettings();toast("Notifications impossibles : "+(e.message||e))}}
   else{settings.pushOn=false;saveSettings();try{const db=await fb();await db.ref("push/"+fuid).remove();if(firebase.messaging)await firebase.messaging().deleteToken()}catch(e){}toast("Notifications désactivées")}

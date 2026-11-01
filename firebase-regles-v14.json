@@ -147,6 +147,12 @@
         },
         "$other": {
           ".validate": false
+        },
+        "me": {
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "naf": {
+          ".validate": "newData.isString() && newData.val().length <= 12"
         }
       }
     }
