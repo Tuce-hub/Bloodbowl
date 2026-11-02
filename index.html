@@ -169,6 +169,8 @@ details.chartsBox[open]>summary{margin-bottom:10px}
 .follow{display:flex;gap:8px;flex-wrap:wrap}
 .follow button{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-label);font-weight:700;font-size:14px;color:var(--muted)}
 .follow button[aria-pressed="true"]{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 60%,transparent)}
+.tm2 .tt{display:block;font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tm2 .tt.on{color:var(--gold)}
 .sortrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:var(--f-label);font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .sortrow button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-label);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .sortrow button[aria-pressed="true"]{background:var(--surface2);color:var(--fg);border-color:var(--gold)}
@@ -1581,10 +1583,12 @@ function badge(m){const [c,t]=BADGE[liveStatus(m)];return `<span class="badge ${
 const DPH=m=>m.endedAt?"":m.phase==="setup"?(Number(m.half)===2&&!+m.turnA&&!+m.turnB?"Mi-temps":"Placement"):m.phase==="end"?"Temps écoulé":"";
 function turnCap(m){if(m.endedAt)return "Final";if(m.phase==="end")return "Fin du temps rég.";if(m.turnA==null)return "";
   const h=Number(m.half)===2?"2e MT":"1re MT";if(m.phase==="setup")return (Number(m.half)===2&&!+m.turnA&&!+m.turnB?"Mi-temps":"Coup d'envoi")+" · "+h;
-  const t=m.active==="B"?+m.turnB:m.active==="A"?+m.turnA:Math.max(+m.turnA||0,+m.turnB||0);return `Tour ${t||1}/8 · ${h}`}
+  return Number(m.half)===2?"2e mi-temps":"1re mi-temps"}
+// Tour de chaque coach (affiché sous son nom pendant le jeu).
+const turnOf=(m,ab)=>m.turnA==null||m.endedAt||m.phase==="setup"&&!+m["turn"+ab]?"":`Tour ${Number(m["turn"+ab])||0}/8`;
 const casTxt=n=>(Number(n)||0)+" sortie"+((Number(n)||0)>1?"s":"");
 function tm2(m,ab,list){const act=m.active===ab&&!m.endedAt&&m.phase!=="end";const r=liveRem(m,ab);const naf=m["naf"+ab];
-  return `<div class="tm2${ab==="B"?" r":""}${act?" on":""}"><b>${esc(m["coach"+ab])}</b><small>${esc(m["roster"+ab]||"")}${list?" · "+casTxt(m["cas"+ab]):(naf?" · "+nafLink(naf,"NAF "+esc(naf)):"")}</small>${list?`<span class="clk num${r<0?" neg":""}" data-dt="${esc(m.id)}|${ab}">${fmt(r)}</span>`:""}</div>`}
+  return `<div class="tm2${ab==="B"?" r":""}${act?" on":""}"><b>${esc(m["coach"+ab])}</b><small>${esc(m["roster"+ab]||"")}${list?" · "+casTxt(m["cas"+ab]):(naf?" · "+nafLink(naf,"NAF "+esc(naf)):"")}</small>${turnOf(m,ab)?`<small class="tt${act?" on":""}">${turnOf(m,ab)}</small>`:""}${list?`<span class="clk num${r<0?" neg":""}" data-dt="${esc(m.id)}|${ab}">${fmt(r)}</span>`:""}</div>`}
 function scoreBoard(m,list){return `<div class="sb2">${tm2(m,"A",list)}<div class="score2"><span class="s num">${Number(m.tdA)||0} – ${Number(m.tdB)||0}</span>${list?`<span class="c">${esc(turnCap(m))}</span>`:""}</div>${tm2(m,"B",list)}</div>`}
 function sideRow(m,ab,big,links){const act=m.active===ab&&!m.endedAt;const r=liveRem(m,ab);
   return `<div class="dr${act?" on":""}"><div class="dw"><b>${esc(m["coach"+ab])}</b><small>${esc(m["roster"+ab]||"")}${m["naf"+ab]?" · "+(links?nafLink(m["naf"+ab],"NAF "+esc(m["naf"+ab])):"NAF "+esc(m["naf"+ab])):""}</small>${big?`<small class="dcs">Sorties : <b class="num">${Number(m["cas"+ab])||0}</b></small>`:""}</div>
@@ -1620,10 +1624,10 @@ function renderDetail0(){const id=dOpen;if(!id)return;const m=livesData[id]?Obje
     $("#dBack").onclick=closeDetail;$("#dShare").onclick=()=>{const x=livesData[id];if(x)shareLive(Object.assign({id},x))};renderForm(id);chatStick=true}
   const mine=m.owner===fuid, canMod=mine||isAdmin;
   const rA=liveRem(m,"A"),rB=liveRem(m,"B"),on=x=>m.active===x&&!m.endedAt&&m.phase!=="end";
-  const pills=[];if(m.turnA!=null&&!m.endedAt){if(m.phase==="play")pills.push(`<span class="g">Tour ${(m.active==="B"?+m.turnB:+m.turnA)||1}/8</span>`);if(DPH(m))pills.push(`<span class="g">${DPH(m)}</span>`);pills.push(`<span>${Number(m.half)===2?"2e":"1re"} mi-temps</span>`)}
+  const pills=[];if(m.turnA!=null&&!m.endedAt){if(DPH(m))pills.push(`<span class="g">${DPH(m)}</span>`);pills.push(`<span>${Number(m.half)===2?"2e":"1re"} mi-temps</span>`)}
   if(m.endedAt)pills.push('<span class="g">Score final</span>');
   $("#dBoard").innerHTML=`<div class="dmeta">${badge(m)}<span class="dcomp">${esc(m.comp||"Match amical")}</span></div>${scoreBoard(m,false)}
-   <div class="clocks"><div class="${on("A")?"on":""}"><small>${esc(m.coachA)}</small><span class="num${rA<0?" neg":""}" data-dt="${esc(m.id)}|A">${fmt(rA)}</span></div><div class="${on("B")?"on":""}"><small>${esc(m.coachB)}</small><span class="num${rB<0?" neg":""}" data-dt="${esc(m.id)}|B">${fmt(rB)}</span></div></div>
+   <div class="clocks"><div class="${on("A")?"on":""}"><small>${esc(m.coachA)}${turnOf(m,"A")?" · "+turnOf(m,"A"):""}</small><span class="num${rA<0?" neg":""}" data-dt="${esc(m.id)}|A">${fmt(rA)}</span></div><div class="${on("B")?"on":""}"><small>${esc(m.coachB)}${turnOf(m,"B")?" · "+turnOf(m,"B"):""}</small><span class="num${rB<0?" neg":""}" data-dt="${esc(m.id)}|B">${fmt(rB)}</span></div></div>
    ${pills.length?`<div class="trn">${pills.join("")}</div>`:""}
    <div class="stat3"><span class="l num">${Number(m.casA)||0}</span><span class="k">Sorties</span><span class="r num">${Number(m.casB)||0}</span></div>
    ${m.endedAt?"":`<p class="hint dd-upd" style="text-align:center">Mis à jour à ${hhmm(m.updatedAt)}</p>`}`;
