@@ -650,7 +650,8 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <label class="tog"><span>Messages du tchat <small class="hint" style="display:block">Des matchs de vos favoris (jamais pour vos propres matchs)</small></span><span class="switch"><input type="checkbox" id="sPushChat"><i></i></span></label>
       <div class="field"><span class="flabel">Coachs favoris</span><div class="favs" id="favList"></div>
         <div class="minrow"><input id="favInput" placeholder="Ajouter un coach" autocomplete="off" style="flex:1;width:auto"><button type="button" class="btn small" id="favAdd">Ajouter</button></div>
-        <p class="hint">Astuce : dans l'onglet Direct, touchez ☆ à côté d'un coach pour l'ajouter. Sur iPhone, l'appli doit être ajoutée à l'écran d'accueil.</p></div>
+        <p class="hint">Astuce : dans l'onglet Direct, touchez ☆ à côté d'un coach pour l'ajouter. Sur iPhone, l'appli doit être ajoutée à l'écran d'accueil.</p>
+        <p class="hint" id="favSyncState"></p></div>
     </div>
     <div class="panel wip-box">
       <div class="wip-cover" aria-hidden="true"><span>Work in progress</span></div>
@@ -812,6 +813,7 @@ async function sync(manual){
     if(changed){saveMatches();renderAll()}
     if(await uploadPhotos()){await pushUpserts();renderAll()}
     syncState="ok";if(manual)toast(`Synchronisé · ${allMatches().length} match(s)`);
+    syncPrefs();
   }catch(e){syncState=navigator.onLine?"err":"wait";if(manual)toast(navigator.onLine?"Échec : vérifiez l'adresse et le code secret":"Hors ligne : nouvel essai automatique")}
   finally{busy=false;setSync()}}
 async function pushUpserts(){if(!pending.size)return;const sent=[...pending].map(id=>matches[id]).filter(Boolean);
@@ -1442,12 +1444,20 @@ async function importNaf(){const naf=cleanNaf(settings.myNaf||""),msg=$("#nafMsg
 $("#bNaf").onclick=importNaf;
 /* ---------- notifications (Firebase Cloud Messaging) et coachs favoris ---------- */
 const favKey=n=>norm(n).replace(/[.#$\[\]\/]/g,"_").slice(0,60);
-const favs=()=>Array.isArray(settings.favs)?settings.favs:[];
+// Favoris : { clé: {n:nom, on:bool, t:horodatage} } pour pouvoir fusionner entre appareils (la modif la plus récente gagne).
+function favMap(){if(!settings.favMap||typeof settings.favMap!=="object"){settings.favMap={};(Array.isArray(settings.favs)?settings.favs:[]).forEach(n=>settings.favMap[favKey(n)]={n,on:true,t:1})}return settings.favMap}
+const favs=()=>Object.values(favMap()).filter(f=>f&&f.on).map(f=>f.n).sort((a,b)=>a.localeCompare(b,"fr",{sensitivity:"base"}));
 const isFav=n=>favs().some(f=>favKey(f)===favKey(n));
-function toggleFav(n,on){n=String(n||"").trim();if(!n)return;let f=favs().filter(x=>favKey(x)!==favKey(n));if(on)f.push(n);settings.favs=f;saveSettings();renderFavs();pushSave();if(dOpen)renderFollow();toast(on?`${n} ajouté aux favoris`:`${n} retiré des favoris`)}
+let prefsT;
+async function syncPrefs(){if(!syncConf())return;try{const j=await api("POST",{action:"prefs",favMap:favMap()});const remote=j&&j.prefs&&j.prefs.favMap;if(!remote)return;
+    const before=JSON.stringify(favs());const m=favMap();Object.entries(remote).forEach(([k,v])=>{if(v&&(!m[k]||(+v.t||0)>(+m[k].t||0)))m[k]={n:String(v.n||""),on:!!v.on,t:+v.t||0}});
+    settings.prefsSync="ok";saveSettings();if(JSON.stringify(favs())!==before){renderFavs();pushSave();if(dOpen)renderFollow()}}
+  catch(e){settings.prefsSync=/Action inconnue/.test(e.message||"")?"old":"err";saveSettings()}renderFavs()}
+function toggleFav(n,on){n=String(n||"").trim();if(!n)return;favMap()[favKey(n)]={n,on:!!on,t:Date.now()};delete settings.favs;saveSettings();renderFavs();pushSave();clearTimeout(prefsT);prefsT=setTimeout(syncPrefs,1500);if(dOpen)renderFollow();toast(on?`${n} ajouté aux favoris`:`${n} retiré des favoris`)}
 function renderFavs(){const b=$("#favList");if(!b)return;const f=favs();
   b.innerHTML=f.length?f.map((n,i)=>`<span class="fav">★ ${esc(n)}<button type="button" data-unfav="${i}" aria-label="Retirer ${esc(n)}">×</button></span>`).join(""):'<span class="hint">Aucun favori pour l\'instant.</span>';
   b.querySelectorAll("[data-unfav]").forEach(x=>x.onclick=()=>toggleFav(f[+x.dataset.unfav],false));
+  const ps=$("#favSyncState");if(ps)ps.textContent=!syncConf()?"Pour retrouver vos favoris sur tous vos appareils, configurez la synchronisation Google Sheets (même adresse et même code secret partout).":settings.prefsSync==="old"?"Favoris non partagés : mettez à jour votre script Google (Code.gs, nouvelle version du déploiement).":settings.prefsSync==="err"?"Favoris : dernière synchronisation échouée, nouvel essai automatique.":"Favoris partagés entre vos appareils via la synchronisation Google Sheets.";
   $("#sPush").checked=!!settings.pushOn;$("#sPushAll").checked=!!settings.pushAll;$("#sPushChat").checked=settings.pushChat!==false;
   const st=$("#pushState");if(st)st.textContent=!("Notification" in window)?"Ce navigateur ne permet pas les notifications (sur iPhone : ajoutez l'appli à l'écran d'accueil).":!VAPID_KEY?"Pas encore activées sur le serveur du club : voir l'étape d'installation.":Notification.permission==="denied"?"Bloquées dans les réglages du téléphone pour ce site.":settings.pushOn?"Activées sur ce téléphone.":"Début et résultat des matchs en direct de vos coachs favoris, et messages du tchat."}
 async function pushToken(){if(!VAPID_KEY)throw new Error("notifications pas encore activées sur le serveur du club");

@@ -9,6 +9,7 @@
  *    (Première installation : Déployer > Nouveau déploiement > Application Web,
  *     Exécuter en tant que : Moi, Qui a accès : Tout le monde.)
  *
+ * Mise à jour « favoris partagés » (Dugout 0.31) : refaites l'étape 3 (nouvelle version du déploiement).
  * Mise à jour « relais Spike » (Dugout 0.26.3) : refaites les étapes 2 et 3. Google demandera une
  *    nouvelle autorisation (« se connecter à un service externe ») : acceptez-la.
  *
@@ -65,6 +66,7 @@ function doPost(e) {
   try { body = JSON.parse(e.postData.contents); } catch (err) { return out({ ok: false, error: 'Requête illisible' }); }
   if (!body || body.token !== TOKEN) return out({ ok: false, error: 'Code secret incorrect' });
   if (body.action === 'photo') return out(savePhoto(body));
+  if (body.action === 'prefs') return out(savePrefs(body.favMap));
   if (body.action !== 'upsert' || !Array.isArray(body.matches)) return out({ ok: false, error: 'Action inconnue' });
 
   const lock = LockService.getScriptLock();
@@ -315,6 +317,26 @@ function spikeRelay(path) {
   const code = r.getResponseCode();
   if (code !== 200) return { ok: false, error: 'Spike a répondu ' + code };
   return { ok: true, relay: 'spike', data: JSON.parse(r.getContentText()) };
+}
+
+/**
+ * Préférences partagées entre vos appareils (téléphone, PC…) : coachs favoris.
+ * favMap = { cléCoach: { n: nom, on: true/false, t: horodatage } } ; à chaque clé, la modification la plus récente gagne.
+ */
+function savePrefs(favMap) {
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    let cur = {}; try { cur = JSON.parse(props.getProperty('favMap') || '{}'); } catch (e) { cur = {}; }
+    const inc = (favMap && typeof favMap === 'object') ? favMap : {};
+    Object.keys(inc).slice(0, 300).forEach(k => {
+      const v = inc[k]; if (!v || typeof v !== 'object') return;
+      const clean = { n: String(v.n || '').slice(0, 60), on: !!v.on, t: Number(v.t) || 0 };
+      if (!cur[k] || clean.t > (Number(cur[k].t) || 0)) cur[k] = clean;
+    });
+    props.setProperty('favMap', JSON.stringify(cur));
+    return { ok: true, prefs: { favMap: cur } };
+  } finally { lock.releaseLock(); }
 }
 
 function autoriser() {
