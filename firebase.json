@@ -1,4 +1,4 @@
 {
   "functions": [{ "source": "functions", "codebase": "default" }],
-  "database": { "rules": "firebase-regles-v14.json" }
+  "database": { "rules": "firebase-regles-v15.json" }
 }

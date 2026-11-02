@@ -563,6 +563,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <input class="search" id="dSearch" type="search" placeholder="Filtrer : coach, roster, NAF…" autocomplete="off">
       <div class="chips" id="dComps"></div>
       <div class="hist" id="dCards"><div class="empty">Chargement des matchs en direct…</div></div>
+      <div class="hist-c" id="dArch"></div>
     </div>
     <div id="dDetail" hidden style="display:flex;flex-direction:column;gap:14px"></div>
   </section>
@@ -1066,9 +1067,11 @@ function deleteMatch(m){confirmBox("Supprimer ce match ?",`${m.myRoster} ${m.myT
 function showMatch(m){const r=result(m);
   modal(`<div class="sheet-h"><span class="pill ${r}">${r}</span><h3>${esc(m.myRoster)} <span class="sc num">${m.myTD}–${m.oppTD}</span> ${esc(m.oppRoster)}</h3></div>
   <div class="sheet">${infoHTML(m)}</div>${hasPhoto(m)?'<img class="ph-full" id="shPh" alt="Photo du match" hidden><p class="hint" id="shPhMsg">Chargement de la photo…</p>':""}
+  ${m.live?'<button type="button" class="btn small" data-scom>💬 Commentaires du direct</button>':""}
   <div class="acts acts3"><button class="btn small danger" data-sdel>Supprimer</button><button class="btn small" data-sed>Modifier</button><button class="btn small primary" data-x>Fermer</button></div>`,(d,close)=>{
     d.querySelector("[data-x]").onclick=close;
     d.querySelector("[data-sed]").onclick=()=>{close();editMatch(matches[m.id]||m)};
+    const sc=d.querySelector("[data-scom]");if(sc)sc.onclick=()=>{$("#modal").hidden=true;$("#modal").innerHTML="";modalStack.length=0;openDetail(m.id,"chat")};
     d.querySelector("[data-sdel]").onclick=()=>{close();deleteMatch(m)};
     if(hasPhoto(m))photoFor(m).then(src=>{const im=d.querySelector("#shPh"),msg=d.querySelector("#shPhMsg");if(!im)return;if(src){im.src=src;im.hidden=false;msg.remove()}else msg.textContent="Photo indisponible : vérifiez la connexion et la synchro."})})}
 
@@ -1148,7 +1151,7 @@ function renderLiveCard(){const box=$("#liveBox");if(!live){box.hidden=true;$("#
   $("#lQuit").onclick=()=>confirmBox("Abandonner ce match ?","Le chrono et le score en cours seront effacés sans être enregistrés.","Abandonner",true,()=>{if(live.broadcast)liveAbort(live.id);unwatchOwnChat();live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll()})}
 
 function endMatch(){if(!live)return;$("#cRulesBox").hidden=true;commit();if(live.running){live.running=false;live.paused=true}saveLive();
-  const m={id:live.id,date:new Date().toISOString(),competition:live.competition||"",oppNaf:live.oppNaf||"",myRoster:live.myRoster,oppCoach:live.oppCoach,oppRoster:live.oppRoster,myTD:live.td.me,oppTD:live.td.opp,myCas:live.cas.me,oppCas:live.cas.opp,minutes:live.minutes,usedMe:live.minutes*60000-live.remaining.me,usedOpp:live.minutes*60000-live.remaining.opp};
+  const m={id:live.id,live:!!live.broadcast,date:new Date().toISOString(),competition:live.competition||"",oppNaf:live.oppNaf||"",myRoster:live.myRoster,oppCoach:live.oppCoach,oppRoster:live.oppRoster,myTD:live.td.me,oppTD:live.td.opp,myCas:live.cas.me,oppCas:live.cas.opp,minutes:live.minutes,usedMe:live.minutes*60000-live.remaining.me,usedOpp:live.minutes*60000-live.remaining.opp};
   modal(`<h3>Fin du match · ${esc(fdate(m.date))}</h3>${endForm(m)}<div class="acts sticky"><button class="btn small danger" data-ab>Abandonner</button><button class="btn small" data-x>Reprendre le match</button><button class="btn small primary" data-ok>Enregistrer</button></div>`,(d,close)=>{
     d.querySelector("[data-x]").onclick=close;
     d.querySelector("[data-ab]").onclick=()=>{close();confirmBox("Abandonner ce match ?","Il ne sera pas enregistré : le chrono et le score en cours seront effacés.","Abandonner",true,()=>{if(live.broadcast)liveAbort(live.id);unwatchOwnChat();live=null;saveLive();releaseWake();exitFull();forceClock=false;renderAll();toast("Match abandonné")})};
@@ -1464,7 +1467,7 @@ $("#sPushChat").onchange=e=>{settings.pushChat=e.target.checked;saveSettings();p
 $("#favAdd").onclick=()=>{const v=$("#favInput").value.trim();if(!v)return;$("#favInput").value="";toggleFav(v,true)};
 $("#favInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#favAdd").click()}});
 attachAC($("#favInput"),"coachfav");
-function renderFollow(){const box=$("#dFollow");const m=dOpen&&livesData[dOpen];if(!box||!m)return;
+function renderFollow(){const box=$("#dFollow");const m=dOpen&&liveById(dOpen);if(!box||!m)return;
   box.innerHTML=["A","B"].map(ab=>{const n=m["coach"+ab];if(!n)return"";const on=isFav(n);return `<button type="button" data-follow="${esc(n)}" aria-pressed="${on}">${on?"★":"☆"} ${esc(n)}</button>`}).join("");
   box.querySelectorAll("[data-follow]").forEach(b=>b.onclick=()=>toggleFav(b.dataset.follow,b.getAttribute("aria-pressed")!=="true"))}
 renderFavs();if(settings.pushOn)setTimeout(()=>pushToken().then(t=>{if(t&&t!==settings.pushToken){settings.pushToken=t;saveSettings()}pushSave()}).catch(()=>{}),4000);
@@ -1556,28 +1559,35 @@ function renderUnread(){const n=unreadCount();const b=$("#cClose");if(b){let d=b
 /* ---------- onglet Direct (spectateurs) ---------- */
 let livesRef=null,livesData={},dComp="",dOpen=null,evRef=null,chRef=null,evData={},chData={},cleaned=new Set(),lastSend=0;
 function liveStatus(m){const now=srvNow();if(m.endedAt)return "end";if(now-(Number(m.updatedAt)||0)>15*60e3)return "idle";if(m.paused)return "pause";return m.running?"live":"wait"}
-function expired(m){const now=srvNow();return (m.endedAt&&now-m.endedAt>H3)||(now-(Number(m.updatedAt)||0)>H6)}
+// Un direct terminé est conservé (archives, tchat toujours ouvert). Seuls les directs abandonnés sans fin depuis 6 h sont effacés.
+function expired(m){return !m.endedAt&&srvNow()-(Number(m.updatedAt)||0)>H6}
+const recent=m=>!m.endedAt||srvNow()-m.endedAt<=H3;
+let archData={},archRef=null;
+const liveById=id=>livesData[id]||archData[id]||null;
 function liveRem(m,ab){let r=Number(m["rem"+ab])||0;if(m.running&&m.active===ab&&!m.endedAt)r-=srvNow()-(Number(m.updatedAt)||srvNow());return r}
 async function openDirect(){renderDirectStatus();try{const db=await fb();if(livesRef)return;
   livesRef=db.ref("lives").orderByChild("updatedAt").startAt(srvNow()-H6);
   livesRef.on("value",s=>{livesData=s.val()||{};cleanup();renderDirect();updateTabBadge();if(dOpen)renderDetail()},()=>{fbErr="Lecture du direct refusée.";renderDirectStatus()});
+  archRef=db.ref("lives").orderByChild("endedAt").startAt(1).limitToLast(80);
+  archRef.on("value",s=>{archData=s.val()||{};renderDirect();if(dOpen)renderDetail()},()=>{});
   sweepOld()}catch(e){renderDirectStatus()}}
 // Directs abandonnés depuis plus de 6 h : hors de la liste chargée, on les balaie à part.
 async function sweepOld(){try{const s=await fdb.ref("lives").orderByChild("updatedAt").endAt(srvNow()-H6).limitToFirst(25).once("value");
-  Object.keys(s.val()||{}).forEach(id=>{if(cleaned.has(id))return;cleaned.add(id);fdb.ref().update({["lives/"+id]:null,["events/"+id]:null,["chats/"+id]:null}).catch(()=>{})})}catch(e){}}
+  Object.entries(s.val()||{}).forEach(([id,v])=>{if(cleaned.has(id)||(v&&v.endedAt))return;cleaned.add(id);fdb.ref().update({["lives/"+id]:null,["events/"+id]:null,["chats/"+id]:null}).catch(()=>{})})}catch(e){}}
 function cleanup(){Object.entries(livesData).forEach(([id,m])=>{if(!m||!expired(m)||cleaned.has(id))return;cleaned.add(id);fdb.ref().update({["lives/"+id]:null,["events/"+id]:null,["chats/"+id]:null}).catch(()=>{})})}
 function liveList(){const q=fold($("#dSearch").value.trim());
-  let list=Object.entries(livesData).map(([id,m])=>Object.assign({id},m)).filter(m=>m&&m.coachA!=null&&!expired(m));
+  let list=Object.entries(Object.assign({},archData,livesData)).map(([id,m])=>Object.assign({id},m)).filter(m=>m&&m.coachA!=null&&!expired(m));
   // doublons : même affiche diffusée par les deux joueurs -> on garde la plus récente
   const seen=new Map();list.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).forEach(m=>{const k=[norm(m.coachA),norm(m.coachB)].sort().join("|")+"|"+norm(m.comp)+"|"+(m.endedAt?"e":"o");if(!seen.has(k))seen.set(k,m)});
   list=[...seen.values()];
   const comps=[...new Set(list.map(m=>m.comp).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
   if(dComp&&!comps.includes(dComp))dComp="";
   if(dComp)list=list.filter(m=>m.comp===dComp);
-  if(q)list=list.filter(m=>[m.coachA,m.coachB,m.rosterA,m.rosterB,m.comp,m.nafB].some(x=>fold(x).includes(q)));
+  if(q)list=list.filter(m=>[m.coachA,m.coachB,m.rosterA,m.rosterB,m.comp,m.nafA,m.nafB].some(x=>fold(x).includes(q)));
   const rank={live:0,pause:1,wait:2,idle:3,end:4};
-  list.sort((a,b)=>rank[liveStatus(a)]-rank[liveStatus(b)]||(b.updatedAt||0)-(a.updatedAt||0));
-  return {list,comps}}
+  const old=list.filter(m=>!recent(m)).sort((a,b)=>(b.endedAt||0)-(a.endedAt||0));
+  list=list.filter(recent).sort((a,b)=>rank[liveStatus(a)]-rank[liveStatus(b)]||(b.updatedAt||0)-(a.updatedAt||0));
+  return {list,comps,old}}
 const BADGE={live:["live","En direct"],pause:["pause","Pause"],wait:["wait","Prêt"],idle:["idle","Inactif"],end:["end","Terminé"]};
 function badge(m){const [c,t]=BADGE[liveStatus(m)];return `<span class="badge ${c}">${c==="live"?'<i class="pulse"></i>':""}${t}</span>`}
 const DPH=m=>m.endedAt?"":m.phase==="setup"?(Number(m.half)===2&&!+m.turnA&&!+m.turnB?"Mi-temps":"Placement"):m.phase==="end"?"Temps écoulé":"";
@@ -1595,7 +1605,9 @@ function sideRow(m,ab,big,links){const act=m.active===ab&&!m.endedAt;const r=liv
   <span class="dsc num">${Number(m["td"+ab])||0}</span><span class="dt num${r<0?" neg":""}" data-dt="${esc(m.id)}|${ab}">${fmt(r)}</span></div>`}
 function renderDirectStatus(){const el=$("#dStat");if(!el)return;
   el.className="dstat "+(fbErr?"err":fbOnline?"ok":"wait");el.textContent=fbErr||(fbOnline?"Connecté":"Connexion…")}
-function renderDirect(){if($("#v-direct").hidden)return;renderDirectStatus();const {list,comps}=liveList();
+function renderDirect(){if($("#v-direct").hidden)return;renderDirectStatus();const {list,comps,old}=liveList();
+  $("#dArch").innerHTML=old.length?`<h2 class="csec">Matchs terminés · ${old.length}</h2>`+old.map(m=>`<button type="button" class="hrow" style="grid-template-columns:1fr auto" data-mid="${esc(m.id)}"><span style="min-width:0"><span class="t1" style="display:block"><b class="num">${Number(m.tdA)||0}–${Number(m.tdB)||0}</b>${esc(m.coachA)} vs ${esc(m.coachB)}</span><span class="t2" style="display:block">${esc(fdate(new Date(m.endedAt)))}${m.comp?" · "+esc(m.comp):""} · ${esc(m.rosterA||"")} – ${esc(m.rosterB||"")} · 💬</span></span><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></span></button>`).join(""):"";
+  $$("#dArch [data-mid]").forEach(b=>b.onclick=()=>openDetail(b.dataset.mid,"chat"));
   $("#dComps").innerHTML=comps.length?[`<button type="button" class="chip" aria-pressed="${!dComp}" data-c="">Toutes</button>`,...comps.map(c=>`<button type="button" class="chip" aria-pressed="${dComp===c}" data-c="${esc(c)}">${esc(c)}</button>`)].join(""):"";
   $$("#dComps .chip").forEach(b=>b.onclick=()=>{dComp=b.dataset.c;renderDirect()});
   $("#dCards").innerHTML=list.length?list.map(m=>`<button type="button" class="dcard" data-mid="${esc(m.id)}"><div class="dmeta">${badge(m)}<span class="dcomp">${esc(m.comp||"Match amical")}</span>${DPH(m)?`<span class="dph">${DPH(m)}</span>`:""}</div>${scoreBoard(m,true)}</button>`).join("")
@@ -1606,12 +1618,12 @@ async function openDetail(id,tab){dOpen=id;dTab=tab||"feed";dChatSeen=srvNow();t
     if(evRef)evRef.off();if(chRef)chRef.off();evData={};chData={};
     evRef=db.ref("events/"+id).limitToLast(60);evRef.on("value",s=>{evData=s.val()||{};renderDetail()});
     chRef=db.ref("chats/"+id).limitToLast(150);chRef.on("value",s=>{chData=s.val()||{};renderDetail();if(live&&live.id===id&&dTab==="chat")markChatSeen(id)});
-    if(!livesData[id]){const s=await db.ref("lives/"+id).once("value");if(s.exists())livesData[id]=s.val()}
+    if(!liveById(id)){const s=await db.ref("lives/"+id).once("value");if(s.exists())archData[id]=s.val()}
     renderDetail()}catch(e){$("#dDetail").innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button></div><div class="empty">${esc(fbErr||"Direct indisponible.")}</div>`;$("#dBack").onclick=closeDetail}}
 function closeDetail(){dOpen=null;$("#dDetail").dataset.mid="";if(evRef){evRef.off();evRef=null}if(chRef){chRef.off();chRef=null}$("#dDetail").hidden=true;$("#dDetail").innerHTML="";$("#dList").hidden=false;try{history.replaceState(null,"","#direct")}catch(e){}renderDirect()}
 const hhmm=t=>{try{return new Date(Number(t)-srvOff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
 function renderDetail(){renderDetail0();renderFollow()}
-function renderDetail0(){const id=dOpen;if(!id)return;const m=livesData[id]?Object.assign({id},livesData[id]):null;const box=$("#dDetail");
+function renderDetail0(){const id=dOpen;if(!id)return;const m=liveById(id)?Object.assign({id},liveById(id)):null;const box=$("#dDetail");
   if(!m||expired(m)){box.dataset.mid="";box.innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button></div><div class="empty">Ce direct est terminé ou n'existe plus.</div>`;$("#dBack").onclick=closeDetail;return}
   if(box.dataset.mid!==id){box.dataset.mid=id;
     box.innerHTML=`<div class="dd-bar"><button class="btn small" type="button" id="dBack">← Retour</button><button class="btn small" type="button" id="dShare">Partager</button></div>
@@ -1662,7 +1674,7 @@ async function sendMsg(id,name){const inp=$("#dMsg");const text=inp.value.trim()
 async function shareLive(m){const url=location.origin+location.pathname+"#d-"+m.id;const title=`${m.coachA} vs ${m.coachB}${m.comp?" · "+m.comp:""}`;
   try{if(navigator.share){await navigator.share({title:"Dugout · Direct",text:title,url});return}}catch(e){if(e&&e.name==="AbortError")return}
   try{await navigator.clipboard.writeText(url);toast("Lien copié")}catch(e){modal(`<h3>Lien du direct</h3><p>Copiez ce lien pour le partager :</p><input class="search" readonly value="${esc(url)}" id="shareUrl"><div class="acts"><button class="btn small" data-x>Fermer</button></div>`,(d,close)=>{d.querySelector("[data-x]").onclick=close;const i=d.querySelector("#shareUrl");i.focus();i.select()})}}
-function directTick(){$$("[data-dt]").forEach(el=>{const [id,ab]=el.dataset.dt.split("|");const m=livesData[id];if(!m)return;const r=liveRem(m,ab);el.textContent=fmt(r);el.classList.toggle("neg",r<0)})}
+function directTick(){$$("[data-dt]").forEach(el=>{const [id,ab]=el.dataset.dt.split("|");const m=liveById(id);if(!m)return;const r=liveRem(m,ab);el.textContent=fmt(r);el.classList.toggle("neg",r<0)})}
 setInterval(directTick,500);
 
 /* réglages du direct */
