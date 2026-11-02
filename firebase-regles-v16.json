@@ -3,15 +3,19 @@
     "admins": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid && newData.val() === true && newData.parent().parent().child('adminCodes').child($uid).val() === 'Nuffle-Fu69Fe-tfrnJn'",
+        ".write": "auth != null && auth.uid === $uid && newData.val() === true && root.child('secrets').child('adminCode').isString() && root.child('secrets').child('adminCode').val().length >= 12 && newData.parent().parent().child('adminCodes').child($uid).val() === root.child('secrets').child('adminCode').val()",
         ".validate": "newData.isBoolean()"
       }
     },
     "adminCodes": {
       "$uid": {
         ".read": false,
-        ".write": "auth != null && auth.uid === $uid && newData.val() === 'Nuffle-Fu69Fe-tfrnJn'"
+        ".write": "auth != null && auth.uid === $uid && root.child('secrets').child('adminCode').isString() && root.child('secrets').child('adminCode').val().length >= 12 && newData.val() === root.child('secrets').child('adminCode').val()"
       }
+    },
+    "secrets": {
+      ".read": false,
+      ".write": false
     },
     "rate": {
       "$uid": {
@@ -23,10 +27,11 @@
     "lives": {
       ".read": true,
       ".indexOn": [
-        "updatedAt"
+        "updatedAt",
+        "endedAt"
       ],
       "$mid": {
-        ".write": "auth != null && ((!data.exists() && newData.child('owner').val() === auth.uid) || (data.exists() && data.child('owner').val() === auth.uid) || (data.exists() && !newData.exists() && (root.child('admins').child(auth.uid).val() === true || data.child('updatedAt').val() < now - 21600000 || (data.child('endedAt').isNumber() && data.child('endedAt').val() < now - 10800000))))",
+        ".write": "auth != null && ((!data.exists() && newData.child('owner').val() === auth.uid) || (data.exists() && data.child('owner').val() === auth.uid) || (data.exists() && !newData.exists() && (root.child('admins').child(auth.uid).val() === true || (!data.child('endedAt').exists() && data.child('updatedAt').val() < now - 21600000))))",
         ".validate": "newData.hasChildren(['owner', 'coachA', 'coachB', 'updatedAt']) && newData.child('owner').val() === auth.uid",
         "owner": {
           ".validate": "newData.isString()"
@@ -66,7 +71,7 @@
     "events": {
       ".read": true,
       "$mid": {
-        ".write": "auth != null && !newData.exists() && (!root.child('lives').child($mid).exists() || root.child('lives').child($mid).child('owner').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || root.child('lives').child($mid).child('updatedAt').val() < now - 21600000 || (root.child('lives').child($mid).child('endedAt').isNumber() && root.child('lives').child($mid).child('endedAt').val() < now - 10800000))",
+        ".write": "auth != null && !newData.exists() && (!root.child('lives').child($mid).exists() || root.child('lives').child($mid).child('owner').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || (!root.child('lives').child($mid).child('endedAt').exists() && root.child('lives').child($mid).child('updatedAt').val() < now - 21600000))",
         "$eid": {
           ".write": "auth != null && newData.parent().parent().parent().child('lives').child($mid).child('owner').val() === auth.uid",
           ".validate": "newData.hasChildren(['k', 't']) && newData.child('t').val() === now",
@@ -91,7 +96,7 @@
     "chats": {
       ".read": true,
       "$mid": {
-        ".write": "auth != null && !newData.exists() && (!root.child('lives').child($mid).exists() || root.child('lives').child($mid).child('owner').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || root.child('lives').child($mid).child('updatedAt').val() < now - 21600000 || (root.child('lives').child($mid).child('endedAt').isNumber() && root.child('lives').child($mid).child('endedAt').val() < now - 10800000))",
+        ".write": "auth != null && !newData.exists() && (!root.child('lives').child($mid).exists() || root.child('lives').child($mid).child('owner').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || (!root.child('lives').child($mid).child('endedAt').exists() && root.child('lives').child($mid).child('updatedAt').val() < now - 21600000))",
         "$msg": {
           ".write": "auth != null && ((!data.exists() && newData.exists() && root.child('lives').child($mid).exists()) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || root.child('lives').child($mid).child('owner').val() === auth.uid || root.child('admins').child(auth.uid).val() === true)))",
           ".validate": "newData.hasChildren(['uid', 'name', 'text', 't']) && newData.child('uid').val() === auth.uid && newData.child('t').val() === now && (!root.child('rate').child(auth.uid).exists() || root.child('rate').child(auth.uid).val() < now - 5000) && newData.parent().parent().parent().child('rate').child(auth.uid).val() === now",
@@ -121,6 +126,39 @@
       },
       "$other": {
         ".validate": false
+      }
+    },
+    "push": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['token','updatedAt'])",
+        "token": {
+          ".validate": "newData.isString() && newData.val().length <= 512"
+        },
+        "all": {
+          ".validate": "newData.isBoolean()"
+        },
+        "chat": {
+          ".validate": "newData.isBoolean()"
+        },
+        "favs": {
+          "$f": {
+            ".validate": "newData.val() === true && $f.length <= 60"
+          }
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber() && newData.val() === now"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "me": {
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "naf": {
+          ".validate": "newData.isString() && newData.val().length <= 12"
+        }
       }
     }
   }
