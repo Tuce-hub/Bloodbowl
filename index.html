@@ -745,7 +745,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 (function(){
 "use strict";
 // Clé publique « Web Push » (Console Firebase › Paramètres du projet › Cloud Messaging › Certificats Web Push). Vide = notifications pas encore activées.
-const VAPID_KEY="";
+const VAPID_KEY="BJ6eeaUrUhv7x3vQ7KZ-u-fJ-BlyYeXNUeuqE8FIkUGO9S5dHCvoxMFMD7B0lqe-mMoj0IJ_LiTl9B2r4Vmc3PM";
 const ROSTERS=["Alliance du Vieux Monde", "Amazones", "Bas-Fonds", "Bretonniens", "Elfes noirs", "Elfes sylvains", "Élus du Chaos", "Gnomes", "Gobelins", "Halflings", "Hauts elfes", "Hommes Lézard", "Horreurs nécromantiques", "Humains", "Khorne", "Morts ambulants", "Nains", "Nains du chaos", "Noblesse Impériale", "Nordiques", "Nurgle", "Ogres", "Orques", "Orques Noirs", "Renégats du Chaos", "Rois des tombes", "Skavens", "Slanns", "Snotlings", "Union elfique", "Vampires"],
   ROSTER_ALIAS={"hommes-lézards":"Hommes Lézard","morts-vivants":"Morts ambulants"},
   canonRoster=r=>{const k=String(r||"").trim().toLowerCase();return ROSTER_ALIAS[k]||ROSTERS.find(x=>x.toLowerCase()===k)||r},
