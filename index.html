@@ -669,8 +669,8 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <h2>Blood Bowl 3</h2>
       <div class="field"><label for="sBb3">Mon pseudo Blood Bowl 3</label><input id="sBb3" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
       <div class="field"><label for="sBb3Lg">Mes ligues privées (séparées par des virgules)</label><input id="sBb3Lg" autocomplete="off" placeholder="Ex. Euskal Turn Over, FRANCO BOWL"></div>
-      <button class="btn small" type="button" id="bBb3">Mettre à jour mes matchs Blood Bowl 3</button>
-      <p class="hint" id="bb3Msg">Récupère vos matchs via l'API officielle de Cyanide : ligue officielle (ladder, arena) et vos ligues privées. Les mises à jour suivantes ne vérifient que vos équipes récentes et les compétitions en cours.</p>
+      <button class="btn small" type="button" id="bBb3">Rechercher mes matchs Blood Bowl 3</button>
+      <p class="hint" id="bb3Msg">Chaque coach saisit son pseudo Blood Bowl 3 : l'appli retrouve ses matchs de la ligue officielle (ladder, arena) et des ligues privées indiquées. La première recherche peut prendre quelques minutes ; les suivantes ne vérifient que les nouveaux matchs.</p>
     </div>
     <div class="panel">
       <h2>Sauvegarde et installation</h2>
@@ -1393,7 +1393,7 @@ async function spikeGet(path){
   try{return await fetchJson(SPIKE_API+path,"Spike",{headers:{Accept:"application/ld+json"}})}
   catch(e){if(!/injoignable|délai/.test(e.message))throw e;spikeViaRelay=true;toast("Spike injoignable en direct : passage par votre script Google…");return spikeRelay(path)}}
 // Import Blood Bowl 3 : fonction Firebase « bb3Import » (API officielle Cyanide, clé gardée côté serveur).
-const BB3_DEFAULT_LEAGUES="Euskal Turn Over, FRANCO BOWL, FRANCOBOWL, Vent des Gobs, Ligue de Tuce";
+const BB3_DEFAULT_LEAGUES="Euskal Turn Over";
 function bb3Record(g,meId){const mine=(g.teams||[]).find(t=>t.idcoach===meId),opp=(g.teams||[]).find(t=>t.idcoach!==meId);if(!mine||!opp)return null;
   const oc=(g.coaches||[]).find(c=>c.idcoach!==meId),fin=String(g.finished||g.started||"");const d=fin?new Date(fin.replace(" ","T")+(/[zZ+]/.test(fin.slice(10))?"":"Z")):new Date();
   return {id:"bb3-"+g.uuid,date:isNaN(d)?new Date().toISOString():d.toISOString(),competition:`BB3 · ${g.leaguename||"?"}`,source:"bb3",bb3League:g.leaguename||"",bb3Team:mine.idteamlisting||"",
@@ -1402,7 +1402,7 @@ function bb3Record(g,meId){const mine=(g.teams||[]).find(t=>t.idcoach===meId),op
 async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
   const lgTxt=$("#sBb3Lg").value.trim();settings.bb3Name=name;settings.bb3Leagues=lgTxt;saveSettings();
   const mineBb3=allMatches().filter(m=>m.source==="bb3");const full=!mineBb3.length;
-  const go=async()=>{btn.disabled=true;msg.classList.remove("warn");msg.textContent=full?"Import complet en cours : jusqu'à 10 minutes, gardez l'appli ouverte…":"Recherche des nouveaux matchs (environ 30 s)…";
+  const go=async()=>{btn.disabled=true;msg.classList.remove("warn");msg.textContent=full?"Recherche de tout votre historique… (quelques minutes, gardez l'appli ouverte)":"Recherche des nouveaux matchs (environ 30 s)…";
     try{await fb();if(!firebase.functions)await loadScript(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-functions-compat.js`);
       const last=mineBb3.map(m=>m.date).sort().pop();const since=full?"2023-01-01":new Date(Date.parse(last)-3*864e5).toISOString().slice(0,10);
       const recent=Date.now()-180*864e5,teams=[...new Set(mineBb3.filter(m=>m.bb3Team&&Date.parse(m.date)>=recent).map(m=>m.bb3Team))];
@@ -1415,7 +1415,7 @@ async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),b
       confirmImport("Blood Bowl 3",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""}.`},fixes)}
     catch(e){const c=String(e&&e.code||"");msg.textContent="Import impossible : "+(/not-found|internal|unavailable/.test(c)&&!e.details?"la fonction Blood Bowl 3 n'est pas encore en ligne sur le serveur du club (voir BB3.md)":(e.message||"vérifiez la connexion"))+".";msg.classList.add("warn");toast("Import BB3 impossible : voir le message sous le bouton")}
     finally{btn.disabled=false}};
-  if(full)confirmBox("Premier import complet ?","Aucun match Blood Bowl 3 n'est encore enregistré ici : l'appli va parcourir tout votre historique (plusieurs centaines de requêtes, jusqu'à 10 minutes). Plus rapide : importer le fichier dugout-bb3 fourni (Réglages › Sauvegarde › Importer).","Lancer l'import complet",false,go);else go()}
+  if(full)confirmBox("Première recherche ?","L'appli va parcourir tout votre historique Blood Bowl 3. Selon le nombre de vos équipes, cela peut prendre quelques minutes : gardez l'appli ouverte.","Lancer la recherche",false,go);else go()}
 $("#bBb3").onclick=importBB3;
 /* ---------- import NAF (base NAF reprise par l'API de Spike) ---------- */
 // Un match NAF est un doublon s'il existe déjà un match saisi à la main le même jour, même score, même adversaire (n° NAF ou nom).

@@ -24,10 +24,10 @@ console.cloud.google.com › projet horloge-bloodbowl › icône **>_** (Cloud S
    Résultat attendu : 4 fonctions, dont `bb3Import`.
 
 ## Utilisation
-- **Premier import** : le plus rapide est d'importer le fichier `dugout-bb3-…json` fourni
-  (Réglages › Sauvegarde et installation › Importer). Sinon, le bouton lance un import complet (jusqu'à 10 min).
-- **Ensuite** : Réglages › Blood Bowl 3 › « Mettre à jour mes matchs Blood Bowl 3 ». Seules vos équipes récentes
-  et les compétitions en cours de vos ligues privées sont vérifiées (~40 requêtes, ~30 s).
+- **Chaque coach**, sur son appareil : Réglages › Blood Bowl 3 › son pseudo, ses ligues privées › « Rechercher mes matchs Blood Bowl 3 ».
+- **Première recherche** : tout l'historique (quelques minutes selon le nombre d'équipes ; ~5 min pour 300 équipes).
+- **Ensuite** : seules les équipes récentes et les compétitions en cours sont vérifiées (~40 requêtes, ~30 s).
+- Toutes les recherches du club passent par la même clé : quotas Cyanide partagés (1 000 requêtes/h).
 
 ## Garde-fous (quotas Cyanide : 1 000 requêtes/h, 10 000/jour)
 - une mise à jour toutes les 2 min par appareil, un import complet par heure ;

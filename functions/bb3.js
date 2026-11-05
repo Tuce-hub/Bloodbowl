@@ -51,7 +51,7 @@ const slim = m => ({
  * @param full   true : tout l'historique (long) ; false : récent seulement
  * @param teams  équipes déjà connues comme actives (mode récent)
  */
-async function fetchCoachMatches({ key, coach, leagues = [], since = "2023-01-01", full = false, teams = [], recentDays = 120, fetchImpl = fetch, concurrency = 6 }) {
+async function fetchCoachMatches({ key, coach, leagues = [], since = "2023-01-01", full = false, teams = [], recentDays = 120, fetchImpl = fetch, concurrency = 8 }) {
   let requests = 0;
   const c = async (m, p) => { requests++; return call(key, m, p, fetchImpl); };
   const look = await c("lookup", { coach_name: coach });
