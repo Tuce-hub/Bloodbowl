@@ -53,9 +53,10 @@ const slim = m => ({
  * @param teams équipes déjà actives connues de l'appli (revérifiées à chaque fois, depuis « since »)
  */
 async function fetchCoachMatches({ key, coach, since = "2023-01-01", teams = [], state = {}, recentDays = 120,
-  budgetMs = 420e3, fetchImpl = fetch, concurrency = 6 }) {
+  budgetMs = 420e3, maxRequests = 1e9, fetchImpl = fetch, concurrency = 6 }) {
   const t0 = Date.now(); let requests = 0;
-  const left = () => budgetMs - (Date.now() - t0);
+  // Temps restant ; tombe à 0 si le plafond de requêtes (quota Cyanide) est atteint.
+  const left = () => requests >= maxRequests ? 0 : budgetMs - (Date.now() - t0);
   const c = async (m, p) => { requests++; return call(key, m, p, fetchImpl); };
   const st = { checked: Array.isArray(state.checked) ? state.checked.slice() : [], leagues: Object.assign({}, state.leagues || {}) };
   const look = await c("lookup", { coach_name: coach });

@@ -669,7 +669,8 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <h2>Blood Bowl 3</h2>
       <div class="field"><label for="sBb3">Mon pseudo Blood Bowl 3</label><input id="sBb3" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
       <button class="btn small" type="button" id="bBb3">Rechercher mes matchs Blood Bowl 3</button>
-      <p class="hint" id="bb3Msg">Chaque coach saisit son pseudo Blood Bowl 3 : l'appli retrouve ses matchs de la ligue officielle (ladder, arena). La première recherche peut prendre quelques minutes ; les suivantes ne vérifient que les nouveaux matchs.</p>
+      <p class="hint" id="bb3State"></p>
+      <p class="hint" id="bb3Msg">Chaque coach saisit son pseudo Blood Bowl 3. Le serveur du club récupère son historique en arrière-plan (toutes ligues), puis ses nouveaux matchs chaque heure : l'import est ensuite immédiat.</p>
     </div>
     <div class="panel">
       <h2>Sauvegarde et installation</h2>
@@ -1397,23 +1398,34 @@ function bb3Record(g,meId){const mine=(g.teams||[]).find(t=>t.idcoach===meId),op
   return {id:"bb3-"+g.uuid,date:isNaN(d)?new Date().toISOString():d.toISOString(),competition:`BB3 · ${g.leaguename||"?"}`,source:"bb3",bb3League:g.leaguename||"",bb3Team:mine.idteamlisting||"",
     myRoster:BB3_RACES[+mine.idraces]||("Race "+mine.idraces),oppCoach:oc?oc.coachname:"?",oppNaf:"",oppRoster:BB3_RACES[+opp.idraces]||("Race "+opp.idraces),
     myTD:+mine.score||0,oppTD:+opp.score||0,myCas:+mine.inflictedcasualties||0,oppCas:+opp.inflictedcasualties||0,note:`BB3 · ${g.competitionname||""} · ${mine.teamname||""} contre ${opp.teamname||""}`}}
+// Blood Bowl 3 : le serveur du club collecte les matchs en arrière-plan (bb3Collect) ; l'appli lit la base.
+let bb3Ref=null,bb3Info=null;
+function bb3Watch(){const id=settings.bb3CoachId;if(!id)return;fb().then(db=>{if(bb3Ref)bb3Ref.off();bb3Ref=db.ref("bb3coaches/"+id);bb3Ref.on("value",s=>{bb3Info=s.val();renderBb3State()},()=>{})}).catch(()=>{})}
+function renderBb3State(){const el=$("#bb3State"),btn=$("#bBb3");if(!el||!btn)return;const i=bb3Info;
+  if(!settings.bb3CoachId||!i){el.textContent="";btn.textContent="Rechercher mes matchs Blood Bowl 3";return}
+  if(i.status!=="ready"){el.textContent=`⏳ Récupération de l'historique de ${i.name} en cours : ${i.resolved||0}/${i.total||"?"} équipes vérifiées, ${i.count||0} matchs trouvés. Vous pouvez fermer l'appli : une notification vous préviendra (si elles sont activées).`;btn.textContent="Actualiser";return}
+  const ago=i.lastRun?Math.max(1,Math.round((Date.now()-i.lastRun)/60000)):null;
+  el.textContent=`✅ ${i.count||0} matchs de ${i.name} disponibles${ago!=null?` · dernière mise à jour il y a ${ago<60?ago+" min":Math.round(ago/60)+" h"}`:""}.`;btn.textContent="Importer mes matchs Blood Bowl 3"}
 async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
-  settings.bb3Name=name;saveSettings();
-  const mineBb3=allMatches().filter(m=>m.source==="bb3");const full=!mineBb3.length;
-  const go=async()=>{btn.disabled=true;msg.classList.remove("warn");msg.textContent=full?"Recherche de tout votre historique… (quelques minutes, gardez l'appli ouverte)":"Recherche des nouveaux matchs (environ 30 s)…";
-    try{await fb();if(!firebase.functions)await loadScript(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-functions-compat.js`);
-      const last=mineBb3.map(m=>m.date).sort().pop();const since=full?"2023-01-01":new Date(Date.parse(last)-3*864e5).toISOString().slice(0,10);
-      const recent=Date.now()-180*864e5,teams=[...new Set(mineBb3.filter(m=>m.bb3Team&&Date.parse(m.date)>=recent).map(m=>m.bb3Team))];
-      const call=firebase.app().functions("europe-west1").httpsCallable("bb3Import",{timeout:600000});
-      const r=(await call({coach:name,since,full,teams})).data||{};
-      if(!r.coach)throw new Error(`aucun coach Blood Bowl 3 nommé « ${name} »${r.candidates&&r.candidates.length?" (proches : "+r.candidates.join(", ")+")":""}`);
-      const fresh=[],fixes=[];(r.matches||[]).forEach(g=>{const rec=bb3Record(g,r.coach.id);if(!rec)return;const old=matches[rec.id];
-        if(!old)fresh.push(rec);else if(!old.deleted&&old.source==="bb3"&&["myRoster","oppRoster","myTD","oppTD","myCas","oppCas","bb3Team"].some(k=>old[k]!==rec[k]))fixes.push(Object.assign({},old,rec))});
-      msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""}`:"Aucun nouveau match")+(fixes.length?`, ${fixes.length} à corriger`:"")+` (${(r.matches||[]).length} trouvés, ${r.requests} requêtes).`;
-      confirmImport("Blood Bowl 3",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""}.`},fixes)}
-    catch(e){const c=String(e&&e.code||"");msg.textContent="Import impossible : "+(/not-found|internal|unavailable/.test(c)&&!e.details?"la fonction Blood Bowl 3 n'est pas encore en ligne sur le serveur du club (voir BB3.md)":(e.message||"vérifiez la connexion"))+".";msg.classList.add("warn");toast("Import BB3 impossible : voir le message sous le bouton")}
-    finally{btn.disabled=false}};
-  if(full)confirmBox("Première recherche ?","L'appli va parcourir tout votre historique Blood Bowl 3. Selon le nombre de vos équipes, cela peut prendre quelques minutes : gardez l'appli ouverte.","Lancer la recherche",false,go);else go()}
+  btn.disabled=true;msg.classList.remove("warn");
+  try{const db=await fb();
+    if(!settings.bb3CoachId||norm(settings.bb3Name)!==norm(name)){msg.textContent="Inscription auprès du serveur du club…";
+      if(!firebase.functions)await loadScript(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-functions-compat.js`);
+      const r=(await firebase.app().functions("europe-west1").httpsCallable("bb3Register")({coach:name})).data;
+      settings.bb3CoachId=r.coachId;settings.bb3Name=r.name;saveSettings();bb3Watch();
+      msg.textContent=`${r.name} est inscrit : le serveur récupère votre historique en arrière-plan (de quelques minutes à une heure selon le nombre d'équipes).`;return}
+    const info=(await db.ref("bb3coaches/"+settings.bb3CoachId).once("value")).val();bb3Info=info;renderBb3State();
+    if(!info){settings.bb3CoachId="";saveSettings();throw new Error("inscription introuvable, relancez la recherche")}
+    if(info.status!=="ready"){msg.textContent="Récupération toujours en cours : réessayez un peu plus tard.";return}
+    msg.textContent="Lecture des matchs…";
+    const all=(await db.ref("bb3matches/"+settings.bb3CoachId).once("value")).val()||{};
+    const fresh=[],fixes=[];Object.values(all).forEach(g=>{const rec=bb3Record(g,settings.bb3CoachId);if(!rec)return;const old=matches[rec.id];
+      if(!old)fresh.push(rec);else if(!old.deleted&&old.source==="bb3"&&["myRoster","oppRoster","myTD","oppTD","myCas","oppCas","bb3Team"].some(k=>old[k]!==rec[k]))fixes.push(Object.assign({},old,rec))});
+    msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""}`:"Aucun nouveau match")+(fixes.length?`, ${fixes.length} à corriger`:"")+` (${Object.keys(all).length} sur le serveur).`;
+    confirmImport("Blood Bowl 3",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""}.`},fixes)}
+  catch(e){const c=String(e&&e.code||"");msg.textContent="Impossible : "+(/not-found/.test(c)&&e.message?e.message:/internal|unavailable/.test(c)&&!e.details?"le serveur Blood Bowl 3 du club n'est pas encore en ligne (voir BB3.md)":(e.message||"vérifiez la connexion"))+".";msg.classList.add("warn");toast("Blood Bowl 3 : voir le message sous le bouton")}
+  finally{btn.disabled=false}}
+bb3Watch();
 $("#bBb3").onclick=importBB3;
 /* ---------- import NAF (base NAF reprise par l'API de Spike) ---------- */
 // Un match NAF est un doublon s'il existe déjà un match saisi à la main le même jour, même score, même adversaire (n° NAF ou nom).
@@ -1779,7 +1791,7 @@ $("#bDiscordSave").onclick=async()=>{const v=$("#sDiscord").value.trim();
   if(v&&!/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(v)){toast("Adresse invalide : elle doit commencer par https://discord.com/api/webhooks/");return}
   try{await fb();await fdb.ref("config/discordWebhook").set(v);toast(v?"Webhook Discord enregistré":"Annonces Discord désactivées")}catch(e){toast("Enregistrement refusé : vérifiez que vous êtes administrateur et que les règles sont à jour")}};
 $("#bDiscordTest").onclick=()=>{if(!discordHook){toast("Enregistrez d'abord le webhook");return}postDiscord("✅ Test Dugout : les annonces de matchs en direct arriveront dans ce salon.");toast("Message test envoyé : vérifiez le salon Discord")};
-function routeHash(){const h=(location.hash||"").slice(1);if(h.startsWith("d-")){openDetail(h.slice(2));return true}if(h==="direct"){showTab("direct");return true}return false}
+function routeHash(){const h=(location.hash||"").slice(1);if(h==="bb3"){showTab("set");setTimeout(()=>{const x=[...document.querySelectorAll("#v-set > .panel > h2")].find(e=>e.textContent.trim()==="Blood Bowl 3");if(x&&x.parentElement.classList.contains("closed"))x.click()},50);return true}if(h.startsWith("d-")){openDetail(h.slice(2));return true}if(h==="direct"){showTab("direct");return true}return false}
 addEventListener("hashchange",()=>{const h=(location.hash||"").slice(1);if(h.startsWith("d-")&&h.slice(2)!==dOpen)openDetail(h.slice(2))});
 
 function refreshModals(){const m=$("#modal");if(m.hidden)return;[m.firstChild,...modalStack.map(x=>x.node)].forEach(n=>{if(n&&n._refresh)try{n._refresh()}catch(e){}})}

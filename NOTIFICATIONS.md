@@ -16,7 +16,7 @@ L'appli sait recevoir les notifications, mais l'envoi se fait par 3 petites fonc
    ligne `const VAPID_KEY="";` (ou envoyez-la à Claude). Cette clé est publique, sans risque.
 
 ## 3. Mettre à jour les règles de la base (2 min)
-**Realtime Database › Règles** › remplacez tout par le contenu de `firebase-regles-v16.json` › **Publier**.
+**Realtime Database › Règles** › remplacez tout par le contenu de `firebase-regles-v17.json` › **Publier**.
 (Ajout : la rubrique `push`, où chaque téléphone enregistre son jeton et ses favoris.)
 
 ## 4. Mettre en ligne les fonctions (10 min, depuis un ordinateur)

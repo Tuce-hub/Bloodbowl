@@ -1,39 +1,41 @@
-# Import Blood Bowl 3 (API officielle Cyanide)
+# Blood Bowl 3 : collecte en arrière-plan (API officielle Cyanide)
 
-L'appli appelle la fonction Firebase `bb3Import`, qui interroge l'API de Cyanide avec **votre clé personnelle**.
-La clé est rangée dans un **secret Firebase** : elle n'apparaît ni dans l'appli ni dans ce dépôt public.
+Comme Spike, le serveur du club **collecte les matchs à l'avance** ; l'appli les lit instantanément.
 
-Prérequis : projet Firebase en offre **Blaze** (voir NOTIFICATIONS.md, étape 1).
+- `bb3Register` (appelée par l'appli) : un coach saisit son pseudo, il est inscrit.
+- `bb3Collect` (toutes les 10 min) : récupère l'historique des nouveaux inscrits (toutes ligues, en plusieurs passages),
+  puis les nouveaux matchs de chaque inscrit une fois par heure. Notification « Vos matchs sont prêts » à la fin de l'historique.
+- Base : `bb3coaches/{id}` (avancement), `bb3matches/{id}/{match}` (matchs), lisibles par l'appli, écrites seulement par le serveur.
+- Quota : 700 requêtes Cyanide par heure au maximum pour tout le club (limite Cyanide : 1 000/h).
+- La clé est un **secret Firebase** (`CYANIDE_KEY`) : jamais dans l'appli ni dans ce dépôt public.
+
+Prérequis : offre **Blaze** (voir NOTIFICATIONS.md, étape 1). Coût attendu : 0 €.
 
 ## Mise en ligne (une fois, Google Cloud Shell)
-console.cloud.google.com › projet horloge-bloodbowl › icône **>_** (Cloud Shell). Une commande à la fois :
+console.cloud.google.com › projet horloge-bloodbowl › icône **>_**. Une commande à la fois :
 
-1. Récupérer la dernière version du code (ou `git clone https://github.com/Tuce-hub/Bloodbowl.git` la première fois) :
+1. Code à jour (`git clone https://github.com/Tuce-hub/Bloodbowl.git` la première fois) :
    ```
    cd Bloodbowl && git pull
    ```
-2. Enregistrer la clé comme secret (la commande demande la valeur : collez la clé, puis Entrée ; elle ne s'affiche pas) :
+2. Clé Cyanide en secret (collez la clé quand c'est demandé ; elle ne s'affiche pas) :
    ```
    npx firebase-tools functions:secrets:set CYANIDE_KEY --project horloge-bloodbowl
    ```
-3. Installer et mettre en ligne les fonctions :
+3. Fonctions :
    ```
    cd functions && npm install && cd ..
    npx firebase-tools deploy --only functions --project horloge-bloodbowl
    ```
-   Résultat attendu : 4 fonctions, dont `bb3Import`.
+   Le premier déploiement active Cloud Scheduler (tâche toutes les 10 min). Résultat attendu : `bb3Register`, `bb3Collect`
+   et les fonctions de notifications.
+4. Règles : console Firebase › Realtime Database › Règles › contenu de `firebase-regles-v17.json` › Publier.
 
-## Utilisation
-- **Chaque coach**, sur son appareil : Réglages › Blood Bowl 3 › son pseudo › « Rechercher mes matchs Blood Bowl 3 » (ligue officielle : ladder, arena).
-- **Première recherche** : tout l'historique (quelques minutes selon le nombre d'équipes ; ~5 min pour 300 équipes).
-- **Ensuite** : seules les équipes récentes sont vérifiées (quelques requêtes, quelques secondes).
-- Toutes les recherches du club passent par la même clé : quotas Cyanide partagés (1 000 requêtes/h).
+## Pour chaque coach
+Réglages › Blood Bowl 3 › son pseudo › « Rechercher mes matchs Blood Bowl 3 ».
+- 1re fois : inscription, puis récupération en arrière-plan (de quelques minutes à ~1 h pour 300 équipes).
+  On peut fermer l'appli ; avec les notifications activées, un message prévient quand c'est prêt.
+- Ensuite : « Importer mes matchs Blood Bowl 3 » est immédiat (confirmation avant import).
 
-## Garde-fous (quotas Cyanide : 1 000 requêtes/h, 10 000/jour)
-- une mise à jour toutes les 2 min par appareil, un import complet par heure ;
-- plafond de 6 000 requêtes par jour pour tout le club ;
-- appareil connecté à Firebase obligatoire.
-
-## Rappel des conditions Cyanide
-La clé est personnelle : ne la communiquez à personne. Cyanide demande que lui soient déclarées les applis qui
-utilisent l'API : https://tuce-hub.github.io/Bloodbowl/
+## Conditions Cyanide
+Clé personnelle, à ne communiquer à personne. Déclarez l'appli à Cyanide : https://tuce-hub.github.io/Bloodbowl/

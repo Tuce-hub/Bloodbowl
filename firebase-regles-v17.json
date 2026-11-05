@@ -160,6 +160,14 @@
           ".validate": "newData.isString() && newData.val().length <= 12"
         }
       }
+    },
+    "bb3coaches": {
+      ".read": "auth != null",
+      ".write": false
+    },
+    "bb3matches": {
+      ".read": "auth != null",
+      ".write": false
     }
   }
 }
