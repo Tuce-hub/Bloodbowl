@@ -10,6 +10,11 @@ const { onValueCreated, onValueUpdated } = require("firebase-functions/v2/databa
 const { initializeApp } = require("firebase-admin/app");
 const { getDatabase } = require("firebase-admin/database");
 const { getMessaging } = require("firebase-admin/messaging");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { defineSecret } = require("firebase-functions/params");
+const { fetchCoachMatches } = require("./bb3");
+// Clé personnelle de l'API Cyanide : secret Firebase, jamais dans le code (voir BB3.md).
+const CYANIDE_KEY = defineSecret("CYANIDE_KEY");
 
 initializeApp();
 const DB = { instance: "horloge-bloodbowl-default-rtdb", region: "europe-west1" };
@@ -76,6 +81,30 @@ exports.chatMessage = onValueCreated({ ref: "/chats/{mid}/{msg}", ...DB }, async
     title: `💬 ${m.name} · ${vs(l)}`, body: String(m.text || "").slice(0, 160),
     url: `./#d-${e.params.mid}`, tag: `chat-${e.params.mid}`
   });
+});
+
+/**
+ * Import Blood Bowl 3 (API officielle Cyanide) appelé par l'appli.
+ * Garde-fous : utilisateur connecté, une demande toutes les 2 min (1 h pour un import complet), plafond quotidien.
+ */
+exports.bb3Import = onCall({ region: "europe-west1", secrets: [CYANIDE_KEY], timeoutSeconds: 540, memory: "256MiB", maxInstances: 2 }, async req => {
+  if (!req.auth) throw new HttpsError("unauthenticated", "Connexion requise");
+  const d = req.data || {};
+  const coach = String(d.coach || "").trim().slice(0, 40);
+  if (!coach) throw new HttpsError("invalid-argument", "Pseudo Blood Bowl 3 manquant");
+  const full = !!d.full;
+  const leagues = (Array.isArray(d.leagues) ? d.leagues : []).map(x => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, 10);
+  const teams = (Array.isArray(d.teams) ? d.teams : []).map(String).filter(x => /^[0-9a-f-]{36}$/i.test(x)).slice(0, 200);
+  const since = /^\d{4}-\d{2}-\d{2}$/.test(String(d.since || "")) ? String(d.since) : "2023-01-01";
+  const db = getDatabase(), now = Date.now();
+  const rate = db.ref("bb3rate/" + req.auth.uid), last = (await rate.get()).val() || 0, wait = full ? 3600e3 : 120e3;
+  if (now - last < wait) throw new HttpsError("resource-exhausted", `Réessayez dans ${Math.ceil((wait - (now - last)) / 60000)} min`);
+  const quota = db.ref("bb3quota/" + new Date().toISOString().slice(0, 10));
+  if (((await quota.get()).val() || 0) > 6000) throw new HttpsError("resource-exhausted", "Quota du jour atteint, réessayez demain");
+  await rate.set(now);
+  const r = await fetchCoachMatches({ key: CYANIDE_KEY.value(), coach, leagues, since, full, teams });
+  await quota.transaction(v => (v || 0) + r.requests);
+  return r;
 });
 
 exports._pickTargets = pickTargets; // pour les tests

@@ -1,0 +1,290 @@
+{
+    "size": [
+        6206,
+        332,
+        40,
+        175,
+        5
+    ],
+    "matches": [
+        {
+            "uuid": "62acd370-55af-11f1-a124-bc2411305479",
+            "id": "62acd370-55af-11f1-a124-bc2411305479",
+            "idcompetition": "4e24c5e3-3347-11f1-903a-d8bbc1d7001d",
+            "competitionname": "OPEN_LADDER_SEASON_11",
+            "started": "2026-05-22 07:25:19",
+            "finished": "2026-05-22 08:02:24",
+            "idleague": "00000000-0000-0000-0000-000000000025",
+            "leaguename": "Official league",
+            "stadium": null,
+            "round": null,
+            "api_match": "https:\/\/web.cyanide-studio.com\/ws\/bb3\/match\/?key=d313e394c4010bded62e39caf0593fa3&uuid=62acd370-55af-11f1-a124-bc2411305479&bb=3",
+            "coaches": [
+                {
+                    "idcoach": "5d78c3b7-8e66-11ee-b910-02000090a64f",
+                    "coachname": "Obi Juan Kenobi",
+                    "platform": "steam",
+                    "oldrating": "1016",
+                    "newrating": "1032"
+                },
+                {
+                    "idcoach": "996c16ce-b145-11ed-80a8-020000a4d571",
+                    "coachname": "Tuce",
+                    "platform": "steam",
+                    "oldrating": "1015",
+                    "newrating": "999"
+                }
+            ],
+            "teams": [
+                {
+                    "idteamlisting": "05d79263-5498-11f1-a124-bc2411305479",
+                    "idcoach": "5d78c3b7-8e66-11ee-b910-02000090a64f",
+                    "idraces": "4",
+                    "teamname": "Obi Orc Kenobi",
+                    "teamlogo": "Logo_Orc_12",
+                    "value": 1095,
+                    "score": "1",
+                    "nbsupporters": "10.0",
+                    "inflictedpasses": "0",
+                    "inflictedcatches": "0",
+                    "inflictedinterceptions": "0",
+                    "inflictedtouchdowns": "0",
+                    "inflictedcasualties": "0",
+                    "inflictedtackles": "2",
+                    "inflictedko": "2",
+                    "inflictedinjuries": "5",
+                    "inflicteddead": "0",
+                    "inflictedmetersrunning": "0",
+                    "inflictedmeterspassing": "0",
+                    "inflictedpushouts": "0",
+                    "sustainedexpulsions": "0",
+                    "sustainedcasualties": "1",
+                    "sustainedko": "0",
+                    "sustainedinjuries": "3",
+                    "sustaineddead": "1"
+                },
+                {
+                    "idteamlisting": "d6f15406-5488-11f1-a124-bc2411305479",
+                    "idcoach": "996c16ce-b145-11ed-80a8-020000a4d571",
+                    "idraces": "8",
+                    "teamname": "Les K\u00e9k\u00e9s",
+                    "teamlogo": "Logo_ChaosChosen_07",
+                    "value": 860,
+                    "score": "0",
+                    "nbsupporters": "0.0",
+                    "inflictedpasses": "0",
+                    "inflictedcatches": "0",
+                    "inflictedinterceptions": "0",
+                    "inflictedtouchdowns": "0",
+                    "inflictedcasualties": "1",
+                    "inflictedtackles": "0",
+                    "inflictedko": "0",
+                    "inflictedinjuries": "3",
+                    "inflicteddead": "1",
+                    "inflictedmetersrunning": "28",
+                    "inflictedmeterspassing": "0",
+                    "inflictedpushouts": "0",
+                    "sustainedexpulsions": "0",
+                    "sustainedcasualties": "0",
+                    "sustainedko": "2",
+                    "sustainedinjuries": "6",
+                    "sustaineddead": "0"
+                }
+            ]
+        },
+        {
+            "uuid": "adb7f9c1-5557-11f1-a124-bc2411305479",
+            "id": "adb7f9c1-5557-11f1-a124-bc2411305479",
+            "idcompetition": "4e24c5e3-3347-11f1-903a-d8bbc1d7001d",
+            "competitionname": "OPEN_LADDER_SEASON_11",
+            "started": "2026-05-21 20:57:29",
+            "finished": "2026-05-21 21:53:01",
+            "idleague": "00000000-0000-0000-0000-000000000025",
+            "leaguename": "Official league",
+            "stadium": null,
+            "round": null,
+            "api_match": "https:\/\/web.cyanide-studio.com\/ws\/bb3\/match\/?key=d313e394c4010bded62e39caf0593fa3&uuid=adb7f9c1-5557-11f1-a124-bc2411305479&bb=3",
+            "coaches": [
+                {
+                    "idcoach": "996c16ce-b145-11ed-80a8-020000a4d571",
+                    "coachname": "Tuce",
+                    "platform": "steam",
+                    "oldrating": "1016",
+                    "newrating": "1015"
+                },
+                {
+                    "idcoach": "3ba7950f-dace-11ed-8d38-020000a4d571",
+                    "coachname": "badger",
+                    "platform": "steam",
+                    "oldrating": "999",
+                    "newrating": "1000"
+                }
+            ],
+            "teams": [
+                {
+                    "idteamlisting": "d6f15406-5488-11f1-a124-bc2411305479",
+                    "idcoach": "996c16ce-b145-11ed-80a8-020000a4d571",
+                    "idraces": "8",
+                    "teamname": "Les K\u00e9k\u00e9s",
+                    "teamlogo": "Logo_ChaosChosen_07",
+                    "value": 1020,
+                    "score": "1",
+                    "nbsupporters": "3.5",
+                    "inflictedpasses": "0",
+                    "inflictedcatches": "2",
+                    "inflictedinterceptions": "0",
+                    "inflictedtouchdowns": "1",
+                    "inflictedcasualties": "0",
+                    "inflictedtackles": "1",
+                    "inflictedko": "1",
+                    "inflictedinjuries": "5",
+                    "inflicteddead": "0",
+                    "inflictedmetersrunning": "27",
+                    "inflictedmeterspassing": "0",
+                    "inflictedpushouts": "0",
+                    "sustainedexpulsions": "1",
+                    "sustainedcasualties": "3",
+                    "sustainedko": "3",
+                    "sustainedinjuries": "13",
+                    "sustaineddead": "1"
+                },
+                {
+                    "idteamlisting": "f10786da-5381-11f1-a124-bc2411305479",
+                    "idcoach": "3ba7950f-dace-11ed-8d38-020000a4d571",
+                    "idraces": "4",
+                    "teamname": "Barnsley Boyz",
+                    "teamlogo": "Logo_Orc_12",
+                    "value": 1035,
+                    "score": "1",
+                    "nbsupporters": "3.5",
+                    "inflictedpasses": "0",
+                    "inflictedcatches": "0",
+                    "inflictedinterceptions": "0",
+                    "inflictedtouchdowns": "1",
+                    "inflictedcasualties": "3",
+                    "inflictedtackles": "2",
+                    "inflictedko": "2",
+                    "inflictedinjuries": "12",
+                    "inflicteddead": "1",
+                    "inflictedmetersrunning": "11",
+                    "inflictedmeterspassing": "0",
+                    "inflictedpushouts": "0",
+                    "sustainedexpulsions": "0",
+                    "sustainedcasualties": "0",
+                    "sustainedko": "1",
+                    "sustainedinjuries": "5",
+                    "sustaineddead": "0"
+                }
+            ]
+        },
+        {
+            "uuid": "fed89df9-5488-11f1-a124-bc2411305479",
+            "id": "fed89df9-5488-11f1-a124-bc2411305479",
+            "idcompetition": "4e24c5e3-3347-11f1-903a-d8bbc1d7001d",
+            "competitionname": "OPEN_LADDER_SEASON_11",
+            "started": "2026-05-20 20:17:59",
+            "finished": "2026-05-20 21:21:30",
+            "idleague": "00000000-0000-0000-0000-000000000025",
+            "leaguename": "Official league",
+            "stadium": null,
+            "round": null,
+            "api_match": "https:\/\/web.cyanide-studio.com\/ws\/bb3\/match\/?key=d313e394c4010bded62e39caf0593fa3&uuid=fed89df9-5488-11f1-a124-bc2411305479&bb=3",
+            "coaches": [
+                {
+                    "idcoach": "996c16ce-b145-11ed-80a8-020000a4d571",
+                    "coachname": "Tuce",
+                    "platform": "steam",
+                    "oldrating": "1000",
+                    "newrating": "1016"
+                },
+                {
+                    "idcoach": "4f051c3b-febf-11ef-a124-bc2411305479",
+                    "coachname": "Shirial",
+                    "platform": "steam",
+                    "oldrating": "1000",
+                    "newrating": "984"
+                }
+            ],
+            "teams": [
+                {
+                    "idteamlisting": "d6f15406-5488-11f1-a124-bc2411305479",
+                    "idcoach": "996c16ce-b145-11ed-80a8-020000a4d571",
+                    "idraces": "8",
+                    "teamname": "Les K\u00e9k\u00e9s",
+                    "teamlogo": "Logo_ChaosChosen_07",
+                    "value": 1000,
+                    "score": "1",
+                    "nbsupporters": "2.5",
+                    "inflictedpasses": "1",
+                    "inflictedcatches": "2",
+                    "inflictedinterceptions": "0",
+                    "inflictedtouchdowns": "1",
+                    "inflictedcasualties": "3",
+                    "inflictedtackles": "1",
+                    "inflictedko": "6",
+                    "inflictedinjuries": "19",
+                    "inflicteddead": "0",
+                    "inflictedmetersrunning": "25",
+                    "inflictedmeterspassing": "2",
+                    "inflictedpushouts": "0",
+                    "sustainedexpulsions": "0",
+                    "sustainedcasualties": "0",
+                    "sustainedko": "2",
+                    "sustainedinjuries": "13",
+                    "sustaineddead": "0"
+                },
+                {
+                    "idteamlisting": "c4a7536d-52f8-11f1-a124-bc2411305479",
+                    "idcoach": "4f051c3b-febf-11ef-a124-bc2411305479",
+                    "idraces": "14",
+                    "teamname": "La banda del Cheo 11 (12)",
+                    "teamlogo": "Logo_ImperialNobility_18",
+                    "value": 990,
+                    "score": "0",
+                    "nbsupporters": "2.5",
+                    "inflictedpasses": "0",
+                    "inflictedcatches": "1",
+                    "inflictedinterceptions": "0",
+                    "inflictedtouchdowns": "0",
+                    "inflictedcasualties": "0",
+                    "inflictedtackles": "0",
+                    "inflictedko": "2",
+                    "inflictedinjuries": "13",
+                    "inflicteddead": "0",
+                    "inflictedmetersrunning": "9",
+                    "inflictedmeterspassing": "0",
+                    "inflictedpushouts": "0",
+                    "sustainedexpulsions": "0",
+                    "sustainedcasualties": "3",
+                    "sustainedko": "6",
+                    "sustainedinjuries": "19",
+                    "sustaineddead": "0"
+                }
+            ]
+        }
+    ],
+    "urls": {
+        "images": {
+            "logos": "https:\/\/images.cyanide-studio.com\/bb3\/logos\/",
+            "races": "https:\/\/images.cyanide-studio.com\/bb3\/races\/",
+            "portraits": "https:\/\/images.cyanide-studio.com\/bb3\/portraits\/",
+            "skills": "https:\/\/images.cyanide-studio.com\/bb3\/skillicons\/",
+            "stadiums": "https:\/\/images.cyanide-studio.com\/bb3\/stadiums\/"
+        }
+    },
+    "context": {
+        "leagues": [
+            {
+                "name": "Official league"
+            }
+        ]
+    },
+    "meta": {
+        "user": "S\u00e9bastien NUCCIO ",
+        "game": "bb3",
+        "method": "matches",
+        "format": "json",
+        "services": "https:\/\/web.cyanide-studio.com\/ws\/?key=d313e394c4010bded62e39caf0593fa3&bb=3"
+    },
+    "promotional_content": false
+}

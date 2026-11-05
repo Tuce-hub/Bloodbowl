@@ -665,12 +665,12 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <button class="btn small" type="button" id="bFumbbl">Importer mes matchs FUMBBL</button>
       <p class="hint" id="fumbblMsg">Récupère vos matchs joués sur fumbbl.com. Ils comptent dans vos stats, avec la compétition « FUMBBL ». Relancez l'import pour ajouter les nouveaux.</p>
     </div>
-    <div class="panel wip-box">
-      <div class="wip-cover" aria-hidden="true"><span>Work in progress</span></div>
+    <div class="panel">
       <h2>Blood Bowl 3</h2>
-      <div class="field"><label for="sBb3">Mon pseudo Blood Bowl 3</label><input id="sBb3" tabindex="-1" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
-      <button class="btn small" type="button" id="bBb3" tabindex="-1" disabled>Importer mes matchs Blood Bowl 3</button>
-      <p class="hint" id="bb3Msg">Récupère vos matchs Blood Bowl 3 via le site Spike (spike.bugeat.com). Relancez l'import pour ajouter les nouveaux.</p>
+      <div class="field"><label for="sBb3">Mon pseudo Blood Bowl 3</label><input id="sBb3" autocomplete="off" autocapitalize="off" placeholder="Ex. Tuce"></div>
+      <div class="field"><label for="sBb3Lg">Mes ligues privées (séparées par des virgules)</label><input id="sBb3Lg" autocomplete="off" placeholder="Ex. Euskal Turn Over, FRANCO BOWL"></div>
+      <button class="btn small" type="button" id="bBb3">Mettre à jour mes matchs Blood Bowl 3</button>
+      <p class="hint" id="bb3Msg">Récupère vos matchs via l'API officielle de Cyanide : ligue officielle (ladder, arena) et vos ligues privées. Les mises à jour suivantes ne vérifient que vos équipes récentes et les compétitions en cours.</p>
     </div>
     <div class="panel">
       <h2>Sauvegarde et installation</h2>
@@ -1302,7 +1302,7 @@ function renderBackups(){const ex=settings.lastExport?Math.floor((Date.now()-Dat
   box.querySelectorAll("[data-snap]").forEach(b=>b.onclick=()=>{const x=snaps[+b.dataset.snap];
     confirmBox("Restaurer cette sauvegarde ?",`Les ${x.matches.length} matchs du ${fdate(x.at)} reviennent tels qu'ils étaient ce jour-là (y compris ceux supprimés depuis). Les matchs ajoutés après sont conservés.`,"Restaurer",false,()=>{
       const now=Date.now();x.matches.forEach(m=>{matches[m.id]=fixRosters(Object.assign({},m,{deleted:false,updatedAt:now}));pending.add(m.id)});saveMatches();setSync();sync();renderAll();toast("Sauvegarde restaurée")})})}
-function renderSettings(){renderBackups();if($("#sFumbbl"))$("#sFumbbl").value=settings.fumbblName||"";if($("#sBb3"))$("#sBb3").value=settings.bb3Name||"";$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
+function renderSettings(){renderBackups();if($("#sFumbbl"))$("#sFumbbl").value=settings.fumbblName||"";if($("#sBb3")){$("#sBb3").value=settings.bb3Name||"";$("#sBb3Lg").value=settings.bb3Leagues!=null?settings.bb3Leagues:BB3_DEFAULT_LEAGUES}$("#sMinutes").value=settings.minutes;$("#sBeep").checked=settings.beep;$("#sName").value=settings.coachName||"";$("#sNaf").value=settings.myNaf||"";$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";$("#sUrl").value=settings.syncUrl||"";$("#sToken").value=settings.syncToken||"";$("#sWake").checked=settings.wake}
 $("#sMinutes").addEventListener("change",e=>{const v=parseInt(e.target.value,10);if(v>0){settings.minutes=v;saveSettings();$("#fMinutes").value=v;toast(`Temps par défaut : ${v} min`)}});
 $("#sBeep").addEventListener("change",e=>{settings.beep=e.target.checked;saveSettings();if(e.target.checked){unlockAudio();beep()}});
 $("#sNaf").addEventListener("change",e=>{settings.myNaf=cleanNaf(e.target.value);setTimeout(pushSave,0);e.target.value=settings.myNaf;saveSettings();$("#sNafLink").innerHTML=settings.myNaf?nafLink(settings.myNaf,"Ma page NAF"):"";if(live&&live.broadcast)pushLive()});
@@ -1392,27 +1392,30 @@ async function spikeGet(path){
   if(spikeViaRelay)return spikeRelay(path);
   try{return await fetchJson(SPIKE_API+path,"Spike",{headers:{Accept:"application/ld+json"}})}
   catch(e){if(!/injoignable|délai/.test(e.message))throw e;spikeViaRelay=true;toast("Spike injoignable en direct : passage par votre script Google…");return spikeRelay(path)}}
+// Import Blood Bowl 3 : fonction Firebase « bb3Import » (API officielle Cyanide, clé gardée côté serveur).
+const BB3_DEFAULT_LEAGUES="Euskal Turn Over, FRANCO BOWL, FRANCOBOWL, Vent des Gobs, Ligue de Tuce";
+function bb3Record(g,meId){const mine=(g.teams||[]).find(t=>t.idcoach===meId),opp=(g.teams||[]).find(t=>t.idcoach!==meId);if(!mine||!opp)return null;
+  const oc=(g.coaches||[]).find(c=>c.idcoach!==meId),fin=String(g.finished||g.started||"");const d=fin?new Date(fin.replace(" ","T")+(/[zZ+]/.test(fin.slice(10))?"":"Z")):new Date();
+  return {id:"bb3-"+g.uuid,date:isNaN(d)?new Date().toISOString():d.toISOString(),competition:`BB3 · ${g.leaguename||"?"}`,source:"bb3",bb3League:g.leaguename||"",bb3Team:mine.idteamlisting||"",
+    myRoster:BB3_RACES[+mine.idraces]||("Race "+mine.idraces),oppCoach:oc?oc.coachname:"?",oppNaf:"",oppRoster:BB3_RACES[+opp.idraces]||("Race "+opp.idraces),
+    myTD:+mine.score||0,oppTD:+opp.score||0,myCas:+mine.inflictedcasualties||0,oppCas:+opp.inflictedcasualties||0,note:`BB3 · ${g.competitionname||""} · ${mine.teamname||""} contre ${opp.teamname||""}`}}
 async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),btn=$("#bBb3");if(!name){toast("Indiquez votre pseudo Blood Bowl 3");return}
-  settings.bb3Name=name;saveSettings();btn.disabled=true;msg.classList.remove("warn");msg.textContent="Recherche du compte…";
-  try{const f=await spikeGet("/coaches?name="+encodeURIComponent(name));const found=f["hydra:member"]||[],me=found.find(c=>String(c.name).toLowerCase()===name.toLowerCase());
-    if(!me)throw new Error(`aucun coach Blood Bowl 3 nommé exactement « ${name} » sur Spike${found.length?" (proches : "+found.slice(0,4).map(c=>c.name).join(", ")+")":""}`);
-    let page=1,seen=0,total=0;const fresh=[],fixes=[],ids=new Set();
-    for(;;){msg.textContent=`Téléchargement des matchs… ${seen}${total?" / "+total:""}`;
-      const j=await spikeGet(`/data/games?page=${page}&itemsPerPage=100&coach_uuid=${me.uuid}`);total=j["hydra:totalItems"]||0;const L=j["hydra:member"]||[];
-      L.forEach(g=>{seen++;
-        const tm=g.coach_uuid_1===me.uuid?g.team_uuid_1:g.team_uuid_2,mine=(g.teams||[]).find(t=>t.idteamlisting===tm),opp=(g.teams||[]).find(t=>t.idteamlisting!==tm),oc=(g.coaches||[]).find(c=>c.idcoach!==me.uuid);if(!mine||!opp)return;
-        const id="bb3-"+g.uuid;if(ids.has(id))return;ids.add(id);
-        const rec={id,date:g.finished||g.started||new Date().toISOString(),competition:`BB3 · ${g.league_name||"?"}`,source:"bb3",bb3League:g.league_name||"",
-          myRoster:BB3_RACES[mine.idraces]||("Race "+mine.idraces),oppCoach:oc?oc.coachname:"?",oppNaf:"",oppRoster:BB3_RACES[opp.idraces]||("Race "+opp.idraces),
-          myTD:+mine.score||0,oppTD:+opp.score||0,myCas:+mine.inflictedcasualties||0,oppCas:+opp.inflictedcasualties||0,note:`BB3 · ${g.competition_name||""} · ${mine.teamname} contre ${opp.teamname}`};
-        const old=matches[id];
-        if(!old)fresh.push(rec);
-        else if(!old.deleted&&old.source==="bb3"&&["myRoster","oppRoster","myTD","oppTD","myCas","oppCas"].some(k=>old[k]!==rec[k]))fixes.push(Object.assign({},old,rec))});
-      if(!L.length||seen>=total)break;page++}
-    msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""} trouvé${fresh.length>1?"s":""}`:"Aucun nouveau match")+(fixes.length?`, ${fixes.length} à corriger`:"")+` (${seen} sur Spike).`;
-    confirmImport("Blood Bowl 3",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""} (${seen} sur Spike).`},fixes)}
-  catch(e){msg.textContent="Import impossible : "+(e.message||"vérifiez la connexion")+".";msg.classList.add("warn");toast("Import BB3 impossible : voir le message sous le bouton")}
-  finally{btn.disabled=false}}
+  const lgTxt=$("#sBb3Lg").value.trim();settings.bb3Name=name;settings.bb3Leagues=lgTxt;saveSettings();
+  const mineBb3=allMatches().filter(m=>m.source==="bb3");const full=!mineBb3.length;
+  const go=async()=>{btn.disabled=true;msg.classList.remove("warn");msg.textContent=full?"Import complet en cours : jusqu'à 10 minutes, gardez l'appli ouverte…":"Recherche des nouveaux matchs (environ 30 s)…";
+    try{await fb();if(!firebase.functions)await loadScript(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-functions-compat.js`);
+      const last=mineBb3.map(m=>m.date).sort().pop();const since=full?"2023-01-01":new Date(Date.parse(last)-3*864e5).toISOString().slice(0,10);
+      const recent=Date.now()-180*864e5,teams=[...new Set(mineBb3.filter(m=>m.bb3Team&&Date.parse(m.date)>=recent).map(m=>m.bb3Team))];
+      const call=firebase.app().functions("europe-west1").httpsCallable("bb3Import",{timeout:600000});
+      const r=(await call({coach:name,leagues:lgTxt.split(",").map(x=>x.trim()).filter(Boolean),since,full,teams})).data||{};
+      if(!r.coach)throw new Error(`aucun coach Blood Bowl 3 nommé « ${name} »${r.candidates&&r.candidates.length?" (proches : "+r.candidates.join(", ")+")":""}`);
+      const fresh=[],fixes=[];(r.matches||[]).forEach(g=>{const rec=bb3Record(g,r.coach.id);if(!rec)return;const old=matches[rec.id];
+        if(!old)fresh.push(rec);else if(!old.deleted&&old.source==="bb3"&&["myRoster","oppRoster","myTD","oppTD","myCas","oppCas","bb3Team"].some(k=>old[k]!==rec[k]))fixes.push(Object.assign({},old,rec))});
+      msg.textContent=(fresh.length?`${fresh.length} nouveau${fresh.length>1?"x":""} match${fresh.length>1?"s":""}`:"Aucun nouveau match")+(fixes.length?`, ${fixes.length} à corriger`:"")+` (${(r.matches||[]).length} trouvés, ${r.requests} requêtes).`;
+      confirmImport("Blood Bowl 3",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""}.`},fixes)}
+    catch(e){const c=String(e&&e.code||"");msg.textContent="Import impossible : "+(/not-found|internal|unavailable/.test(c)&&!e.details?"la fonction Blood Bowl 3 n'est pas encore en ligne sur le serveur du club (voir BB3.md)":(e.message||"vérifiez la connexion"))+".";msg.classList.add("warn");toast("Import BB3 impossible : voir le message sous le bouton")}
+    finally{btn.disabled=false}};
+  if(full)confirmBox("Premier import complet ?","Aucun match Blood Bowl 3 n'est encore enregistré ici : l'appli va parcourir tout votre historique (plusieurs centaines de requêtes, jusqu'à 10 minutes). Plus rapide : importer le fichier dugout-bb3 fourni (Réglages › Sauvegarde › Importer).","Lancer l'import complet",false,go);else go()}
 $("#bBb3").onclick=importBB3;
 /* ---------- import NAF (base NAF reprise par l'API de Spike) ---------- */
 // Un match NAF est un doublon s'il existe déjà un match saisi à la main le même jour, même score, même adversaire (n° NAF ou nom).
