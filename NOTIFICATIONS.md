@@ -27,7 +27,7 @@ Le plus simple : **Google Cloud Shell** (rien à installer).
    git clone https://github.com/Tuce-hub/Bloodbowl.git && cd Bloodbowl
    cd functions && npm install && cd ..
    npx firebase-tools login --no-localhost
-   npx firebase-tools deploy --only functions --project horloge-bloodbowl
+   npx firebase-tools deploy --only functions:default --project horloge-bloodbowl
    ```
 3. Le premier déploiement active tout seul les services nécessaires (quelques minutes). S'il demande de réessayer, relancez la dernière commande.
 

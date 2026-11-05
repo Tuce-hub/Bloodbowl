@@ -1,4 +1,15 @@
 {
-  "functions": [{ "source": "functions", "codebase": "default" }],
-  "database": { "rules": "firebase-regles-v17.json" }
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default"
+    },
+    {
+      "source": "functions-bb3",
+      "codebase": "bb3"
+    }
+  ],
+  "database": {
+    "rules": "firebase-regles-v17.json"
+  }
 }

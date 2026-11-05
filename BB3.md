@@ -24,8 +24,8 @@ console.cloud.google.com › projet horloge-bloodbowl › icône **>_**. Une com
    ```
 3. Fonctions :
    ```
-   cd functions && npm install && cd ..
-   npx firebase-tools deploy --only functions --project horloge-bloodbowl
+   cd functions-bb3 && npm install && cd ..
+   npx firebase-tools deploy --only functions:bb3 --project horloge-bloodbowl
    ```
    Le premier déploiement active Cloud Scheduler (tâche toutes les 10 min). Résultat attendu : `bb3Register`, `bb3Collect`
    et les fonctions de notifications.
