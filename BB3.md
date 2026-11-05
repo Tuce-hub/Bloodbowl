@@ -24,9 +24,9 @@ console.cloud.google.com › projet horloge-bloodbowl › icône **>_** (Cloud S
    Résultat attendu : 4 fonctions, dont `bb3Import`.
 
 ## Utilisation
-- **Chaque coach**, sur son appareil : Réglages › Blood Bowl 3 › son pseudo, ses ligues privées › « Rechercher mes matchs Blood Bowl 3 ».
+- **Chaque coach**, sur son appareil : Réglages › Blood Bowl 3 › son pseudo › « Rechercher mes matchs Blood Bowl 3 » (ligue officielle : ladder, arena).
 - **Première recherche** : tout l'historique (quelques minutes selon le nombre d'équipes ; ~5 min pour 300 équipes).
-- **Ensuite** : seules les équipes récentes et les compétitions en cours sont vérifiées (~40 requêtes, ~30 s).
+- **Ensuite** : seules les équipes récentes sont vérifiées (quelques requêtes, quelques secondes).
 - Toutes les recherches du club passent par la même clé : quotas Cyanide partagés (1 000 requêtes/h).
 
 ## Garde-fous (quotas Cyanide : 1 000 requêtes/h, 10 000/jour)
