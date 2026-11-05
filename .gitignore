@@ -1,0 +1,5 @@
+
+# Réponses d'API de test : ne jamais publier
+*.json.tmp
+m*.json
+!manifest.webmanifest
