@@ -3,3 +3,5 @@
 *.json.tmp
 m*.json
 !manifest.webmanifest
+functions/node_modules/
+functions-bb3/node_modules/
