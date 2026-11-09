@@ -5,3 +5,4 @@ m*.json
 !manifest.webmanifest
 functions/node_modules/
 functions-bb3/node_modules/
+firebase-debug.log
