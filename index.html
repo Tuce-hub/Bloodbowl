@@ -514,7 +514,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
   <header class="top">
     <div class="brand"><h1>Dugout</h1><span>Blood Bowl</span></div>
     <div class="hd-r"><button type="button" class="hd-rules" id="aRules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Règles</button>
-    <div class="sync" id="sync"><i class="dot off" id="syncDot"></i><span id="syncTxt">Stockage local</span></div></div>
+    <div class="sync" id="sync" hidden><i class="dot off" id="syncDot"></i><span id="syncTxt">Stockage local</span></div></div>
   </header>
 
   <!-- MATCH -->
@@ -630,7 +630,7 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
       <p class="hint" id="sDiscordState"></p>
       <div class="field" id="sDiscordBox" hidden><label for="sDiscord">Webhook Discord (administrateur)</label><input id="sDiscord" type="url" inputmode="url" placeholder="https://discord.com/api/webhooks/…" autocomplete="off"><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn small" type="button" id="bDiscordSave">Enregistrer</button><button class="btn small" type="button" id="bDiscordTest">Envoyer un message test</button></div></div>
     </div>
-    <div class="panel">
+    <div class="panel" hidden><!-- synchro Google Sheets retirée (0.34.1) -->
       <h2>Synchronisation Google Sheets</h2>
       <p class="hint" id="syncLong"></p>
       <div class="field">
@@ -792,7 +792,9 @@ function confirmBox(title,text,ok,danger,fn){modal(`<h3>${esc(title)}</h3><p>${e
 
 /* ---------- synchro Google Sheets (local d'abord) ---------- */
 let syncState="idle", busy=false;
-const syncConf=()=>!!(settings.syncUrl&&settings.syncToken);
+// Synchronisation Google Sheets retirée : les matchs restent sur l'appareil (export / sauvegardes automatiques).
+const syncConf=()=>false;
+if(settings.syncUrl||settings.syncToken){delete settings.syncUrl;delete settings.syncToken;LS.set("settings",settings)}
 function setSync(){const n=pending.size,dot=$("#syncDot"),txt=$("#syncTxt"),long=$("#syncLong");dot.className="dot";
   if(!syncConf()){dot.classList.add("off");txt.textContent="Local";long.textContent="Synchro non configurée : les matchs restent sur ce téléphone. Renseignez l'adresse du script et le code secret pour les retrouver partout et dans votre Google Sheet.";return}
   if(syncState==="err"){dot.classList.add("err");txt.textContent=n?`${n} en attente`:"Erreur synchro";long.textContent="La synchro a échoué : vérifiez l'adresse du script (elle finit par /exec) et le code secret. Les matchs restent enregistrés sur ce téléphone.";return}
@@ -1470,7 +1472,7 @@ function toggleFav(n,on){n=String(n||"").trim();if(!n)return;favMap()[favKey(n)]
 function renderFavs(){const b=$("#favList");if(!b)return;const f=favs();
   b.innerHTML=f.length?f.map((n,i)=>`<span class="fav">★ ${esc(n)}<button type="button" data-unfav="${i}" aria-label="Retirer ${esc(n)}">×</button></span>`).join(""):'<span class="hint">Aucun favori pour l\'instant.</span>';
   b.querySelectorAll("[data-unfav]").forEach(x=>x.onclick=()=>toggleFav(f[+x.dataset.unfav],false));
-  const ps=$("#favSyncState");if(ps)ps.textContent=!syncConf()?"Pour retrouver vos favoris sur tous vos appareils, configurez la synchronisation Google Sheets (même adresse et même code secret partout).":settings.prefsSync==="old"?"Favoris non partagés : mettez à jour votre script Google (Code.gs, nouvelle version du déploiement).":settings.prefsSync==="err"?"Favoris : dernière synchronisation échouée, nouvel essai automatique.":"Favoris partagés entre vos appareils via la synchronisation Google Sheets.";
+  const ps=$("#favSyncState");if(ps)ps.textContent=!syncConf()?"Favoris enregistrés sur cet appareil.":settings.prefsSync==="old"?"Favoris non partagés : mettez à jour votre script Google (Code.gs, nouvelle version du déploiement).":settings.prefsSync==="err"?"Favoris : dernière synchronisation échouée, nouvel essai automatique.":"Favoris partagés entre vos appareils via la synchronisation Google Sheets.";
   $("#sPush").checked=!!settings.pushOn;$("#sPushAll").checked=!!settings.pushAll;$("#sPushChat").checked=settings.pushChat!==false;
   const st=$("#pushState");if(st)st.textContent=!("Notification" in window)?"Ce navigateur ne permet pas les notifications (sur iPhone : ajoutez l'appli à l'écran d'accueil).":!VAPID_KEY?"Pas encore activées sur le serveur du club : voir l'étape d'installation.":Notification.permission==="denied"?"Bloquées dans les réglages du téléphone pour ce site.":settings.pushOn?"Activées sur ce téléphone.":"Début et résultat des matchs en direct de vos coachs favoris, et messages du tchat."}
 async function pushToken(){if(!VAPID_KEY)throw new Error("notifications pas encore activées sur le serveur du club");
@@ -1792,7 +1794,10 @@ $("#bDiscordSave").onclick=async()=>{const v=$("#sDiscord").value.trim();
   try{await fb();await fdb.ref("config/discordWebhook").set(v);toast(v?"Webhook Discord enregistré":"Annonces Discord désactivées")}catch(e){toast("Enregistrement refusé : vérifiez que vous êtes administrateur et que les règles sont à jour")}};
 $("#bDiscordTest").onclick=()=>{if(!discordHook){toast("Enregistrez d'abord le webhook");return}postDiscord("✅ Test Dugout : les annonces de matchs en direct arriveront dans ce salon.");toast("Message test envoyé : vérifiez le salon Discord")};
 function routeHash(){const h=(location.hash||"").slice(1);if(h==="bb3"){showTab("set");setTimeout(()=>{const x=[...document.querySelectorAll("#v-set > .panel > h2")].find(e=>e.textContent.trim()==="Blood Bowl 3");if(x&&x.parentElement.classList.contains("closed"))x.click()},50);return true}if(h.startsWith("d-")){openDetail(h.slice(2));return true}if(h==="direct"){showTab("direct");return true}return false}
-addEventListener("hashchange",()=>{const h=(location.hash||"").slice(1);if(h.startsWith("d-")&&h.slice(2)!==dOpen)openDetail(h.slice(2))});
+addEventListener("hashchange",()=>{const h=(location.hash||"").slice(1);if(h.startsWith("d-")&&h.slice(2)===dOpen)return;routeHash()});
+// Toucher une notification alors que l'appli est déjà ouverte : le service worker indique l'écran à afficher.
+if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",e=>{const r=e.data&&e.data.dugoutRoute;if(typeof r!=="string")return;
+  if(location.hash===r)routeHash();else location.hash=r});
 
 function refreshModals(){const m=$("#modal");if(m.hidden)return;[m.firstChild,...modalStack.map(x=>x.node)].forEach(n=>{if(n&&n._refresh)try{n._refresh()}catch(e){}})}
 function renderAll(){refreshModals();renderNewMatchHelpers();renderLiveCard();renderStats();renderHist();renderClockVisibility();tick()}

@@ -1,6 +1,6 @@
 // Dugout Blood Bowl — fonctionnement hors ligne.
 // Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement.
-const VERSION = "dugout-v34"; // seul endroit où changer la version : l'appli l'affiche automatiquement (v34 → 0.34)
+const VERSION = "dugout-v34.1"; // seul endroit où changer la version : l'appli l'affiche automatiquement (v34.1 → 0.34.1)
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", e => {
@@ -53,7 +53,8 @@ self.addEventListener("notificationclick", e => {
   e.notification.close();
   const url = new URL((e.notification.data && e.notification.data.url) || "./", self.registration.scope).href;
   e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
-    for (const c of list) { if ("focus" in c) { c.navigate(url).catch(() => {}); return c.focus(); } }
+    // Appli déjà ouverte : on la met au premier plan et on lui dit quel écran afficher (#direct, #d-<match>, #bb3).
+    for (const c of list) { if ("focus" in c) { c.postMessage({ dugoutRoute: new URL(url).hash }); return c.focus(); } }
     return self.clients.openWindow(url);
   }));
 });
