@@ -58,7 +58,10 @@ async function fetchCoachMatches({ key, coach, since = "2023-01-01", teams = [],
   // Temps restant ; tombe à 0 si le plafond de requêtes (quota Cyanide) est atteint.
   const left = () => requests >= maxRequests ? 0 : budgetMs - (Date.now() - t0);
   const c = async (m, p) => { requests++; return call(key, m, p, fetchImpl); };
+  // Ligue du club : toujours parcourue (la recherche « toutes ligues » de Cyanide s'arrête à 9 999 ligues et peut la manquer).
+  const CLUB_LEAGUES = ["Euskal Turn Over"];
   const st = { checked: Array.isArray(state.checked) ? state.checked.slice() : [], leagues: Object.assign({}, state.leagues || {}) };
+  CLUB_LEAGUES.forEach(l => { if (!(l in st.leagues)) st.leagues[l] = false; });
   const look = await c("lookup", { coach_name: coach });
   const found = (look.coaches || []).find(x => String(x.name).toLowerCase() === String(coach).toLowerCase());
   if (!found) return { coach: null, matches: [], requests, state: st, remaining: 0, total: 0, candidates: (look.coaches || []).slice(0, 5).map(x => x.name) };
