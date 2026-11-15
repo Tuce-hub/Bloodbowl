@@ -171,6 +171,12 @@ details.chartsBox[open]>summary{margin-bottom:10px}
 .follow button[aria-pressed="true"]{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 60%,transparent)}
 .tm2 .tt{display:block;font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .tm2 .tt.on{color:var(--gold)}
+.instb{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border:1px solid color-mix(in srgb,var(--gold) 55%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--gold) 8%,var(--surface))}
+.instb .it{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.instb .it b{font-family:var(--f-label);font-weight:700;font-size:17px;letter-spacing:.03em}
+.instb .it span{font-size:14px;color:var(--muted);line-height:1.35}
+.instb .ia{display:flex;align-items:center;gap:4px}
+.instb .ix{width:36px;height:36px;border:0;background:transparent;color:var(--muted);font-size:24px;line-height:1}
 .sortrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:var(--f-label);font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .sortrow button{height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-label);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .sortrow button[aria-pressed="true"]{background:var(--surface2);color:var(--fg);border-color:var(--gold)}
@@ -519,6 +525,10 @@ textarea{width:100%;min-height:140px;background:var(--surface2);border:1px solid
 
   <!-- MATCH -->
   <section class="view" id="v-match">
+    <div class="instb" id="instBox" hidden>
+      <div class="it"><b>📲 Installer Dugout</b><span id="instTxt">Plein écran, hors connexion, notifications.</span></div>
+      <div class="ia"><button type="button" class="btn small primary" id="instGo">Installer</button><button type="button" class="ix" id="instNo" aria-label="Plus tard">×</button></div>
+    </div>
     <div id="liveBox" hidden></div>
     <form class="panel" id="newMatch" autocomplete="off">
       <h2>Nouveau match</h2>
@@ -1314,9 +1324,24 @@ $("#bSyncNow").onclick=()=>sync(true);
 $("#sUrl").addEventListener("change",e=>{settings.syncUrl=e.target.value.trim();saveSettings();allToPending();sync(true)});
 $("#sToken").addEventListener("change",e=>{settings.syncToken=e.target.value.trim();saveSettings();allToPending();sync(true)});
 function allToPending(){Object.keys(matches).forEach(id=>pending.add(id));saveMatches()}
-let installEvt=null;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;$("#bInstall").hidden=false});
-$("#bInstall").onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;$("#bInstall").hidden=true};
-window.addEventListener("appinstalled",()=>{$("#bInstall").hidden=true;toast("Appli installée")});
+// Installation : bandeau sur l'accueil (Chrome/Android : bouton natif ; iPhone : marche à suivre ; navigateur intégré d'une autre appli : ouvrir dans Chrome/Safari).
+let installEvt=null;
+const standalone=()=>matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches||navigator.standalone===true;
+const ua=navigator.userAgent,isIOS=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const inApp=/FBAN|FBAV|Instagram|Line\/|MicroMessenger|Snapchat|; wv\)/.test(ua);
+function showInstall(mode){if(standalone())return;const until=LS.get("instSnooze",0);if(Date.now()<until)return;
+  const box=$("#instBox"),go=$("#instGo"),t=$("#instTxt");box.hidden=false;go.hidden=mode!=="prompt";
+  if(mode==="ios")t.textContent="Sur iPhone : touchez le bouton Partager (carré avec une flèche) en bas de Safari, puis « Sur l'écran d'accueil ».";
+  else if(mode==="inapp")t.textContent="Vous êtes dans le navigateur d'une autre appli : ouvrez ce lien dans Chrome (ou Safari sur iPhone) pour installer Dugout.";
+  else if(mode==="menu")t.textContent="Dans Chrome : menu ⋮ en haut à droite, puis « Installer l'application » (ou « Ajouter à l'écran d'accueil »).";
+  else t.textContent="Plein écran, hors connexion, notifications."}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;$("#bInstall").hidden=false;showInstall("prompt")});
+const doInstall=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;$("#bInstall").hidden=true;$("#instBox").hidden=true};
+$("#bInstall").onclick=doInstall;$("#instGo").onclick=doInstall;
+$("#instNo").onclick=()=>{LS.set("instSnooze",Date.now()+14*864e5);$("#instBox").hidden=true};
+window.addEventListener("appinstalled",()=>{$("#bInstall").hidden=true;$("#instBox").hidden=true;toast("Appli installée")});
+// Sans proposition de Chrome après quelques secondes : marche à suivre adaptée (iPhone, navigateur intégré, menu de Chrome).
+setTimeout(()=>{if(installEvt||standalone())return;if(isIOS)showInstall("ios");else if(inApp)showInstall("inapp");else if(/Android/.test(ua))showInstall("menu")},4000);
 
 
 $("#bExport").onclick=async()=>{const data=JSON.stringify({app:"dugout-bloodbowl",version:1,exportedAt:new Date().toISOString(),matches:allMatches()},null,2);
