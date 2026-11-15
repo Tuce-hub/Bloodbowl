@@ -1452,7 +1452,7 @@ async function importBB3(){const name=$("#sBb3").value.trim(),msg=$("#bb3Msg"),b
     confirmImport("Blood Bowl 3",fresh,n=>{if(n)msg.textContent=`${n} match${n>1?"s":""} importé${n>1?"s":""}.`},fixes)}
   catch(e){const c=String(e&&e.code||"");msg.textContent="Impossible : "+(/not-found/.test(c)&&e.message?e.message:/internal|unavailable/.test(c)&&!e.details?"le serveur Blood Bowl 3 du club n'est pas encore en ligne (voir BB3.md)":(e.message||"vérifiez la connexion"))+".";msg.classList.add("warn");toast("Blood Bowl 3 : voir le message sous le bouton")}
   finally{btn.disabled=false}}
-bb3Watch();
+setTimeout(()=>{try{bb3Watch()}catch(e){}},0); // après le chargement complet du script (sinon Firebase n'est pas encore prêt)
 $("#bBb3").onclick=importBB3;
 /* ---------- import NAF (base NAF reprise par l'API de Spike) ---------- */
 // Un match NAF est un doublon s'il existe déjà un match saisi à la main le même jour, même score, même adversaire (n° NAF ou nom).
